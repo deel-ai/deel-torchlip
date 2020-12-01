@@ -46,13 +46,10 @@ def evaluate_lip_const(model: Sequential, x, eps=1e-4, seed=None):
 
     """
     y_pred = model(x.float())
-    # x = np.repeat(x, 100, 0)
-    # y_pred = np.repeat(y_pred, 100, 0)
     np.random.seed(seed)
     x_var = x + torch.from_numpy(
         np.random.uniform(low=eps * 0.25, high=eps, size=x.shape)
     )
-    # x_var = x + FloatTensor(shape=x.shape)).uniform_(eps * 0.25, eps, seed=seed)
     y_pred_var = model(x_var.float())
     dx = x - x_var
     dfx = y_pred - y_pred_var
@@ -96,25 +93,3 @@ def compute_lconv_ip_coef(kernel_size, input_shape=None, stride=1):
         zr2 = (alphaw2 + 1) * (k2_div2 - gamma2 + sn2 * alphaw2 / 2.0)
         coefLip = np.sqrt((h * w) / ((k1 * ho - zl1 - zr1) * (k2 * wo - zl2 - zr2)))
     return coefLip
-
-
-def bjorck_normalization(w, niter=DEFAULT_NITER_BJORCK):
-    """
-    apply Bjorck normalization on w.
-
-    Args:
-        w: weight to normalize, in order to work properly, we must have
-            max_eigenval(w) ~= 1
-        niter: number of iterations
-
-    Returns:
-        the orthonormal weights
-
-    """
-    shape = w.shape
-    height = w.size(0)
-    w_mat = w.reshape(height, -1)
-    for i in range(niter):
-        w_mat = 1.5 * w_mat - 0.5 * torch.mm(w_mat, torch.mm(w_mat.t(), w_mat))
-    w = w_mat.reshape(shape)
-    return w
