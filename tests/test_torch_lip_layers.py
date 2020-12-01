@@ -6,6 +6,7 @@ import math
 import os
 import pprint
 import unittest
+from typing import Union
 
 import numpy as np
 import torch.autograd as autograd
@@ -13,28 +14,19 @@ from deel.lip.pt.layers import (
     FrobeniusConv2d,
     FrobeniusLinear,
     ScaledAvgPool2d,
+    SpectralConv1d,
     SpectralConv2d,
+    SpectralConv3d,
     SpectralLinear,
     TorchLipschitzLayer,
-    SpectralConv1d,
-    SpectralConv3d,
 )
 from deel.lip.pt.module import Sequential
 from deel.lip.pt.utils import evaluate_lip_const
-from torch import (
-    Tensor,
-    abs,
-    from_numpy,
-    load,
-    manual_seed,
-    no_grad,
-    save,
-)
+from torch import Tensor, abs, from_numpy, load, manual_seed, no_grad, save
 from torch.nn import Conv1d, Conv2d, Conv3d, Linear, MSELoss
 from torch.nn import Sequential as tSequential
 from torch.optim import Adam
 from torch.utils.data import DataLoader, TensorDataset
-from typing import Union
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -127,7 +119,7 @@ def generate_k_lip_model(layer_type: type, layer_params: dict, k):
         k: lipshitz factor of the function
 
     Returns:
-        a keras Model with a single layer.
+        a torch Model with a single layer.
 
     """
     if issubclass(layer_type, Sequential):
@@ -618,7 +610,7 @@ class LipschitzLayersTest(unittest.TestCase):
             ]
         )
 
-    def _test_spectralConv3d(self): #TBC
+    def _test_spectralConv3d(self):  # TBC
         self._apply_tests_bank(
             [
                 dict(
@@ -735,7 +727,7 @@ class LipschitzLayersTest(unittest.TestCase):
             ]
         )
 
-    def _test_ScaledAvgPool2d(self): #TBC
+    def _test_ScaledAvgPool2d(self):  # TBC
         self._apply_tests_bank(
             [
                 # tests only checks that lip cons is enforced

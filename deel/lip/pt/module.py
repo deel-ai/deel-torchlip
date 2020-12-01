@@ -12,7 +12,6 @@ from collections import OrderedDict
 import numpy as np
 from torch.nn import Sequential as TorchSequential
 
-# from tensorflow.keras.layers import Input
 from .layers import TorchLipschitzLayer, TorchCondensable
 from .utils import _deel_export
 
@@ -25,7 +24,7 @@ class Sequential(TorchSequential, TorchLipschitzLayer, TorchCondensable):
         k_coef_lip=1.0,
     ):
         """
-        Equivalent of keras.Sequential but allow to set k-lip factor globally. Also
+        Equivalent of torch.Sequential but allow to set k-lip factor globally. Also
         support condensation and vanilla exportation.
         For now constant repartition is implemented (each layer
         get n_sqrt(k_lip_factor), where n is the number of layers)
@@ -38,6 +37,10 @@ class Sequential(TorchSequential, TorchLipschitzLayer, TorchCondensable):
         """
         super(Sequential, self).__init__(layers)
         self.layers = layers
+        if len(self.layers) == 1 and isinstance(self.layers[0], OrderedDict):
+            self.layers_list = self.layers[0].values()
+        else:
+            self.layers_list = self.layers
         self.set_klip_factor(k_coef_lip)
         self.init = False
 
@@ -52,20 +55,9 @@ class Sequential(TorchSequential, TorchLipschitzLayer, TorchCondensable):
         nb_layers = np.sum(
             [isinstance(layer, TorchLipschitzLayer) for layer in self.layers]
         )
-        if len(self.layers) == 1 and isinstance(self.layers[0], OrderedDict):
-            for _, module in self.layers[0].items():
-                if isinstance(module, TorchLipschitzLayer):
-                    module.set_klip_factor(math.pow(klip_factor, 1 / nb_layers))
-            else:
-                warn(
-                    "Sequential model contains a layer wich is not a Lipschitsz layer: {}".format(  # noqa: E501
-                        module
-                    )
-                )
-        else:
-            for _, module in enumerate(self.layers):
-                if isinstance(module, TorchLipschitzLayer):
-                    module.set_klip_factor(math.pow(klip_factor, 1 / nb_layers))
+        for module in enumerate(self.layers_list):
+            if isinstance(module, TorchLipschitzLayer):
+                module.set_klip_factor(math.pow(klip_factor, 1 / nb_layers))
             else:
                 warn(
                     "Sequential model contains a layer wich is not a Lipschitsz layer: {}".format(  # noqa: E501
@@ -74,7 +66,7 @@ class Sequential(TorchSequential, TorchLipschitzLayer, TorchCondensable):
                 )
 
     def _compute_lip_coef(self, input_shape=None):
-        for layer in self.layers:
+        for layer in self.layers_list:
             if isinstance(layer, TorchLipschitzLayer):
                 layer._compute_lip_coef(input_shape)
             else:
@@ -84,8 +76,8 @@ class Sequential(TorchSequential, TorchLipschitzLayer, TorchCondensable):
                     )
                 )
 
-    def _init_lip_coef(self, input_shape):
-        for layer in self.layers:
+    def _init_lip_coef(self, input_shape):   
+        for layer in self.layers_list:
             if isinstance(layer, TorchLipschitzLayer):
                 layer._init_lip_coef(input_shape)
             else:
@@ -97,7 +89,7 @@ class Sequential(TorchSequential, TorchLipschitzLayer, TorchCondensable):
 
     def _get_coef(self):
         global_coef = 1.0
-        for layer in self.layers:
+        for layer in self.layers_list:
             if isinstance(layer, TorchLipschitzLayer) and (global_coef is not None):
                 global_coef *= layer._get_coef()
             else:
@@ -110,13 +102,13 @@ class Sequential(TorchSequential, TorchLipschitzLayer, TorchCondensable):
         return global_coef
 
     def condense(self):
-        for layer in self.layers:
+        for layer in self.layers_list:
             if isinstance(layer, TorchCondensable):
                 layer.condense()
 
     def vanilla_export(self):
         layers = list()
-        for layer in self.layers:
+        for layer in self.layers_list:
             if isinstance(layer, TorchCondensable):
                 layer.condense()
                 layers.append(layer.vanilla_export())

@@ -35,7 +35,7 @@ def evaluate_lip_const(model: Sequential, x, eps=1e-4, seed=None):
     input sample. This may not correctly estimate the behaviour in the whole domain.
 
     Args:
-        model: built keras model used to make predictions
+        model: built torch model used to make predictions
         x: inputs used to compute the lipschitz constant
         eps: magnitude of noise to add to input in order to compute the constant
         seed: seed used when generating the noise ( can be set to None )

@@ -33,8 +33,9 @@ def bjorck_normalization(w: torch.Tensor, niter: int = DEFAULT_NITER_BJORCK):
     height = w.size(0)
     w_mat = w.reshape(height, -1)
     for i in range(niter):
-        # W = tf.Print(W,[tf.shape(W)])
-        w = (1.0 + DEFAULT_BETA) * w_mat - DEFAULT_BETA * torch.mm(w_mat, torch.mm(w_mat.t(), w_mat))
+        w = (1.0 + DEFAULT_BETA) * w_mat - DEFAULT_BETA * torch.mm(
+            w_mat, torch.mm(w_mat.t(), w_mat)
+        )
     w = w_mat.reshape(shape)
     return w
 
@@ -62,7 +63,9 @@ def _power_iteration(
 
 
 def spectral_normalization(
-    kernel: torch.Tensor, u: torch.Tensor = None, niter: int = DEFAULT_NITER_SPECTRAL,
+    kernel: torch.Tensor,
+    u: torch.Tensor = None,
+    niter: int = DEFAULT_NITER_SPECTRAL,
 ):
     """
     Normalize the kernel to have it's max eigenvalue == 1.
@@ -100,10 +103,12 @@ def spectral_normalization(
 
 
 def qr_normalization(
-    kernel: torch.Tensor, u: torch.Tensor = None, niter: int = DEFAULT_NITER_SPECTRAL,
+    kernel: torch.Tensor,
+    u: torch.Tensor = None,
+    niter: int = DEFAULT_NITER_SPECTRAL,
 ):
-    """ Make the kernel tensor 1-Lipschitz Using QR
-    Currently not used and to be checked 
+    """Make the kernel tensor 1-Lipschitz Using QR
+    Currently not used and to be checked
     """
     # TODO: check and fix the code. An ugly approximation is done using padding to have "square" tensors
     # TODO: this approximation has to be checked and fixed if possible
