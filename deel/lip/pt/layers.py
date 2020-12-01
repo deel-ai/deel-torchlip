@@ -8,8 +8,12 @@ reparametrization. Currently, are implemented:
 
 * Linear layer:
     as SpectralLinear
-* Conv2D layer:
+* Conv1d layer:
+    as SpectralConv1d
+* Conv2d layer:
     as SpectralConv2d
+* Conv3d layer:
+    as SpectralConv3d
 * AvgPool2d:
     as ScaledAvgPool2d
 
@@ -36,7 +40,6 @@ from .utils import (
     DEFAULT_NITER_SPECTRAL,
     DEFAULT_NITER_SPECTRAL_INIT,
     _deel_export,
-    # bjorck_normalization,
     compute_lconv_ip_coef,
 )
 
@@ -115,116 +118,6 @@ class TorchLipschitzLayer(abc.ABC):
         return self.coef_lip * self.k_coef_lip
 
 
-class LipschitzLayer(nn.Module):
-    """ Class holding the Lipschitz attributes and compute methods """
-
-    def __init__(self, *args, **kwargs):
-        torch.nn.Module.__init__(self, *args, **kwargs)
-        self.add_lipschitz_buffers()
-
-    def add_lipschitz_buffers(self):
-        """ add buffers needed for lipschitz """
-        # lipschitz_u is the tensor used in
-        self.register_buffer("lipschitz_u", None)
-        self.register_buffer("lipschitz_gain", None)
-
-    def compute_lipschitz_gain(self, input):
-        if isinstance(self, nn.Linear):
-            self.lipschitz_gain = torch.ones(1, device=self.weight.device)
-
-        elif isinstance(self, (nn.Conv1d, nn.Conv2d, nn.Conv3d)):
-
-            # all dimensions, including input channels number
-            dims = list(input.shape[2:])
-            in_channels = self.in_channels
-            all_dims = dims + [in_channels]
-            # print("all dims", all_dims)
-
-            # check kernel, stride and dilation have the same dimensions
-            assert len(self.kernel_size) == len(self.stride) == len(self.dilation)
-            kernel_size = self.kernel_size
-            k_divs = [(el - 1) / 2 for el in kernel_size]
-
-            # dilation = self.dilation
-            stride = self.stride
-
-            alpha = [np.ceil(k / sn) for k, sn in zip(kernel_size, stride)]
-            alphabar = [np.floor(k_div / sn) for k_div, sn in zip(k_divs, stride)]
-            betabar = [
-                k_div - alphab * sn
-                for k_div, alphab, sn in zip(k_divs, alphabar, stride)
-            ]
-
-            gamma = [
-                dim - 1 - sn * np.ceil((dim - 1 - k_div) / sn)
-                for dim, sn, k_div in zip(dims, stride, k_divs)
-            ]
-            alphadim = [np.floor(gamma_ / sn) for gamma_, sn in zip(gamma, stride)]
-
-            dim_out = [np.floor(dim / sn) for dim, sn in zip(dims, stride)]
-
-            # paddings
-            # TODO : check if can use self.padding instead of zl and zr
-            # padding = self.padding
-            # self.padding_mode 'zeros'
-
-            zl = [
-                (alphab * sn + 2 * betab) * (alphab + 1) / 2
-                for betab, alphab, sn in zip(betabar, alphabar, stride)
-            ]
-            zr = [
-                (alphad + 1) * (k_div - gamma_ + sn * alphad / 2.0)
-                for alphad, k_div, gamma_, sn in zip(alphadim, k_divs, gamma, stride)
-            ]
-
-            input_size = in_channels ** len(dims) * reduce(lambda x, y: x * y, dims)
-            output_size = reduce(
-                lambda x, y: x * y,
-                [
-                    k * (dim - zl_ - zr_)
-                    for k, dim, zl_, zr_ in zip(kernel_size, dims, zl, zr)
-                ],
-            )
-            # inverted fraction
-            throughput = torch.as_tensor((output_size / input_size))
-
-            # compute gain
-            self.lipschitz_gain = torch.pow(throughput, 1 / len(all_dims)).to(
-                device=self.weight.device
-            )
-        else:
-            raise (NotImplementedError("No gain for {}".format(type(self))))
-
-    def add_spectral_norm(self):
-
-        init.orthogonal_(self.weight)
-        if self.bias is not None:
-            init.zeros_(self.bias)
-        spectral_norm(
-            self,
-            name="weight",
-            n_power_iterations=self.niter_spectral,
-        )
-
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-            "niter_spectral": self.niter_spectral,
-            "niter_bjorck": self.niter_bjorck,
-        }
-        base_config = super(SpectralLinear, self).state_dict()
-        return dict(list(base_config.items()) + list(config.items()))
-
-    def get_lipschitz_weight(self, input):
-        # Normalize weight
-        W_bar, self.lipschitz_u, sigma = spectral_normalization(
-            self.weight, self.lipschitz_u
-        )
-        # and apply lipschitz coefficient
-        self.compute_lipschitz_gain(input)
-        return W_bar * self.lipschitz_gain
-
-
 class TorchCondensable(abc.ABC):
     """
     Some Layers don't optimize directly the kernel, this means that the kernel stored
@@ -260,7 +153,31 @@ class TorchCondensable(abc.ABC):
         """
         pass
 
+class LipschitzLayer(nn.Module):
+    """ Class holding the Lipschitz attributes and compute methods """
+    def __init__(self, *args, **kwargs):
+        torch.nn.Module.__init__(self, *args, **kwargs)
 
+    def add_spectral_norm(self):
+        init.orthogonal_(self.weight)
+        if self.bias is not None:
+            init.zeros_(self.bias)
+        spectral_norm(
+            self,
+            name="weight",
+            n_power_iterations=self.niter_spectral,
+        )
+
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
+        config = {
+            "k_coef_lip": self.k_coef_lip,
+            "niter_spectral": self.niter_spectral,
+            "niter_bjorck": self.niter_bjorck,
+        }
+        base_config = super(SpectralLinear, self).state_dict()
+        return dict(list(base_config.items()) + list(config.items()))
+
+        
 @_deel_export
 class SpectralLinear(nn.Linear, LipschitzLayer, TorchLipschitzLayer, TorchCondensable):
     def __init__(
@@ -323,7 +240,7 @@ class SpectralLinear(nn.Linear, LipschitzLayer, TorchLipschitzLayer, TorchConden
         The stored kernel is kernel used to make predictions W_bar
         """
         pass
-
+    
     def vanilla_export(self):
         self._kwargs["name"] = self.name
         layer = nn.Linear(
@@ -497,6 +414,9 @@ class SpectralConv1d(nn.Conv1d, LipschitzLayer, TorchLipschitzLayer, TorchConden
         )
 
     def condense(self):
+        """
+        The stored kernel is kernel used to make predictions W_bar
+        """
         pass
 
     def vanilla_export(self):
@@ -600,6 +520,12 @@ class SpectralConv2d(nn.Conv2d, LipschitzLayer, TorchLipschitzLayer, TorchConden
             self.init = True
         W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
         return self._conv_forward(input, W_bar * self._get_coef())
+
+    def condense(self):
+        """
+        The stored kernel is kernel used to make predictions W_bar
+        """
+        pass
 
     def vanilla_export(self):
         self._kwargs["name"] = self.name
@@ -719,6 +645,12 @@ class SpectralConv3d(nn.Conv3d, LipschitzLayer, TorchLipschitzLayer, TorchConden
             self.dilation,
             self.groups,
         )
+
+    def condense(self):
+        """
+        The stored kernel is kernel used to make predictions W_bar
+        """
+        pass
 
     def vanilla_export(self):
         self._kwargs["name"] = self.name

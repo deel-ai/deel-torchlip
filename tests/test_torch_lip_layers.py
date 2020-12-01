@@ -343,9 +343,9 @@ class LipschitzLayersTest(unittest.TestCase):
                 emp_lip_const, from_disk_emp_lip_const, test_params
             )
 
-    def _test_vanilla_dense(self):
+    def test_vanilla_linear(self):
         """
-        Tests for a standard Dense layer, for result comparison.
+        Tests for a standard Linear layer, for result comparison.
         """
         self._apply_tests_bank(
             [
@@ -400,7 +400,7 @@ class LipschitzLayersTest(unittest.TestCase):
             ]
         )
 
-    def _test_spectral_linear(self):
+    def test_spectral_linear(self):
         self._apply_tests_bank(
             [
                 dict(
@@ -454,7 +454,7 @@ class LipschitzLayersTest(unittest.TestCase):
             ]
         )
 
-    def _test_frobenius_linear(self):
+    def test_frobenius_linear(self):
         self._apply_tests_bank(
             [
                 dict(
@@ -508,7 +508,7 @@ class LipschitzLayersTest(unittest.TestCase):
             ]
         )
 
-    def _test_spectralConv1d(self):
+    def test_spectralConv1d(self):
         self._apply_tests_bank(
             [
                 dict(
@@ -563,7 +563,7 @@ class LipschitzLayersTest(unittest.TestCase):
             ]
         )
 
-    def _test_spectralConv2d(self):
+    def test_spectralConv2d(self):
         self._apply_tests_bank(
             [
                 dict(
@@ -618,7 +618,7 @@ class LipschitzLayersTest(unittest.TestCase):
             ]
         )
 
-    def _test_spectralConv3d(self):
+    def _test_spectralConv3d(self): #TBC
         self._apply_tests_bank(
             [
                 dict(
@@ -735,7 +735,7 @@ class LipschitzLayersTest(unittest.TestCase):
             ]
         )
 
-    def _test_ScaledAvgPool2d(self):
+    def _test_ScaledAvgPool2d(self): #TBC
         self._apply_tests_bank(
             [
                 # tests only checks that lip cons is enforced
