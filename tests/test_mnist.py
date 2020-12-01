@@ -161,12 +161,12 @@ def main():
         default=False,
         help="For Saving the current Model",
     )
-    parser.add_argument(
-        "--disable-lipschitz",
-        action="store_true",
-        default=False,
-        help="For Disabling lipschitz constraint",
-    )
+    # parser.add_argument(
+    #     "--disable-lipschitz",
+    #     action="store_true",
+    #     default=False,
+    #     help="For Disabling lipschitz constraint",
+    # )
     parser.add_argument("--reload", type=str, default=None, help="Model to reload")
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
@@ -197,7 +197,7 @@ def main():
     if args.reload:
         state_dict = torch.load(args.reload)
         print(state_dict.keys())
-        state_dict = {k: v for k, v in state_dict.items() if "lipschitz_u" not in k}
+        state_dict = {k: v for k, v in state_dict.items()}
         model.load_state_dict(state_dict)
 
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
@@ -208,8 +208,8 @@ def main():
         test(model, device, test_loader)
         scheduler.step()
 
-    if args.save_model:
-        torch.save(model.state_dict(), "mnist_cnn.pth")
+    # if args.save_model:
+    torch.save(model.state_dict(), "mnist_cnn.pth")
 
 
 if __name__ == "__main__":
