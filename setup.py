@@ -28,8 +28,8 @@ docs_requires = [
 ]
 
 setuptools.setup(
-    name="deel-torch-lip",
-    version="1.0.0",
+    name="deel-lip-pytorch",
+    version="0.0.1",
     author=", ".join(
         ["Mathieu SERRURIER", "Franck MAMALET", "Thibaut BOISSIN", "Justin PLAKOO"]
     ),

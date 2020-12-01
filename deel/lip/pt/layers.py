@@ -129,11 +129,12 @@ class TorchCondensable(abc.ABC):
     The Dense layer that have the same predictions as the trained SpectralDense.
     """
 
-    @abc.abstractmethod
     def condense(self):
         """
         The condense operation allow to overwrite the kernel and ensure that other
         variables are still consistent.
+        The stored kernel is W_bar used to make predictions in spectral layers,
+        this method is not implemented
 
         Returns:
             None
@@ -153,8 +154,10 @@ class TorchCondensable(abc.ABC):
         """
         pass
 
-class LipschitzLayer(nn.Module):
+
+class LayersCommon(nn.Module):
     """ Class holding the Lipschitz attributes and compute methods """
+
     def __init__(self, *args, **kwargs):
         torch.nn.Module.__init__(self, *args, **kwargs)
 
@@ -177,9 +180,9 @@ class LipschitzLayer(nn.Module):
         base_config = super(SpectralLinear, self).state_dict()
         return dict(list(base_config.items()) + list(config.items()))
 
-        
+
 @_deel_export
-class SpectralLinear(nn.Linear, LipschitzLayer, TorchLipschitzLayer, TorchCondensable):
+class SpectralLinear(nn.Linear, LayersCommon, TorchLipschitzLayer, TorchCondensable):
     def __init__(
         self,
         in_features,
@@ -235,12 +238,6 @@ class SpectralLinear(nn.Linear, LipschitzLayer, TorchLipschitzLayer, TorchConden
         W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
         return F.linear(input, W_bar * self._get_coef(), self.bias)
 
-    def condense(self):
-        """
-        The stored kernel is kernel used to make predictions W_bar
-        """
-        pass
-    
     def vanilla_export(self):
         self._kwargs["name"] = self.name
         layer = nn.Linear(
@@ -256,10 +253,11 @@ class SpectralLinear(nn.Linear, LipschitzLayer, TorchLipschitzLayer, TorchConden
 
 
 @_deel_export
-class FrobeniusLinear(nn.Linear, LipschitzLayer, TorchLipschitzLayer, TorchCondensable):
+class FrobeniusLinear(nn.Linear, LayersCommon, TorchLipschitzLayer, TorchCondensable):
     """
     Same a SpectralLinear, but in the case of a single output.
     """
+
     def __init__(
         self,
         in_features,
@@ -287,12 +285,6 @@ class FrobeniusLinear(nn.Linear, LipschitzLayer, TorchLipschitzLayer, TorchConde
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         return F.linear(input, self.weight * self._get_coef(), self.bias)
 
-    def condense(self):
-        """
-        The stored kernel is kernel used to make predictions W_bar
-        """
-        pass
-
     def vanilla_export(self):
         self._kwargs["name"] = self.name
         layer = nn.Linear(
@@ -309,7 +301,7 @@ class FrobeniusLinear(nn.Linear, LipschitzLayer, TorchLipschitzLayer, TorchConde
 
 
 @_deel_export
-class SpectralConv1d(nn.Conv1d, LipschitzLayer, TorchLipschitzLayer, TorchCondensable):
+class SpectralConv1d(nn.Conv1d, LayersCommon, TorchLipschitzLayer, TorchCondensable):
     def __init__(
         self,
         in_channels,
@@ -413,12 +405,6 @@ class SpectralConv1d(nn.Conv1d, LipschitzLayer, TorchLipschitzLayer, TorchConden
             self.groups,
         )
 
-    def condense(self):
-        """
-        The stored kernel is kernel used to make predictions W_bar
-        """
-        pass
-
     def vanilla_export(self):
         self._kwargs["name"] = self.name
         layer = nn.Conv1d(
@@ -438,7 +424,7 @@ class SpectralConv1d(nn.Conv1d, LipschitzLayer, TorchLipschitzLayer, TorchConden
 
 
 @_deel_export
-class SpectralConv2d(nn.Conv2d, LipschitzLayer, TorchLipschitzLayer, TorchCondensable):
+class SpectralConv2d(nn.Conv2d, LayersCommon, TorchLipschitzLayer, TorchCondensable):
     def __init__(
         self,
         in_channels,
@@ -521,12 +507,6 @@ class SpectralConv2d(nn.Conv2d, LipschitzLayer, TorchLipschitzLayer, TorchConden
         W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
         return self._conv_forward(input, W_bar * self._get_coef())
 
-    def condense(self):
-        """
-        The stored kernel is kernel used to make predictions W_bar
-        """
-        pass
-
     def vanilla_export(self):
         self._kwargs["name"] = self.name
         layer = nn.Conv2d(
@@ -546,7 +526,7 @@ class SpectralConv2d(nn.Conv2d, LipschitzLayer, TorchLipschitzLayer, TorchConden
 
 
 @_deel_export
-class SpectralConv3d(nn.Conv3d, LipschitzLayer, TorchLipschitzLayer, TorchCondensable):
+class SpectralConv3d(nn.Conv3d, LayersCommon, TorchLipschitzLayer, TorchCondensable):
     def __init__(
         self,
         in_channels,
@@ -645,12 +625,6 @@ class SpectralConv3d(nn.Conv3d, LipschitzLayer, TorchLipschitzLayer, TorchConden
             self.dilation,
             self.groups,
         )
-
-    def condense(self):
-        """
-        The stored kernel is kernel used to make predictions W_bar
-        """
-        pass
 
     def vanilla_export(self):
         self._kwargs["name"] = self.name
