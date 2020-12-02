@@ -175,7 +175,9 @@ class LayersCommon(nn.Module):
         config = {
             "k_coef_lip": self.k_coef_lip,
             "niter_spectral": self.niter_spectral,
-            "niter_bjorck": self.niter_bjorck,
+            "niter_bjorck": self.niter_bjorck
+            if hasattr(self, "niter_bjorck")
+            else None,
         }
         base_config = super(LayersCommon, self).state_dict()
         return dict(list(base_config.items()) + list(config.items()))
