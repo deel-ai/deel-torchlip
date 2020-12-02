@@ -504,8 +504,31 @@ class SpectralConv2d(nn.Conv2d, LayersCommon, TorchLipschitzLayer, TorchCondensa
         if not self.init:
             self._init_lip_coef(input.shape[1:])
             self.init = True
-        W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
-        return self._conv_forward(input, W_bar * self._get_coef())
+        W_bar = (
+            bjorck_normalization(self.weight, niter=self.niter_bjorck)
+            * self._get_coef()
+        )
+        if self.padding_mode != "zeros":
+            return F.conv2d(
+                F.pad(
+                    input, self._reversed_padding_repeated_twice, mode=self.padding_mode
+                ),
+                W_bar,
+                self.bias,
+                self.stride,
+                (0, 0),
+                self.dilation,
+                self.groups,
+            )
+        return F.conv2d(
+            input,
+            W_bar,
+            self.bias,
+            self.stride,
+            self.padding,
+            self.dilation,
+            self.groups,
+        )
 
     def vanilla_export(self):
         self._kwargs["name"] = self.name
