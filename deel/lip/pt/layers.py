@@ -177,7 +177,7 @@ class LayersCommon(nn.Module):
             "niter_spectral": self.niter_spectral,
             "niter_bjorck": self.niter_bjorck,
         }
-        base_config = super(SpectralLinear, self).state_dict()
+        base_config = super(LayersCommon, self).state_dict()
         return dict(list(base_config.items()) + list(config.items()))
 
 
