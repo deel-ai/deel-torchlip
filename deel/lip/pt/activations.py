@@ -7,7 +7,7 @@ This module contains extra activation functions which respect the Lipschitz cons
 It can be added as a layer, or it can be used in the "activation" params for other
 layers.
 """
-from torch import nn, Tensor, cat, split, minimum, maximum, sort
+from torch import nn, Tensor, cat, chunk, min, max, sort
 from .layers import TorchLipschitzLayer
 from .utils import _deel_export
 
@@ -57,11 +57,11 @@ class MaxMin(nn.Module, TorchLipschitzLayer):
             * self._get_coef()
         )
 
-    def state_dict(self):
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
         config = {
             "k_coef_lip": self.k_coef_lip,
         }
-        base_config = super(MaxMin, self).state_dict()
+        base_config = super(MaxMin, self).state_dict(destination, prefix, keep_vars)
         return dict(list(base_config.items()) + list(config.items()))
 
 
@@ -93,26 +93,29 @@ class GroupSort(nn.Module, TorchLipschitzLayer):
         self.n = n
         self.init = False
 
-    # def reset_parameters(self) -> None:
-    #     super(GroupSort, self).reset_parameters()
-    #     self._init_lip_coef(input_shape)
-    #     if (self.n is None) or (self.n > input_shape[self.channel_axis]):
-    #         self.n = input_shape[self.channel_axis]
-    #     if (input_shape[self.channel_axis] % self.n) != 0:
-    #         raise RuntimeError("self.n has to be a divisor of the number of channels")
-    #     print(self.n)
-
     def _compute_lip_coef(self, input_shape=None):
         return 1.0
 
     def forward(self, input: Tensor) -> Tensor:
         if not self.init:
+            input_shape = input.shape[1:]
             self._init_lip_coef(input.shape[1:])
             self.init = True
+            if (self.n is None) or (self.n > input_shape[0]):
+                self.n = input_shape[0]
+            if (input_shape[0] % self.n) != 0:
+                raise RuntimeError(
+                    "self.n has to be a divisor of the number of channels"
+                )
+
         fv = input.reshape([-1, self.n])
+        # print("===================={}".format(fv.shape))
         if self.n == 2:
-            b, c = split(fv, 2, 1)
-            newv = cat([minimum(b, c), maximum(b, c)], axis=1)
+            # print("===================={}".format(split(fv, 2)))
+            sfv = chunk(fv, 2, 1)
+            b = sfv[0]
+            c = sfv[1]
+            newv = cat([min(b, c), max(b, c)], axis=1)
             newv = newv.reshape(input.shape)
             return newv
 
@@ -120,12 +123,12 @@ class GroupSort(nn.Module, TorchLipschitzLayer):
         newv = newv.reshape(newv, input.shape)
         return newv * self._get_coef()
 
-    def state_dict(self):
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
         config = {
             "n": self.n,
             "k_coef_lip": self.k_coef_lip,
         }
-        base_config = super(GroupSort, self).state_dict()
+        base_config = super(GroupSort, self).state_dict(destination, prefix, keep_vars)
         return dict(list(base_config.items()) + list(config.items()))
 
 

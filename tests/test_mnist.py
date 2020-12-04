@@ -1,4 +1,5 @@
-# From https://github.com/pytorch/examples/blob/master/mnist/main.py with very little change to add Lipschitz constraint
+# From https://github.com/pytorch/examples/blob/master/mnist/main.py with very little
+#  change to add Lipschitz constraint
 
 import argparse
 import torch
@@ -8,11 +9,13 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
+from deel.lip.pt.activations import GroupSort2
 from deel.lip.pt.layers import (
     SpectralConv2d,
     SpectralLinear,
 )
-from deel.lip.pt.utils import evaluate_lip_const
+
+# from deel.lip.pt.utils import evaluate_lip_const
 
 
 class dummy_activation(nn.Module):
@@ -25,7 +28,7 @@ class Net(nn.Module):
         super(Net, self).__init__()
         self.conv1 = SpectralConv2d(1, 32, 3, 1)
         self.conv2 = SpectralConv2d(32, 64, 3, 1)
-        self.dropout1 = nn.Dropout2d(0.25)
+        self.groupSort2 = GroupSort2()
         self.dropout2 = nn.Dropout2d(0.5)
         self.fc1 = SpectralLinear(9216, 128)
         self.fc2 = SpectralLinear(128, 10)
@@ -37,11 +40,11 @@ class Net(nn.Module):
         x = self.conv2(x)
         x = self.activation(x)
         x = F.max_pool2d(x, 2)
-        x = self.dropout1(x)
+        x = self.groupSort2(x)
         x = torch.flatten(x, 1)
         x = self.fc1(x)
         x = self.activation(x)
-        x = self.dropout2(x)
+        x = self.groupSort2(x)
         x = self.fc2(x)
         output = F.log_softmax(x, dim=1)
         return output
@@ -177,28 +180,30 @@ def main():
 
     kwargs = {"batch_size": args.batch_size}
     if use_cuda:
-        kwargs.update({"num_workers": 1, "pin_memory": True, "shuffle": True},)
+        kwargs.update(
+            {"num_workers": 4, "pin_memory": True, "shuffle": True},
+        )
 
     transform = transforms.Compose(
         [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
     )
-    dataset1 = datasets.MNIST("../data", train=True, download=True, transform=transform)
-    dataset2 = datasets.MNIST("../data", train=False, transform=transform)
+    dataset1 = datasets.MNIST("./data", train=True, download=True, transform=transform)
+    dataset2 = datasets.MNIST("./data", train=False, transform=transform)
     train_loader = torch.utils.data.DataLoader(dataset1, **kwargs)
     test_loader = torch.utils.data.DataLoader(dataset2, **kwargs)
 
-    if args.disable_lipschitz:
-        model = Net().to(device)
-    else:
-        model = Net(activation=dummy_activation()).to(device)
+    # if args.disable_lipschitz:
+    #     model = Net().to(device)
+    # else:
+    model = Net(activation=dummy_activation()).to(device)
         # model = Net().to(device)
         # model.apply(lipschitz_constraint)
 
-    if args.reload:
-        state_dict = torch.load(args.reload)
-        print(state_dict.keys())
-        state_dict = {k: v for k, v in state_dict.items()}
-        model.load_state_dict(state_dict)
+    # if args.reload:
+    #     state_dict = torch.load(args.reload)
+    #     print(state_dict.keys())
+    #     state_dict = {k: v for k, v in state_dict.items()}
+    #     model.load_state_dict(state_dict)
 
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 

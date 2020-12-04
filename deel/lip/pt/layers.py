@@ -179,7 +179,9 @@ class LayersCommon(nn.Module):
             if hasattr(self, "niter_bjorck")
             else None,
         }
-        base_config = super(LayersCommon, self).state_dict()
+        base_config = super(LayersCommon, self).state_dict(
+            destination, prefix, keep_vars
+        )
         return dict(list(base_config.items()) + list(config.items()))
 
 
@@ -726,7 +728,9 @@ class FrobeniusConv2d(nn.Conv2d, TorchLipschitzLayer, TorchCondensable):
         config = {
             "k_coef_lip": self.k_coef_lip,
         }
-        base_config = super(FrobeniusConv2d, self).state_dict()
+        base_config = super(FrobeniusConv2d, self).state_dict(
+            destination, prefix, keep_vars
+        )
         return dict(list(base_config.items()) + list(config.items()))
 
     def condense(self):
@@ -795,5 +799,7 @@ class ScaledAvgPool2d(nn.AvgPool2d, TorchLipschitzLayer):
         config = {
             "k_coef_lip": self.k_coef_lip,
         }
-        base_config = super(ScaledAvgPool2d, self).state_dict()
+        base_config = super(ScaledAvgPool2d, self).state_dict(
+            destination, prefix, keep_vars
+        )
         return dict(list(base_config.items()) + list(config.items()))
