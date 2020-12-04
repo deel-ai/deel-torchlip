@@ -42,9 +42,6 @@ class MaxMin(nn.Module, TorchLipschitzLayer):
         super(MaxMin, self).__init__(*args, **kwargs)
         self.init = False
 
-    # def reset_parameters(self) -> None:
-    #     return super().reset_parameters()
-
     def _compute_lip_coef(self, input_shape=None):
         return 1.0
 
@@ -109,9 +106,7 @@ class GroupSort(nn.Module, TorchLipschitzLayer):
                 )
 
         fv = input.reshape([-1, self.n])
-        # print("===================={}".format(fv.shape))
         if self.n == 2:
-            # print("===================={}".format(split(fv, 2)))
             sfv = chunk(fv, 2, 1)
             b = sfv[0]
             c = sfv[1]

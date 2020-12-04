@@ -135,13 +135,9 @@ def qr_normalization(
 def make_weight_1lipschitz(module):
     if not hasattr(module, "lipschitz_u"):
         module.register_buffer("lipschitz_u", None)
-    # print("weigth before", module.weight.shape)
-    # print("CUDA mem befor", torch.cuda.memory_allocated())
     W_bar, module.lipschitz_u, sigma = spectral_normalization(
         module, module.lipschitz_u
     )
     module.weight.data = W_bar
     # module.weight = torch.nn.Parameter(W_bar)
     module.zero_grad()
-    # # print("CUDA mem after", torch.cuda.memory_allocated())
-    # # print("weigth after", module.weight.shape)
