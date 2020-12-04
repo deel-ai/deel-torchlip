@@ -164,6 +164,7 @@ def test(model, train_dl, loss_fn):
 
     test_loss /= len(train_dl.dataset)
     mse = math.sqrt(runnning_mse / len(train_dl.dataset))
+    print("state_dict =====> {}".format(layer.state_dict()))
     return test_loss, mse
 
 
@@ -335,7 +336,7 @@ class LipschitzLayersTest(unittest.TestCase):
                 emp_lip_const, from_disk_emp_lip_const, test_params
             )
 
-    def test_vanilla_linear(self):
+    def _test_vanilla_linear(self):
         """
         Tests for a standard Linear layer, for result comparison.
         """

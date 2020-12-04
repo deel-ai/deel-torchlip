@@ -1,7 +1,9 @@
 .vscode/settings.json
-logs/torch_lip_layers/FrobeniusConv2d/model.h5
-logs/torch_lip_layers/SpectralConv2d/model.h5
-logs/torch_lip_layers/SpectralConv1d/model.h5
-logs/torch_lip_layers/SpectralLinear/model.h5
-logs/torch_lip_layers/FrobeniusLinear/model.h5
-logs/torch_lip_layers/Linear/model.h5
+logs/*
+tests/.config/*
+.bash_history
+.bash_logout
+.bashrc
+.profile
+ray_bootstrap_key.pem
+ray_bootstrap_config.yaml
