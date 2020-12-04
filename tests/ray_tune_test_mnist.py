@@ -9,7 +9,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 
-from deel.lip.pt.layers import (
+from deel.torchlip.layers import (
     SpectralConv2d,
     SpectralLinear,
 )

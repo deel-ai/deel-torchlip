@@ -29,16 +29,14 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn import init
 from torch.nn.utils import spectral_norm
-import torch.nn.functional as F
-from functools import reduce
-from .normalizers import bjorck_normalization, spectral_normalization
 
+from .normalizers import bjorck_normalization
 from .utils import (
     DEFAULT_NITER_BJORCK,
     DEFAULT_NITER_SPECTRAL,
-    DEFAULT_NITER_SPECTRAL_INIT,
     _deel_export,
     compute_lconv_ip_coef,
 )
@@ -744,6 +742,7 @@ class FrobeniusConv2d(nn.Conv2d, TorchLipschitzLayer, TorchCondensable):
         return SpectralConv2d.vanilla_export(self)
 
 
+@_deel_export
 class ScaledAvgPool2d(nn.AvgPool2d, TorchLipschitzLayer):
     def __init__(
         self,

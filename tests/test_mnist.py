@@ -9,13 +9,13 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
-from deel.lip.pt.activations import GroupSort2
-from deel.lip.pt.layers import (
+from deel.torchlip.activations import GroupSort2
+from deel.torchlip.layers import (
     SpectralConv2d,
     SpectralLinear,
 )
 
-# from deel.lip.pt.utils import evaluate_lip_const
+# from deel.torchlip.utils import evaluate_lip_const
 
 
 class dummy_activation(nn.Module):
@@ -196,8 +196,8 @@ def main():
     #     model = Net().to(device)
     # else:
     model = Net(activation=dummy_activation()).to(device)
-        # model = Net().to(device)
-        # model.apply(lipschitz_constraint)
+    # model = Net().to(device)
+    # model.apply(lipschitz_constraint)
 
     # if args.reload:
     #     state_dict = torch.load(args.reload)

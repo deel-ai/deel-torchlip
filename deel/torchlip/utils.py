@@ -20,7 +20,7 @@ CUSTOM_OBJECTS = dict()
 def _deel_export(f):
     """
     Annotation, allows to automatically add deel custom objects to the
-    deel.lip.utils.CUSTOM_OBJECTS variable, which is useful when working with custom
+    deel.torchlip.utils.CUSTOM_OBJECTS variable, which is useful when working with custom
     layers.
     """
     global CUSTOM_OBJECTS
@@ -57,6 +57,21 @@ def evaluate_lip_const(model: Sequential, x, eps=1e-4, seed=None):
     ndfx = torch.sum(torch.square(dfx.data), axis=list(range(1, len(y_pred.shape))))
     lip_cst = torch.sqrt(torch.max(ndfx / ndx))
     print("lip cst: %.3f" % lip_cst)
+    # try:
+    #     layer = model[0]
+    #     u, s, v = torch.svd(layer.weight_orig)
+    #     actual_orig_sn = s.mean()
+    #     orig_sn = (layer.weight_u @ layer.weight_orig @ layer.weight_v).item()
+    #     print("Original spectral norm:              ", actual_orig_sn)
+    #     print("Approximate original spectral norm:  ", orig_sn)
+
+    #     # updated weights singular values
+    #     u, new_sn, v = torch.svd(layer.weight.data, compute_uv=False)
+    #     print(new_sn)
+    #     updated_sn = new_sn.mean()
+    #     print("updated spectral norm:", updated_sn)
+    # except ValueError:
+    #     pass
     return lip_cst
 
 

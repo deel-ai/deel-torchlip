@@ -6,11 +6,10 @@ import math
 import os
 import pprint
 import unittest
-from typing import Union
 
 import numpy as np
 import torch.autograd as autograd
-from deel.lip.pt.layers import (
+from deel.torchlip.layers import (
     FrobeniusConv2d,
     FrobeniusLinear,
     ScaledAvgPool2d,
@@ -20,8 +19,8 @@ from deel.lip.pt.layers import (
     SpectralLinear,
     TorchLipschitzLayer,
 )
-from deel.lip.pt.module import Sequential
-from deel.lip.pt.utils import evaluate_lip_const
+from deel.torchlip.module import Sequential
+from deel.torchlip.utils import evaluate_lip_const
 from torch import Tensor, abs, from_numpy, load, manual_seed, no_grad, save
 from torch.nn import Conv1d, Conv2d, Conv3d, Linear, MSELoss
 from torch.nn import Sequential as tSequential
@@ -148,7 +147,6 @@ def train(train_dl, model, loss_fn, optimizer, epoch, batch_size):
 
 
 def test(model, train_dl, loss_fn):
-    layer = model[0]
     model.eval()
     test_loss = 0
     runnning_mae = 0
@@ -164,7 +162,6 @@ def test(model, train_dl, loss_fn):
 
     test_loss /= len(train_dl.dataset)
     mse = math.sqrt(runnning_mse / len(train_dl.dataset))
-    print("state_dict =====> {}".format(layer.state_dict()))
     return test_loss, mse
 
 
@@ -336,7 +333,7 @@ class LipschitzLayersTest(unittest.TestCase):
                 emp_lip_const, from_disk_emp_lip_const, test_params
             )
 
-    def _test_vanilla_linear(self):
+    def test_vanilla_linear(self):
         """
         Tests for a standard Linear layer, for result comparison.
         """

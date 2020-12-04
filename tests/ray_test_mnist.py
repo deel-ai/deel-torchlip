@@ -16,13 +16,13 @@ from ray.util.sgd import TorchTrainer
 # ray command :./launch_ray_job.sh -c ../config/gcp_lip_pytorch.yaml -e stop
 #              -j /home/justin.plakoo/deel-p-pytorch/tests/ray_test_mnist.py
 
-from deel.lip.pt.activations import GroupSort2
-from deel.lip.pt.layers import (
+from deel.torchlip.activations import GroupSort2
+from deel.torchlip.layers import (
     SpectralConv2d,
     SpectralLinear,
 )
 
-# from deel.lip.pt.utils import evaluate_lip_const
+# from deel.torchlip.utils import evaluate_lip_const
 
 
 class dummy_activation(nn.Module):
