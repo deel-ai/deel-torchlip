@@ -17,7 +17,7 @@ from deel.torchlip.layers import (
     SpectralConv2d,
     SpectralConv3d,
     SpectralLinear,
-    TorchLipschitzLayer,
+    LipschitzLayer,
 )
 from deel.torchlip.module import Sequential
 from deel.torchlip.utils import evaluate_lip_const
@@ -125,11 +125,11 @@ def generate_k_lip_model(layer_type: type, layer_params: dict, k):
         model = layer_type(layer_params)
         model.set_klip_factor(k)
         return model
-    if issubclass(layer_type, TorchLipschitzLayer):
+    if issubclass(layer_type, LipschitzLayer):
         layer_params["k_coef_lip"] = k
 
     layer = layer_type(**layer_params)
-    assert isinstance(layer, TorchLipschitzLayer) or isinstance(layer, Linear)
+    assert isinstance(layer, LipschitzLayer) or isinstance(layer, Linear)
     return tSequential(layer)
 
 

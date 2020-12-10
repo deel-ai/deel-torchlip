@@ -8,12 +8,10 @@ It can be added as a layer, or it can be used in the "activation" params for oth
 layers.
 """
 from torch import nn, Tensor, cat, chunk, min, max, sort
-from .layers import TorchLipschitzLayer
-from .utils import _deel_export
+from .layers import LipschitzLayer
 
 
-@_deel_export
-class MaxMin(nn.Module, TorchLipschitzLayer):
+class MaxMin(nn.Module, LipschitzLayer):
     def __init__(self, data_format="channels_last", k_coef_lip=1.0, *args, **kwargs):
         """
         MaxMin activation [Relu(x),reLU(-x)]
@@ -62,8 +60,7 @@ class MaxMin(nn.Module, TorchLipschitzLayer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-@_deel_export
-class GroupSort(nn.Module, TorchLipschitzLayer):
+class GroupSort(nn.Module, LipschitzLayer):
     def __init__(self, n=None, k_coef_lip=1.0, *args, **kwargs):
         """
         GroupSort activation
@@ -127,7 +124,6 @@ class GroupSort(nn.Module, TorchLipschitzLayer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-@_deel_export
 class GroupSort2(GroupSort):
     def __init__(self, **kwargs):
         """
@@ -146,7 +142,6 @@ class GroupSort2(GroupSort):
         super().__init__(**kwargs)
 
 
-@_deel_export
 class FullSort(GroupSort):
     def __init__(self, **kwargs):
         """
@@ -165,7 +160,6 @@ class FullSort(GroupSort):
         super().__init__(**kwargs)
 
 
-@_deel_export
 def PReLUlip(input, weight, k_coef_lip=1.0):
     """
     PreLu activation, with Lipschitz constraint.

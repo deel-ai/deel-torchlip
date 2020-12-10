@@ -14,19 +14,6 @@ DEFAULT_NITER_BJORCK = 15
 DEFAULT_NITER_SPECTRAL = 3
 DEFAULT_NITER_SPECTRAL_INIT = 10
 
-CUSTOM_OBJECTS = dict()
-
-
-def _deel_export(f):
-    """
-    Annotation, allows to automatically add deel custom objects to the
-    deel.torchlip.utils.CUSTOM_OBJECTS variable, which is useful when working with custom
-    layers.
-    """
-    global CUSTOM_OBJECTS
-    CUSTOM_OBJECTS[f.__name__] = f
-    return f
-
 
 def evaluate_lip_const(model: Sequential, x, eps=1e-4, seed=None):
     """
@@ -53,8 +40,8 @@ def evaluate_lip_const(model: Sequential, x, eps=1e-4, seed=None):
     y_pred_var = model(x_var.float())
     dx = x - x_var
     dfx = y_pred - y_pred_var
-    ndx = torch.sum(torch.square(dx), axis=list(range(1, len(x.shape))))
-    ndfx = torch.sum(torch.square(dfx.data), axis=list(range(1, len(y_pred.shape))))
+    ndx = torch.sum(torch.square(dx), dim=list(range(1, len(x.shape))))
+    ndfx = torch.sum(torch.square(dfx.data), dim=list(range(1, len(y_pred.shape))))
     lip_cst = torch.sqrt(torch.max(ndfx / ndx))
     print("lip cst: %.3f" % lip_cst)
     # try:

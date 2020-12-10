@@ -28,7 +28,7 @@ docs_requires = [
 ]
 
 setuptools.setup(
-    name="deel-lip-pytorch",
+    name="deel-torchlip",
     version="0.0.1",
     author=", ".join(
         ["Mathieu SERRURIER", "Franck MAMALET", "Thibaut BOISSIN", "Justin PLAKOO"]
@@ -41,14 +41,14 @@ setuptools.setup(
             "justin.plakoo@irt-saintexupery.com",
         ]
     ),
-    description="pyTorch implementation for k-Lipschitz layers",
+    description="PyTorch implementation for k-Lipschitz layers",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/deel-ai/deel-lip",
+    url="https://github.com/deel-ai/torchlip",
     packages=setuptools.find_namespace_packages(include=["deel.*"]),
-    install_requires=["numpy", "torch"],
+    install_requires=["numpy"],
     license="MIT",
-    extras_require={"dev": dev_requires},
+    extras_require={"dev": dev_requires, "doc": docs_requires},
     classifiers=[
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
