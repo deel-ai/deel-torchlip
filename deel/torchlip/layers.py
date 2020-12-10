@@ -220,7 +220,7 @@ class SpectralLinear(nn.Linear, LayersCommon, LipschitzLayer, Condensable):
 
         This documentation reuse the body of the original torch.nn.Linear doc.
         """
-        super(SpectralLinear, self).__init__(
+        nn.Linear.__init__(
             in_features=in_features,
             out_features=out_features,
             bias=bias,
