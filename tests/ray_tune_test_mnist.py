@@ -149,12 +149,18 @@ if __name__ == "__main__":
             "training_iteration": 5 if args.smoke_test else 100,
         },
         resources_per_trial={"cpu": 2, "gpu": int(args.cuda)},  # set this for GPUs
-        num_samples=1 if args.smoke_test else 50,
+        num_samples=1 if args.smoke_test else 5,
         config={
             "lr": tune.loguniform(1e-4, 1e-2),
             "momentum": tune.uniform(0.1, 0.9),
         },
         queue_trials=True,
+        name="mnist_ray_tune",
+        local_dir="~/tests_results/tune_results",
     )
 
-    print("Best config is:", analysis.best_config)
+    print(
+        "Best config is: {}".format(
+            analysis.dataframe(metric="mean_accuracy", mode="max")
+        )
+    )
