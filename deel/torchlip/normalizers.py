@@ -3,11 +3,12 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 """
-This module contains computation function, for BjorckNormalizer and spectral
-normalization. This is done for internal use only.
+This module contains computation functions for Bjorck and spectral
+normalization. This is most for internal use.
 """
+from typing import Optional, Tuple
+
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 
 DEFAULT_NITER_BJORCK = 15
@@ -16,24 +17,28 @@ DEFAULT_NITER_SPECTRAL_INIT = 10
 DEFAULT_BETA = 0.5
 
 
-def bjorck_normalization(w: torch.Tensor, niter: int = DEFAULT_NITER_BJORCK):
+def bjorck_normalization(
+    w: torch.Tensor, niter: int = DEFAULT_NITER_BJORCK
+) -> torch.Tensor:
     """
-    apply Bjorck normalization on w.
+    Apply Bjorck normalization on w.
 
     Args:
-        w: weight to normalize, in order to work properly, we must have
-            max_eigenval(w) ~= 1
-        niter: number of iterations
+        w: Weights to normalize. For the normalization to work properly, the greatest
+            eigen value of w must be approximately 1.
+        niter: Number of iterations.
 
     Returns:
-        the orthonormal weights
+        The weights after Bjorck normalization.
 
     """
+    if niter == 0:
+        return w
     shape = w.shape
     height = w.size(0)
     w_mat = w.reshape(height, -1)
     for i in range(niter):
-        w = (1.0 + DEFAULT_BETA) * w_mat - DEFAULT_BETA * torch.mm(
+        w_mat = (1.0 + DEFAULT_BETA) * w_mat - DEFAULT_BETA * torch.mm(
             w_mat, torch.mm(w_mat.t(), w_mat)
         )
     w = w_mat.reshape(shape)
@@ -42,17 +47,17 @@ def bjorck_normalization(w: torch.Tensor, niter: int = DEFAULT_NITER_BJORCK):
 
 def _power_iteration(
     w: torch.Tensor, u: torch.Tensor, niter: int = DEFAULT_NITER_SPECTRAL
-):
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Internal function that performs the power iteration algorithm.
 
     Args:
-        w: weights matrix that we want to find eigen vector
-        u: initialization of the eigen vector
-        niter: number of iteration, must be greater than 0
+        w: Weights matrix that we want to find eigen vector.
+        u: Initialization of the eigen vector.
+        niter: Number of iteration, must be greater than 0.
 
     Returns:
-         u and v corresponding to the maximum eigenvalue
+         A tuple (u, v) containing the largest eigenvalues.
 
     """
     _u = u
@@ -64,21 +69,21 @@ def _power_iteration(
 
 def spectral_normalization(
     kernel: torch.Tensor,
-    u: torch.Tensor = None,
+    u: Optional[torch.Tensor] = None,
     niter: int = DEFAULT_NITER_SPECTRAL,
-):
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     Normalize the kernel to have it's max eigenvalue == 1.
 
     Args:
-        kernel: the kernel to normalize
-        u: initialization for the max eigen vector
-        niter: number of iteration
+        kernel: The kernel to normalize.
+        u: Initialization for the maximum eigen vector.
+        niter: Number of iteration. If u is not specified, we perform
+            twice as much iterations.
 
     Returns:
-        the normalized kernel w_bar, it's shape, the maximum eigen vector, and the
-        maximum eigen value
-
+        The normalized kernel W_bar, the maximum eigen vector, and the
+        largest eigen value.
     """
 
     # Flatten the Tensor
@@ -86,9 +91,8 @@ def spectral_normalization(
 
     if u is None:
         niter *= 2  # if u was not double number of iterations for the first run
-        # TODO : check K.random_normal => init.kaiming_normal
         u = torch.ones(tuple([1, W_flat.shape[-1]]), device=kernel.device)
-        torch.nn.init.kaiming_normal_(u)
+        torch.nn.init.normal_(u)
 
     # do power iteration
     _u, _v = _power_iteration(W_flat, u, niter)
@@ -100,44 +104,3 @@ def spectral_normalization(
     W_bar = kernel.div(sigma)
 
     return W_bar, u, sigma
-
-
-def qr_normalization(
-    kernel: torch.Tensor,
-    u: torch.Tensor = None,
-    niter: int = DEFAULT_NITER_SPECTRAL,
-):
-    """Make the kernel tensor 1-Lipschitz Using QR
-    Currently not used and to be checked
-    """
-    # TODO: check and fix the code. An ugly approximation is done using padding to have "square" tensors
-    # TODO: this approximation has to be checked and fixed if possible
-
-    # Pad weight tensor to be square, cubic, etc..
-    max_dim = max(kernel.shape[:-1])
-    pad_size = []
-    for dim in kernel.shape:
-        pad_size = [0, max_dim - dim] + pad_size
-
-    # Pad with 0.0 to have a "square" tensor for qr
-    pad = nn.ConstantPad2d(pad_size, 0.0)
-    padded_weight = pad(module.weight)
-
-    # decompose weight into Q and R
-    q, r = padded_weight.qr(some=False)
-
-    # extract sub tensor from Q
-    indices = [slice(0, dim) for dim in kernel.shape]
-
-    return q[indices].to(device=kernel.device)
-
-
-def make_weight_1lipschitz(module):
-    if not hasattr(module, "lipschitz_u"):
-        module.register_buffer("lipschitz_u", None)
-    W_bar, module.lipschitz_u, sigma = spectral_normalization(
-        module, module.lipschitz_u
-    )
-    module.weight.data = W_bar
-    # module.weight = torch.nn.Parameter(W_bar)
-    module.zero_grad()
