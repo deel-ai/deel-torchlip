@@ -206,6 +206,9 @@ class SpectralLinear(nn.Linear, LipschitzLayer, Condensable):
         spectralInitializer_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
+        # spectral normalization is performed during forward.
+        # spectral_norm is implemented via a hook that calculates 
+        # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
             name="weight",
@@ -268,6 +271,9 @@ class FrobeniusLinear(nn.Linear, LipschitzLayer, Condensable):
         spectralInitializer_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
+        # spectral normalization is performed during forward.
+        # spectral_norm is implemented via a hook that calculates 
+        # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
             name="weight",
@@ -379,6 +385,9 @@ class SpectralConv1d(nn.Conv1d, LipschitzLayer, Condensable):
         spectralInitializer_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
+        # spectral normalization is performed during forward.
+        # spectral_norm is implemented via a hook that calculates 
+        # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
             name="weight",
@@ -521,6 +530,9 @@ class SpectralConv2d(nn.Conv2d, LipschitzLayer, Condensable):
         spectralInitializer_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
+        # spectral normalization is performed during forward.
+        # spectral_norm is implemented via a hook that calculates 
+        # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
             name="weight",
@@ -662,6 +674,9 @@ class SpectralConv3d(nn.Conv3d, LipschitzLayer, Condensable):
         spectralInitializer_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
+        # spectral normalization is performed during forward.
+        # spectral_norm is implemented via a hook that calculates 
+        # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
             name="weight",
