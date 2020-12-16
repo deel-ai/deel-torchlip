@@ -25,9 +25,10 @@ be done by setting the param `niter_bjorck=0`.
 
 import abc
 
-from typing import Tuple, TYPE_CHECKING
+from typing import Optional, Tuple, TYPE_CHECKING
 
 import numpy as np
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -35,8 +36,8 @@ import torch.nn.functional as F
 from torch.nn import init
 from torch.nn.utils import spectral_norm
 
-from typing import Optional
 from torch.nn.modules.utils import _single
+from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 
 from .normalizers import bjorck_normalization
 from .init import spectral_
@@ -47,9 +48,6 @@ from .utils import (
     sqrt_with_gradeps,
     compute_lconv_ip_coef,
 )
-
-if TYPE_CHECKING:
-    from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
 
 
 class LipschitzModule(abc.ABC):
