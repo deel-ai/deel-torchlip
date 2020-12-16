@@ -8,5 +8,5 @@
 from torch.nn import init
 
 
-def spectralInitializer_(tensor):
+def spectral_(tensor):
     init.orthogonal_(tensor)

@@ -38,7 +38,7 @@ from typing import Optional
 from torch.nn.modules.utils import _single
 
 from .normalizers import bjorck_normalization
-from .init import spectralInitializer_
+from .init import spectral_
 
 from .utils import (
     DEFAULT_NITER_BJORCK,
@@ -203,11 +203,11 @@ class SpectralLinear(nn.Linear, LipschitzLayer, Condensable):
         self.k_coef_lip = k_coef_lip
         self.set_klip_factor(self.k_coef_lip)
         self._init_lip_coef(None)
-        spectralInitializer_(self.weight)
+        spectral_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
         # spectral normalization is performed during forward.
-        # spectral_norm is implemented via a hook that calculates 
+        # spectral_norm is implemented via a hook that calculates
         # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
@@ -221,6 +221,9 @@ class SpectralLinear(nn.Linear, LipschitzLayer, Condensable):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
         return F.linear(input, W_bar * self._get_coef(), self.bias)
+
+    def condense(self):
+        bjorck_normalization(self.weight, niter=self.niter_bjorck)
 
     def vanilla_export(self):
         self._kwargs["name"] = self.name
@@ -268,23 +271,24 @@ class FrobeniusLinear(nn.Linear, LipschitzLayer, Condensable):
         self.k_coef_lip = k_coef_lip
         self._init_lip_coef(None)
         self.set_klip_factor(k_coef_lip)
-        spectralInitializer_(self.weight)
+        init.orthogonal_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
-        # spectral normalization is performed during forward.
-        # spectral_norm is implemented via a hook that calculates 
-        # spectral norm and rescales weight before every :meth:~Module.forward call.
-        spectral_norm(
-            self,
-            name="weight",
-            n_power_iterations=self.niter_spectral,
-        )
 
     def _compute_lip_coef(self, input_shape=None):
         return 1.0
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.linear(input, self.weight * self._get_coef(), self.bias)
+        W_bar = (
+            self.weight
+            / np.linalg.norm(self.weight.detach().numpy())
+            * self._get_coef()
+        )
+        return F.linear(input, W_bar, self.bias)
+
+    def condense(self):
+        W_bar = self.weight.data / np.linalg.norm(self.weight.detach().numpy())
+        self.weight.data = W_bar
 
     def vanilla_export(self):
         self._kwargs["name"] = self.name
@@ -292,12 +296,11 @@ class FrobeniusLinear(nn.Linear, LipschitzLayer, Condensable):
             bias=self.bias,
             in_features=self.in_features,
             out_features=self.out_features,
-            **self._kwargs
         )
         layer.reset_parameters(self)
-        layer.weight = self.weight * self._get_coef()
-        if self.bias:
-            layer.bias = self.bias
+        layer.weight.data = self.weight * self._get_coef()
+        if self.bias is not None:
+            layer.bias.data = self.bias.data
         return layer
 
     def state_dict(self, destination=None, prefix="", keep_vars=False):
@@ -382,11 +385,11 @@ class SpectralConv1d(nn.Conv1d, LipschitzLayer, Condensable):
         self.niter_bjorck = niter_bjorck
         self.k_coef_lip = k_coef_lip
         self.set_klip_factor(self.k_coef_lip)
-        spectralInitializer_(self.weight)
+        spectral_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
         # spectral normalization is performed during forward.
-        # spectral_norm is implemented via a hook that calculates 
+        # spectral_norm is implemented via a hook that calculates
         # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
@@ -399,7 +402,6 @@ class SpectralConv1d(nn.Conv1d, LipschitzLayer, Condensable):
         return compute_lconv_ip_coef(self.kernel_size, input_shape, self.stride)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-
         # TODO: Ça doit pouvoir se faire dans le __init__().
         if not self.is_init:
             self._init_lip_coef(input.shape[1:])
@@ -429,6 +431,9 @@ class SpectralConv1d(nn.Conv1d, LipschitzLayer, Condensable):
             self.dilation,
             self.groups,
         )
+
+    def condense(self):
+        bjorck_normalization(self.weight, niter=self.niter_bjorck)
 
     def vanilla_export(self):
         layer = nn.Conv1d(
@@ -527,11 +532,11 @@ class SpectralConv2d(nn.Conv2d, LipschitzLayer, Condensable):
         self.niter_bjorck = niter_bjorck
         self.k_coef_lip = k_coef_lip
         self.set_klip_factor(self.k_coef_lip)
-        spectralInitializer_(self.weight)
+        spectral_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
         # spectral normalization is performed during forward.
-        # spectral_norm is implemented via a hook that calculates 
+        # spectral_norm is implemented via a hook that calculates
         # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
@@ -574,6 +579,9 @@ class SpectralConv2d(nn.Conv2d, LipschitzLayer, Condensable):
             self.dilation,
             self.groups,
         )
+
+    def condense(self):
+        bjorck_normalization(self.weight, niter=self.niter_bjorck)
 
     def vanilla_export(self):
         self._kwargs["name"] = self.name
@@ -671,11 +679,11 @@ class SpectralConv3d(nn.Conv3d, LipschitzLayer, Condensable):
         self.niter_bjorck = niter_bjorck
         self.k_coef_lip = k_coef_lip
         self.set_klip_factor(self.k_coef_lip)
-        spectralInitializer_(self.weight)
+        spectral_(self.weight)
         if self.bias is not None:
             init.zeros_(self.bias)
         # spectral normalization is performed during forward.
-        # spectral_norm is implemented via a hook that calculates 
+        # spectral_norm is implemented via a hook that calculates
         # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
@@ -716,6 +724,9 @@ class SpectralConv3d(nn.Conv3d, LipschitzLayer, Condensable):
             self.groups,
         )
 
+    def condense(self):
+        bjorck_normalization(self.weight, niter=self.niter_bjorck)
+
     def vanilla_export(self):
         self._kwargs["name"] = self.name
         layer = nn.Conv3d(
@@ -750,21 +761,21 @@ class FrobeniusConv2d(nn.Conv2d, LipschitzLayer, Condensable):
 
     def __init__(
         self,
-        in_channels,
-        out_channels,
-        kernel_size,
-        stride=1,
-        padding=0,
-        dilation=1,
-        groups=1,
-        bias=True,
-        padding_mode="same",
-        k_coef_lip=1.0,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: _size_2_t,
+        stride: _size_2_t = 1,
+        padding: _size_2_t = 0,
+        dilation: _size_2_t = 1,
+        groups: int = 1,
+        bias: bool = True,
+        padding_mode: str = "zeros",
+        k_coef_lip: int = 1.0,
     ):
         if not ((stride == (1, 1)) or (stride == [1, 1]) or (stride == 1)):
             raise RuntimeError("NormalizedConv does not support strides")
-        if padding_mode != "same":
-            raise RuntimeError("NormalizedConv only support padding='same'")
+        # if padding_mode != "same":
+        #     raise RuntimeError("NormalizedConv only support padding='same'")
 
         nn.Conv2d.__init__(
             self,
@@ -840,10 +851,10 @@ class ScaledAvgPool2d(nn.AvgPool2d, LipschitzLayer):
         This documentation reuse the body of the original torch.nn.AveragePooling2D
         doc.
         """
-        if not (stride is None):
-            raise RuntimeError("stride must be equal to pool_size")
-        if padding != 0:
-            raise RuntimeError("ScaledAveragePooling2D only support padding='valid'")
+        # if not (stride is None):
+        #     raise RuntimeError("stride must be equal to pool_size")
+        # if padding != 0:
+        #     raise RuntimeError("ScaledAveragePooling2D only support padding='valid'")
         nn.AvgPool2d.__init__(
             self,
             kernel_size=kernel_size,
@@ -855,18 +866,91 @@ class ScaledAvgPool2d(nn.AvgPool2d, LipschitzLayer):
         )
         self.set_klip_factor(k_coef_lip)
 
-    def reset_parameters(self) -> None:
-        init.orthogonal_(self.weight)
-
     def _compute_lip_coef(self, input_shape=None):
         return math.sqrt(np.prod(np.asarray(self.kernel_size)))
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return super(nn.AvgPool2d, self).forward(input) * self._get_coef()
+        return F.avg_pool2d(input) * self._get_coef()
 
     def state_dict(self, destination=None, prefix="", keep_vars=False):
         config = {
             "k_coef_lip": self.k_coef_lip,
+        }
+        base_config = super().state_dict(destination, prefix, keep_vars)
+        return dict(list(base_config.items()) + list(config.items()))
+
+
+class ScaledGlobalAvgPool2d(nn.AdaptiveAvgPool2d, LipschitzLayer):
+    def __init__(
+        self,
+        data_format=None,
+        k_coef_lip=1.0,
+    ):
+        """
+        Applies a 2D adaptive max pooling over an input signal composed of several
+        input planes.
+
+        The output is of size H x W, for any input size.
+        The number of output features is equal to the number of input planes.
+
+        Args:
+            output_size: the target output size of the image of the form H x W.
+                        Can be a tuple (H, W) or a single H for a square image H x H.
+                        H and W can be either a ``int``, or ``None`` which means the
+                        size will be the same as that of the input.
+            return_indices: if ``True``, will return the indices along with the outputs.
+                            Useful to pass to nn.MaxUnpool2d. Default: ``False``
+
+        This documentation reuse the body of the original
+        nn.AdaptiveAvgPool2d doc.
+        """
+        nn.AdaptiveAvgPool2d.__init__(1)
+        self.set_klip_factor(k_coef_lip)
+        self._init_lip_coef(None)
+
+    def _compute_lip_coef(self, input_shape=None):
+        lip_coef = np.sqrt(input_shape[-2] * input_shape[-1])
+        return lip_coef
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return (
+            F.adaptive_avg_pool2d(
+                input,
+                self.output_size,
+                self.return_indices,
+            )
+            * self._get_coef()
+        )
+
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
+        config = {
+            "k_coef_lip": self.k_coef_lip,
+        }
+        base_config = super().state_dict(destination, prefix, keep_vars)
+        return dict(list(base_config.items()) + list(config.items()))
+
+
+class InvertibleDownSampling(nn.Module):
+    def __init__(
+        self,
+        pool_size,
+    ):
+        super().__init__()
+        self.pool_size = pool_size
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return torch.cat(
+            [
+                input[:, :, i :: self.pool_size[0], j :: self.pool_size[1]]
+                for i in range(self.pool_size[0])
+                for j in range(self.pool_size[1])
+            ],
+            axis=1,
+        )
+
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
+        config = {
+            "pool_size": self.pool_size,
         }
         base_config = super().state_dict(destination, prefix, keep_vars)
         return dict(list(base_config.items()) + list(config.items()))

@@ -116,7 +116,7 @@ class Sequential(TorchSequential, LipschitzLayer, Condensable):
         model = TorchSequential(layers, self.name)
         return model
 
-    def get_config(self):
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
         config = {"k_coef_lip": self.k_coef_lip}
-        base_config = super(Sequential, self).get_config()
+        base_config = super().state_dict(destination, prefix, keep_vars)
         return dict(list(base_config.items()) + list(config.items()))
