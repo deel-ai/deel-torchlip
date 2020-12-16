@@ -6,13 +6,39 @@
 Contains utility functions.
 """
 
+from typing import Any
+
 import numpy as np
 import torch
+import torch.autograd
+
 from torch.nn import Sequential
 
 DEFAULT_NITER_BJORCK = 15
 DEFAULT_NITER_SPECTRAL = 3
 DEFAULT_NITER_SPECTRAL_INIT = 10
+
+
+class SqrtEpsGrad(torch.autograd.Function):
+    """
+    Small class to avoid division by zero when computing the gradient
+    of the sqrt function.
+    """
+
+    @staticmethod
+    def forward(ctx: Any, input: Any, eps: float) -> torch.Tensor:  # type: ignore
+        ctx.save_for_backward(input)
+        ctx.eps = eps
+        return torch.sqrt(input)
+
+    @staticmethod
+    def backward(ctx: Any, grad_output):  # type: ignore
+        (input,) = ctx.saved_tensors
+        return grad_output / (2 * (input + ctx.eps)), None
+
+
+def sqrt_with_gradeps(input: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
+    return SqrtEpsGrad.apply(input, eps)  # type: ignore
 
 
 def evaluate_lip_const(model: Sequential, x, eps=1e-4, seed=None):

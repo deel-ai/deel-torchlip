@@ -43,6 +43,7 @@ from .init import spectral_
 from .utils import (
     DEFAULT_NITER_BJORCK,
     DEFAULT_NITER_SPECTRAL,
+    sqrt_with_gradeps,
     compute_lconv_ip_coef,
 )
 
@@ -222,20 +223,16 @@ class SpectralLinear(nn.Linear, LipschitzLayer, Condensable):
         W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
         return F.linear(input, W_bar * self._get_coef(), self.bias)
 
-    def condense(self):
-        bjorck_normalization(self.weight, niter=self.niter_bjorck)
-
-    def vanilla_export(self):
-        self._kwargs["name"] = self.name
+    def vanilla_export(self) -> nn.Linear:
         layer = nn.Linear(
             in_features=self.in_features,
             out_features=self.out_features,
-            bias=self.bias,
-            **self._kwargs
+            bias=self.bias is not None,
         )
-        layer.weight = self.weight * self._get_coef()
+        weight = bjorck_normalization(self.weight, niter=self.niter_bjorck)
+        layer.weight.data = weight * self._get_coef()
         if self.bias:
-            layer.bias = self.bias
+            layer.bias.data = self.bias
         return layer
 
     def state_dict(self, destination=None, prefix="", keep_vars=False):
@@ -851,10 +848,10 @@ class ScaledAvgPool2d(nn.AvgPool2d, LipschitzLayer):
         This documentation reuse the body of the original torch.nn.AveragePooling2D
         doc.
         """
-        # if not (stride is None):
-        #     raise RuntimeError("stride must be equal to pool_size")
-        # if padding != 0:
-        #     raise RuntimeError("ScaledAveragePooling2D only support padding='valid'")
+        if stride is not None:
+            raise RuntimeError("stride must be equal to pool_size")
+        if padding != 0:
+            raise RuntimeError("ScaledAveragePooling2D only support padding='valid'")
         nn.AvgPool2d.__init__(
             self,
             kernel_size=kernel_size,
@@ -952,5 +949,95 @@ class InvertibleDownSampling(nn.Module):
         config = {
             "pool_size": self.pool_size,
         }
+        base_config = super().state_dict(destination, prefix, keep_vars)
+        return dict(list(base_config.items()) + list(config.items()))
+
+
+class ScaledL2NormPooling2D(nn.AvgPool2d, LipschitzLayer):
+    def __init__(
+        self,
+        kernel_size: _size_2_t,
+        stride: Optional[_size_2_t] = None,
+        padding: _size_2_t = 0,
+        ceil_mode: bool = False,
+        count_include_pad: bool = True,
+        divisor_override: bool = None,
+        k_coef_lip: float = 1.0,
+        eps_grad_sqrt=1e-6,
+    ):
+        """
+        Average pooling operation for spatial data, with a lipschitz bound. This
+        pooling operation is norm preserving (aka gradient=1 almost everywhere).
+
+        [1]Y.-L.Boureau, J.Ponce, et Y.LeCun, « A Theoretical Analysis of Feature
+        Pooling in Visual Recognition »,p.8.
+
+        Arguments:
+            pool_size: integer or tuple of 2 integers,
+                factors by which to downscale (vertical, horizontal).
+                `(2, 2)` will halve the input in both spatial dimension.
+                If only one integer is specified, the same window length
+                will be used for both dimensions.
+            strides: Integer, tuple of 2 integers, or None.
+                Strides values.
+                If None, it will default to `pool_size`.
+            padding: One of `"valid"` or `"same"` (case-insensitive).
+            data_format: A string,
+                one of `channels_last` (default) or `channels_first`.
+                The ordering of the dimensions in the inputs.
+                `channels_last` corresponds to inputs with shape
+                `(batch, height, width, channels)` while `channels_first`
+                corresponds to inputs with shape
+                `(batch, channels, height, width)`.
+                It defaults to the `image_data_format` value found in your
+                Keras config file at `~/.keras/keras.json`.
+                If you never set it, then it will be "channels_last".
+            k_coef_lip: the lipschitz factor to ensure
+            eps_grad_sqrt: Epsilon value to avoid numerical instability
+                due to non-defined gradient at 0 in the sqrt function
+
+        Input shape:
+            - If `data_format='channels_last'`:
+                4D tensor with shape `(batch_size, rows, cols, channels)`.
+            - If `data_format='channels_first'`:
+                4D tensor with shape `(batch_size, channels, rows, cols)`.
+
+        Output shape:
+            - If `data_format='channels_last'`:
+                4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
+            - If `data_format='channels_first'`:
+                4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
+        """
+        if stride is not None:
+            raise RuntimeError("stride must be equal to pool_size")
+        if padding != 0:
+            raise RuntimeError("ScaledAveragePooling2D only support padding='valid'")
+        if eps_grad_sqrt < 0.0:
+            raise RuntimeError("eps_grad_sqrt must be positive")
+        nn.AvgPool2d.__init__(
+            self,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            ceil_mode=ceil_mode,
+            count_include_pad=count_include_pad,
+            divisor_override=divisor_override,
+        )
+        self.set_klip_factor(k_coef_lip)
+        self.eps_grad_sqrt = eps_grad_sqrt
+
+        # TODO: Better way to do this.
+        self.coef_lip = np.sqrt(np.prod(np.asarray(self.kernel_size)))
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return (
+            sqrt_with_gradeps(
+                nn.AvgPool2d.forward(self, torch.square(input)), self.eps_grad_sqrt
+            )
+            * self._get_coef()
+        )
+
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
+        config = {"k_coef_lip": self.k_coef_lip, "eps_grad_sqrt": self.eps_grad_sqrt}
         base_config = super().state_dict(destination, prefix, keep_vars)
         return dict(list(base_config.items()) + list(config.items()))
