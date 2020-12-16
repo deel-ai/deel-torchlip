@@ -7,25 +7,26 @@ This module contains extra activation functions which respect the Lipschitz cons
 It can be added as a layer, or it can be used in the "activation" params for other
 layers.
 """
-from torch import nn, Tensor, cat, chunk, min, max, sort
-from .layers import LipschitzLayer
+
+from typing import Optional
+
+import torch
+import torch.nn as nn
+
+from .layers import LipschitzModule
+from . import functional as F
 
 
-class MaxMin(nn.Module, LipschitzLayer):
-    def __init__(self, data_format="channels_last", k_coef_lip=1.0, *args, **kwargs):
+class MaxMin(nn.Module, LipschitzModule):
+    def __init__(self, k_coef_lip: float = 1.0):
         """
-        MaxMin activation [Relu(x),reLU(-x)]
+        MaxMin activation [ReLU(x),ReLU(-x)]
 
         Args:
-            data_format: either channels_first or channels_last
-            k_coef_lip: the lipschitz coefficient to be enforced
-            *args: params passed to Layers
-            **kwargs: params passed to layers (named fashion)
+            k_coef_lip: The lipschitz coefficient to enforce.
 
         Input shape:
-            Arbitrary. Use the keyword argument `input_shape` (tuple of integers, does
-            not include the samples axis) when using this layer as the first layer in a
-            model.
+            Arbitrary.
 
         Output shape:
             Double channel size as input.
@@ -36,21 +37,11 @@ class MaxMin(nn.Module, LipschitzLayer):
             Processing (ICIP), Phoenix, AZ, USA, 2016, p. 3678‑3682.)
 
         """
-        self.set_klip_factor(k_coef_lip)
-        super(MaxMin, self).__init__(*args, **kwargs)
-        self.init = False
+        nn.Module.__init__(self)
+        LipschitzModule.__init__(self, k_coef_lip, 1)
 
-    def _compute_lip_coef(self, input_shape=None):
-        return 1.0
-
-    def forward(self, input: Tensor) -> Tensor:
-        if not self.init:
-            self._init_lip_coef(input.shape[1:])
-            self.init = True
-        return (
-            cat((nn.functional.relu(input), nn.functional.relu(-input)), 1)
-            * self._get_coef()
-        )
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return F.max_min(input, self._coefficient)
 
     def state_dict(self, destination=None, prefix="", keep_vars=False):
         config = {
@@ -60,8 +51,8 @@ class MaxMin(nn.Module, LipschitzLayer):
         return dict(list(base_config.items()) + list(config.items()))
 
 
-class GroupSort(nn.Module, LipschitzLayer):
-    def __init__(self, n=None, k_coef_lip=1.0, *args, **kwargs):
+class GroupSort(nn.Module, LipschitzModule):
+    def __init__(self, group_size: Optional[int] = None, k_coef_lip: float = 1.0):
         """
         GroupSort activation
 
@@ -82,42 +73,16 @@ class GroupSort(nn.Module, LipschitzLayer):
             Same size as input.
 
         """
-        self.set_klip_factor(k_coef_lip)
-        super(GroupSort, self).__init__(*args, **kwargs)
-        self.n = n
-        self.init = False
+        nn.Module.__init__(self)
+        LipschitzModule.__init__(self, k_coef_lip, 1.0)
+        self.group_size = group_size
 
-    def _compute_lip_coef(self, input_shape=None):
-        return 1.0
-
-    def forward(self, input: Tensor) -> Tensor:
-        if not self.init:
-            input_shape = input.shape[1:]
-            self._init_lip_coef(input.shape[1:])
-            self.init = True
-            if (self.n is None) or (self.n > input_shape[0]):
-                self.n = input_shape[0]
-            if (input_shape[0] % self.n) != 0:
-                raise RuntimeError(
-                    "self.n has to be a divisor of the number of channels"
-                )
-
-        fv = input.reshape([-1, self.n])
-        if self.n == 2:
-            sfv = chunk(fv, 2, 1)
-            b = sfv[0]
-            c = sfv[1]
-            newv = cat([min(b, c), max(b, c)], axis=1)
-            newv = newv.reshape(input.shape)
-            return newv
-
-        newv = sort(fv)
-        newv = newv.reshape(newv, input.shape)
-        return newv * self._get_coef()
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return F.group_sort(input, self.group_size, self._coefficient)
 
     def state_dict(self, destination=None, prefix="", keep_vars=False):
         config = {
-            "n": self.n,
+            "group_size": self.group_size,
             "k_coef_lip": self.k_coef_lip,
         }
         base_config = super(GroupSort, self).state_dict(destination, prefix, keep_vars)
@@ -125,7 +90,7 @@ class GroupSort(nn.Module, LipschitzLayer):
 
 
 class GroupSort2(GroupSort):
-    def __init__(self, **kwargs):
+    def __init__(self, k_coef_lip: float = 1.0):
         """
         GroupSort2 activation. Special case of GroupSort with group of size 2.
 
@@ -138,12 +103,11 @@ class GroupSort2(GroupSort):
             Same size as input.
 
         """
-        kwargs["n"] = 2
-        super().__init__(**kwargs)
+        super().__init__(group_size=2, k_coef_lip=k_coef_lip)
 
 
 class FullSort(GroupSort):
-    def __init__(self, **kwargs):
+    def __init__(self, k_coef_lip: float = 1.0):
         """
         FullSort activation. Special case of GroupSort where the entire input is sorted.
 
@@ -156,15 +120,22 @@ class FullSort(GroupSort):
             Same size as input.
 
         """
-        kwargs["n"] = None
-        super().__init__(**kwargs)
+        super().__init__(group_size=None, k_coef_lip=k_coef_lip)
 
 
-def PReLUlip(input, weight, k_coef_lip=1.0):
+class PReLUlip(nn.PReLU, LipschitzModule):
     """
     PreLu activation, with Lipschitz constraint.
 
     Args:
         k_coef_lip: lipschitz coefficient to be enforced
     """
-    return nn.functional.prelu(input, weight) * k_coef_lip
+
+    def __init__(
+        self, num_parameters: int = 1, init: float = 0.25, k_coef_lip: float = 1.0
+    ):
+        nn.PReLU.__init__(self, num_parameters=num_parameters, init=init)
+        LipschitzModule.__init__(self, k_coef_lip, 1.0)
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        return F.prelu_lip(input, self.weight, self._coefficient)
