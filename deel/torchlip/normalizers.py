@@ -35,8 +35,8 @@ def bjorck_normalization(
     if niter == 0:
         return w
     shape = w.shape
-    height = w.size(0)
-    w_mat = w.reshape(height, -1)
+    cout = w.size(0)
+    w_mat = w.reshape(cout, -1)
     for i in range(niter):
         w_mat = (1.0 + DEFAULT_BETA) * w_mat - DEFAULT_BETA * torch.mm(
             w_mat, torch.mm(w_mat.t(), w_mat)
