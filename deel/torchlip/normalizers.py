@@ -60,11 +60,10 @@ def _power_iteration(
          A tuple (u, v) containing the largest eigenvalues.
 
     """
-    _u = u
     for i in range(niter):
-        _v = F.normalize(torch.mm(_u, w.t()), p=2, dim=1)
-        _u = F.normalize(torch.mm(_v, w), p=2, dim=1)
-    return _u, _v
+        v = F.normalize(torch.mm(u, w.t()), p=2, dim=1)
+        u = F.normalize(torch.mm(v, w), p=2, dim=1)
+    return u, v
 
 
 def spectral_normalization(
@@ -95,10 +94,10 @@ def spectral_normalization(
         torch.nn.init.normal_(u)
 
     # do power iteration
-    _u, _v = _power_iteration(W_flat, u, niter)
+    u, v = _power_iteration(W_flat, u, niter)
 
     # Calculate Sigma
-    sigma = _v.mm(W_flat).mm(_u.t())
+    sigma = v.mm(W_flat).mm(u.t())
 
     # Normalize W_bar
     W_bar = kernel.div(sigma)
