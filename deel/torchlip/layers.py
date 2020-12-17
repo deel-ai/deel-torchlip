@@ -169,15 +169,6 @@ class SpectralLinear(nn.Linear, LipschitzModule):
             layer.bias.data = self.bias
         return layer
 
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-            "niter_spectral": self.niter_spectral,
-            "niter_bjorck": self.niter_bjorck,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
-
 
 class FrobeniusLinear(nn.Linear, LipschitzModule):
     """
@@ -228,14 +219,6 @@ class FrobeniusLinear(nn.Linear, LipschitzModule):
         if self.bias is not None:
             layer.bias.data = self.bias.data
         return layer
-
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-            "niter_spectral": self.niter_spectral,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
 
 
 class SpectralConv1d(nn.Conv1d, LipschitzModule):
@@ -372,15 +355,6 @@ class SpectralConv1d(nn.Conv1d, LipschitzModule):
             layer.bias.data = self.bias.data
         return layer
 
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-            "niter_spectral": self.niter_spectral,
-            "niter_bjorck": self.niter_bjorck,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
-
 
 class SpectralConv2d(nn.Conv2d, LipschitzModule):
     def __init__(
@@ -511,15 +485,6 @@ class SpectralConv2d(nn.Conv2d, LipschitzModule):
         if self.bias is not None:
             layer.bias.data = self.bias.data
         return layer
-
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-            "niter_spectral": self.niter_spectral,
-            "niter_bjorck": self.niter_bjorck,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
 
 
 class SpectralConv3d(nn.Conv3d, LipschitzModule):
@@ -653,15 +618,6 @@ class SpectralConv3d(nn.Conv3d, LipschitzModule):
             layer.bias.data = self.bias.data
         return layer
 
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-            "niter_spectral": self.niter_spectral,
-            "niter_bjorck": self.niter_bjorck,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
-
 
 class FrobeniusConv2d(nn.Conv2d, LipschitzModule):
     """
@@ -742,13 +698,6 @@ class FrobeniusConv2d(nn.Conv2d, LipschitzModule):
             layer.bias.data = self.bias.data
         return layer
 
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
-
 
 class ScaledAvgPool2d(nn.AvgPool2d, LipschitzModule):
     def __init__(
@@ -799,13 +748,6 @@ class ScaledAvgPool2d(nn.AvgPool2d, LipschitzModule):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         return F.avg_pool2d(input) * self._coefficient
 
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
-
 
 class ScaledGlobalAvgPool2d(nn.AdaptiveAvgPool2d, LipschitzModule):
     def __init__(
@@ -847,13 +789,6 @@ class ScaledGlobalAvgPool2d(nn.AdaptiveAvgPool2d, LipschitzModule):
             * self._coefficient
         )
 
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "k_coef_lip": self.k_coef_lip,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
-
 
 class InvertibleDownSampling(nn.Module):
     def __init__(
@@ -872,13 +807,6 @@ class InvertibleDownSampling(nn.Module):
             ),
             dim=1,
         )
-
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {
-            "pool_size": self.pool_size,
-        }
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))
 
 
 class ScaledL2NormPooling2D(nn.AvgPool2d, LipschitzModule):
@@ -963,8 +891,3 @@ class ScaledL2NormPooling2D(nn.AvgPool2d, LipschitzModule):
             )
             * self._coefficient
         )
-
-    def state_dict(self, destination=None, prefix="", keep_vars=False):
-        config = {"k_coef_lip": self.k_coef_lip, "eps_grad_sqrt": self.eps_grad_sqrt}
-        base_config = super().state_dict(destination, prefix, keep_vars)
-        return dict(list(base_config.items()) + list(config.items()))

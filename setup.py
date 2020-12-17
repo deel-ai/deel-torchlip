@@ -31,13 +31,20 @@ setuptools.setup(
     name="deel-torchlip",
     version="0.0.1",
     author=", ".join(
-        ["Mathieu SERRURIER", "Franck MAMALET", "Thibaut BOISSIN", "Justin PLAKOO"]
+        [
+            "Mathieu SERRURIER",
+            "Franck MAMALET",
+            "Thibaut BOISSIN",
+            "Mikaël CAPELLE",
+            "Justin PLAKOO",
+        ]
     ),
     author_email=", ".join(
         [
             "mathieu.serrurier@irt-saintexupery.com",
             "franck.mamalet@irt-saintexupery.com",
             "thibaut.boissin@irt-saintexupery.com",
+            "mikael.capelle@irt-saintexupery.com",
             "justin.plakoo@irt-saintexupery.com",
         ]
     ),
