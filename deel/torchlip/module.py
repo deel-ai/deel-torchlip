@@ -12,10 +12,10 @@ from collections import OrderedDict
 import numpy as np
 from torch.nn import Sequential as TorchSequential
 
-from .layers import LipschitzLayer, Condensable
+from .layers import LipschitzModule
 
 
-class Sequential(TorchSequential, LipschitzLayer, Condensable):
+class Sequential(TorchSequential, LipschitzModule):
     def __init__(
         self,
         layers=None,
@@ -50,9 +50,9 @@ class Sequential(TorchSequential, LipschitzLayer, Condensable):
 
     def set_klip_factor(self, klip_factor):
         super(Sequential, self).set_klip_factor(klip_factor)
-        nb_layers = np.sum([isinstance(layer, LipschitzLayer) for layer in self.layers])
+        nb_layers = np.sum([isinstance(layer, LipschitzModule) for layer in self.layers])
         for module in enumerate(self.layers_list):
-            if isinstance(module, LipschitzLayer):
+            if isinstance(module, LipschitzModule):
                 module.set_klip_factor(math.pow(klip_factor, 1 / nb_layers))
             else:
                 warn(
@@ -63,7 +63,7 @@ class Sequential(TorchSequential, LipschitzLayer, Condensable):
 
     def _compute_lip_coef(self, input_shape=None):
         for layer in self.layers_list:
-            if isinstance(layer, LipschitzLayer):
+            if isinstance(layer, LipschitzModule):
                 layer._compute_lip_coef(input_shape)
             else:
                 warn(
@@ -74,7 +74,7 @@ class Sequential(TorchSequential, LipschitzLayer, Condensable):
 
     def _init_lip_coef(self, input_shape):
         for layer in self.layers_list:
-            if isinstance(layer, LipschitzLayer):
+            if isinstance(layer, LipschitzModule):
                 layer._init_lip_coef(input_shape)
             else:
                 warn(
@@ -86,7 +86,7 @@ class Sequential(TorchSequential, LipschitzLayer, Condensable):
     def _get_coef(self):
         global_coef = 1.0
         for layer in self.layers_list:
-            if isinstance(layer, LipschitzLayer) and (global_coef is not None):
+            if isinstance(layer, LipschitzModule) and (global_coef is not None):
                 global_coef *= layer._get_coef()
             else:
                 warn(
@@ -99,13 +99,13 @@ class Sequential(TorchSequential, LipschitzLayer, Condensable):
 
     def condense(self):
         for layer in self.layers_list:
-            if isinstance(layer, Condensable):
+            if isinstance(layer):
                 layer.condense()
 
     def vanilla_export(self):
         layers = list()
         for layer in self.layers_list:
-            if isinstance(layer, Condensable):
+            if isinstance(layer):
                 layer.condense()
                 layers.append(layer.vanilla_export())
             else:
