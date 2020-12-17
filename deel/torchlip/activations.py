@@ -50,6 +50,9 @@ class MaxMin(nn.Module, LipschitzModule):
         base_config = super(MaxMin, self).state_dict(destination, prefix, keep_vars)
         return dict(list(base_config.items()) + list(config.items()))
 
+    def vanilla_export(self):
+        return self
+
 
 class GroupSort(nn.Module, LipschitzModule):
     def __init__(self, group_size: Optional[int] = None, k_coef_lip: float = 1.0):
@@ -88,6 +91,9 @@ class GroupSort(nn.Module, LipschitzModule):
         base_config = super(GroupSort, self).state_dict(destination, prefix, keep_vars)
         return dict(list(base_config.items()) + list(config.items()))
 
+    def vanilla_export(self):
+        return self
+
 
 class GroupSort2(GroupSort):
     def __init__(self, k_coef_lip: float = 1.0):
@@ -123,7 +129,7 @@ class FullSort(GroupSort):
         super().__init__(group_size=None, k_coef_lip=k_coef_lip)
 
 
-class PReLUlip(nn.PReLU, LipschitzModule):
+class LipschitzPReLU(nn.PReLU, LipschitzModule):
     """
     PreLu activation, with Lipschitz constraint.
 
@@ -139,3 +145,15 @@ class PReLUlip(nn.PReLU, LipschitzModule):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         return F.prelu_lip(input, self.weight, self._coefficient)
+
+    def vanilla_export(self):
+        layer = LipschitzPReLU(num_parameters=self.num_parameters)
+        layer.weight.data = self.weight.data
+        return layer
+
+    def state_dict(self, destination=None, prefix="", keep_vars=False):
+        config = {
+            "k_coef_lip": self.k_coef_lip,
+        }
+        base_config = super(MaxMin, self).state_dict(destination, prefix, keep_vars)
+        return dict(list(base_config.items()) + list(config.items()))
