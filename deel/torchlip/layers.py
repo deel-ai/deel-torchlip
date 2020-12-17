@@ -25,7 +25,7 @@ be done by setting the param `niter_bjorck=0`.
 
 import abc
 
-from typing import Optional, Tuple, TYPE_CHECKING
+from typing import Optional, Tuple
 
 import numpy as np
 
@@ -196,16 +196,8 @@ class FrobeniusLinear(nn.Linear, LipschitzModule):
             init.zeros_(self.bias)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        W_bar = (
-            self.weight
-            / np.linalg.norm(self.weight.detach().numpy())
-            * self._coefficient
-        )
+        W_bar = self.weight / torch.norm(self.weight) * self._coefficient
         return F.linear(input, W_bar, self.bias)
-
-    def condense(self):
-        W_bar = self.weight.data / np.linalg.norm(self.weight.detach().numpy())
-        self.weight.data = W_bar
 
     def vanilla_export(self):
         self._kwargs["name"] = self.name
@@ -308,7 +300,7 @@ class SpectralConv1d(nn.Conv1d, LipschitzModule):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         if self._correction_lip is None:
             self._correction_lip = compute_lconv_ip_coef(
-                self.kernel_size, input.shape[1:], self.stride
+                self.kernel_size, input.shape[-2:], self.stride
             )
 
         W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
@@ -438,7 +430,7 @@ class SpectralConv2d(nn.Conv2d, LipschitzModule):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         if self._correction_lip is None:
             self._correction_lip = compute_lconv_ip_coef(
-                self.kernel_size, input.shape[1:], self.stride
+                self.kernel_size, input.shape[-3:], self.stride
             )
 
         W_bar = (
@@ -573,7 +565,7 @@ class SpectralConv3d(nn.Conv3d, LipschitzModule):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         if self._correction_lip is None:
             self._correction_lip = compute_lconv_ip_coef(
-                self.kernel_size, input.shape[1:], self.stride
+                self.kernel_size, input.shape[-4:], self.stride
             )
 
         W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
@@ -637,7 +629,7 @@ class FrobeniusConv2d(nn.Conv2d, LipschitzModule):
         padding_mode: str = "zeros",
         k_coef_lip: float = 1.0,
     ):
-        if not ((stride == (1, 1)) or (stride == [1, 1]) or (stride == 1)):
+        if np.prod([stride]) != 1:
             raise RuntimeError("NormalizedConv does not support strides")
         # if padding_mode != "same":
         #     raise RuntimeError("NormalizedConv only support padding='same'")
@@ -664,7 +656,7 @@ class FrobeniusConv2d(nn.Conv2d, LipschitzModule):
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         if self._correction_lip is None:
             self._correction_lip = compute_lconv_ip_coef(
-                self.kernel_size, input.shape[1:], self.stride
+                self.kernel_size, input.shape[-3:], self.stride
             )
 
         W_bar = self.weight / torch.norm(self.weight)
