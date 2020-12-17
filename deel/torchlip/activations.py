@@ -129,7 +129,7 @@ class LipschitzPReLU(nn.PReLU, LipschitzModule):
         LipschitzModule.__init__(self, k_coef_lip, 1.0)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.prelu_lip(input, self.weight, self._coefficient)
+        return F.lipschitz_prelu(input, self.weight, self._coefficient)
 
     def vanilla_export(self):
         layer = LipschitzPReLU(num_parameters=self.num_parameters)

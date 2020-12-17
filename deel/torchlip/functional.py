@@ -46,7 +46,7 @@ def full_sort(input: torch.Tensor, k_coef_lip: float = 1.0) -> torch.Tensor:
     return group_sort(input, None, k_coef_lip)
 
 
-def prelu_lip(
+def lipschitz_prelu(
     input: torch.Tensor, weight: torch.Tensor, k_coef_lip: float = 1.0
 ) -> torch.Tensor:
     return F.prelu(input, torch.clamp(weight, -k_coef_lip, +k_coef_lip))
