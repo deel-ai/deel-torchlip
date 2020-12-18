@@ -24,6 +24,7 @@ be done by setting the param `niter_bjorck=0`.
 """
 
 import abc
+import math
 
 from typing import Optional, Tuple
 
@@ -734,11 +735,11 @@ class ScaledAvgPool2d(nn.AvgPool2d, LipschitzModule):
             divisor_override=divisor_override,
         )
         LipschitzModule.__init__(
-            self, k_coef_lip, np.sqrt(np.prod(np.asarray(self.kernel_size)))
+            self, k_coef_lip, math.sqrt(np.prod(np.asarray(self.kernel_size)))
         )
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.avg_pool2d(input) * self._coefficient
+        return F.avg_pool2d(input) * self._coefficient  # type: ignore
 
 
 class ScaledGlobalAvgPool2d(nn.AdaptiveAvgPool2d, LipschitzModule):
@@ -770,13 +771,12 @@ class ScaledGlobalAvgPool2d(nn.AdaptiveAvgPool2d, LipschitzModule):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         if self._correction_lip is None:
-            self._correction_lip = np.sqrt(input.shape[-2] * input.shape[-1])
+            self._correction_lip = math.sqrt(input.shape[-2] * input.shape[-1])
 
-        return (
+        return (  # type: ignore
             F.adaptive_avg_pool2d(
                 input,
-                self.output_size,
-                self.return_indices,
+                self.output_size,  # type: ignore
             )
             * self._coefficient
         )
@@ -830,16 +830,6 @@ class ScaledL2NormPooling2D(nn.AvgPool2d, LipschitzModule):
                 Strides values.
                 If None, it will default to `pool_size`.
             padding: One of `"valid"` or `"same"` (case-insensitive).
-            data_format: A string,
-                one of `channels_last` (default) or `channels_first`.
-                The ordering of the dimensions in the inputs.
-                `channels_last` corresponds to inputs with shape
-                `(batch, height, width, channels)` while `channels_first`
-                corresponds to inputs with shape
-                `(batch, channels, height, width)`.
-                It defaults to the `image_data_format` value found in your
-                Keras config file at `~/.keras/keras.json`.
-                If you never set it, then it will be "channels_last".
             k_coef_lip: the lipschitz factor to ensure
             eps_grad_sqrt: Epsilon value to avoid numerical instability
                 due to non-defined gradient at 0 in the sqrt function
@@ -872,12 +862,12 @@ class ScaledL2NormPooling2D(nn.AvgPool2d, LipschitzModule):
             divisor_override=divisor_override,
         )
         LipschitzModule.__init__(
-            self, k_coef_lip, np.sqrt(np.prod(np.asarray(self.kernel_size)))
+            self, k_coef_lip, math.sqrt(np.prod(np.asarray(self.kernel_size)))
         )
         self.eps_grad_sqrt = eps_grad_sqrt
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return (
+        return (  # type: ignore
             sqrt_with_gradeps(
                 nn.AvgPool2d.forward(self, torch.square(input)), self.eps_grad_sqrt
             )
