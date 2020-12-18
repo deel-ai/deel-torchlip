@@ -6,20 +6,27 @@
 This module contains equivalents for Model and Sequential. These classes add support
 for condensation and vanilla exportation.
 """
+
+import copy
+import logging
 import math
-from warnings import warn
+
+from typing import Any
+
 from collections import OrderedDict
 import numpy as np
 from torch.nn import Sequential as TorchSequential
 
 from .layers import LipschitzModule
 
+logger = logging.getLogger("deel.torchlip")
+
 
 class Sequential(TorchSequential, LipschitzModule):
     def __init__(
         self,
-        layers=None,
-        k_coef_lip=1.0,
+        *args: Any,
+        k_coef_lip: float = 1.0,
     ):
         """
         Equivalent of torch.Sequential but allow to set k-lip factor globally. Also
@@ -33,85 +40,38 @@ class Sequential(TorchSequential, LipschitzModule):
             name: name of the model, can be None
             k_coef_lip: the Lipschitz coefficient to ensure globally on the model.
         """
-        super(Sequential, self).__init__(layers)
-        self.layers = layers
-        if len(self.layers) == 1 and isinstance(self.layers[0], OrderedDict):
-            self.layers_list = self.layers[0].values()
-        else:
-            self.layers_list = self.layers
-        self.set_klip_factor(k_coef_lip)
-        self.init = False
+        TorchSequential.__init__(self, *args)
+        LipschitzModule.__init__(self, k_coef_lip, 1)
 
-    def forward(self, input):
-        if not self.init:
-            self._init_lip_coef(input.shape[1:])
-            self.init = True
-        return super(Sequential, self).forward(input)
-
-    def set_klip_factor(self, klip_factor):
-        super(Sequential, self).set_klip_factor(klip_factor)
-        nb_layers = np.sum([isinstance(layer, LipschitzModule) for layer in self.layers])
-        for module in enumerate(self.layers_list):
+        # Force the Lipschitz coefficient:
+        n_layers = np.sum(
+            (isinstance(layer, LipschitzModule) for layer in self.children())
+        )
+        for module in self.children():
             if isinstance(module, LipschitzModule):
-                module.set_klip_factor(math.pow(klip_factor, 1 / nb_layers))
+                module._coefficient_lip = math.pow(k_coef_lip, 1 / n_layers)
             else:
-                warn(
+                logger.warning(
                     "Sequential model contains a layer wich is not a Lipschitsz layer: {}".format(  # noqa: E501
                         module
                     )
                 )
 
-    def _compute_lip_coef(self, input_shape=None):
-        for layer in self.layers_list:
-            if isinstance(layer, LipschitzModule):
-                layer._compute_lip_coef(input_shape)
-            else:
-                warn(
-                    "Sequential module contains a layer wich is not a Lipschitsz layer: {}".format(  # noqa: E501
-                        layer
-                    )
-                )
-
-    def _init_lip_coef(self, input_shape):
-        for layer in self.layers_list:
-            if isinstance(layer, LipschitzModule):
-                layer._init_lip_coef(input_shape)
-            else:
-                warn(
-                    "Sequential model contains a layer wich is not a Lipschitsz layer: {}".format(  # noqa: E501
-                        layer
-                    )
-                )
-
-    def _get_coef(self):
-        global_coef = 1.0
-        for layer in self.layers_list:
-            if isinstance(layer, LipschitzModule) and (global_coef is not None):
-                global_coef *= layer._get_coef()
-            else:
-                warn(
-                    "Sequential model contains a layer wich is not a Lipschitsz layer: {}".format(  # noqa: E501
-                        layer
-                    )
-                )
-                global_coef = None
-        return global_coef
-
-    def condense(self):
-        for layer in self.layers_list:
-            if isinstance(layer):
-                layer.condense()
-
     def vanilla_export(self):
-        layers = list()
-        for layer in self.layers_list:
-            if isinstance(layer):
-                layer.condense()
+        """
+        Exports this model to a vanilla torch Sequential.
+
+        This method only works for flat sequential. Lipschitz modules are converted
+        using their own `vanilla_export` method while non-Lipschitz modules are simply
+        copied using `copy.deepcopy`.
+
+        Returns:
+            A Vanilla torch.nn.Sequential model.
+        """
+        layers = []
+        for layer in self.children():
+            if isinstance(layer, LipschitzModule):
                 layers.append(layer.vanilla_export())
             else:
-                lay_cp = layer.__class__.from_config(layer.get_config())
-                lay_cp.build(layer.input.shape[1:])
-                lay_cp.set_weights(layer.get_weights())
-                layers.append(lay_cp)
-        model = TorchSequential(layers, self.name)
-        return model
+                layers.append(copy.deepcopy(layer))
+        return TorchSequential(*layers)
