@@ -262,7 +262,12 @@ def train_k_lip_model(
     model_checkpoint_path = os.path.join(logdir, "model.h5")
     save(model, model_checkpoint_path)
     print("State_dict model =====> {}".format(model[0]))
-    print("State_dict model[0] =====> {}".format(model[0].state_dict()))
+    m1 = SpectralLinear(2, 2)
+    print(
+        "mo1 State_dict model[0] =====> {}".format(
+            m1.load_state_dict(model[0].state_dict())
+        )
+    )
 
     del model
 
@@ -335,7 +340,7 @@ class LipschitzModulesTest(unittest.TestCase):
                 emp_lip_const, from_disk_emp_lip_const, test_params
             )
 
-    def test_vanilla_linear(self):
+    def _test_vanilla_linear(self):
         """
         Tests for a standard Linear layer, for result comparison.
         """
