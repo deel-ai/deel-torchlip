@@ -3,8 +3,8 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 """
-This module extends original Pytorch layers, in order to add k lipschitz constraint via
-reparametrization. Currently, are implemented:
+This module extends original Pytorch layers, in order to add k-Lipschitz constraint via
+re-parametrization. Currently, are implemented:
 
 * Linear layer:
     as SpectralLinear
@@ -156,7 +156,6 @@ class FrobeniusLinear(nn.Linear, LipschitzModule):
         out_features: int,
         bias: bool = True,
         k_coef_lip: float = 1.0,
-        niter_spectral: int = DEFAULT_NITER_SPECTRAL,
     ):
         nn.Linear.__init__(
             self,
@@ -200,13 +199,13 @@ class SpectralConv2d(nn.Conv2d, LipschitzModule):
         """
         This class is a Conv2d Layer constrained such that all singular of it's kernel
         are 1. The computation based on BjorckNormalizer algorithm. As this is not
-        enough to ensure 1 Lipschitzity a coertive coefficient is applied on the
+        enough to ensure 1-Lipschitz a coercive coefficient is applied on the
         output.
         The computation is done in three steps:
 
         1. reduce the largest singular value to 1, using iterated power method.
         2. increase other singular values to 1, using BjorckNormalizer algorithm.
-        3. divide the output by the Lipschitz bound to ensure k Lipschitzity.
+        3. divide the output by the Lipschitz bound to ensure k-Lipschitz.
 
         Args:
             in_channels (int): Number of channels in the input image
@@ -290,7 +289,7 @@ class FrobeniusConv2d(nn.Conv2d, LipschitzModule):
         k_coef_lip: float = 1.0,
     ):
         if np.prod([stride]) != 1:
-            raise RuntimeError("NormalizedConv does not support strides")
+            raise RuntimeError("FrobeniusConv2d does not support strides")
         # if padding_mode != "same":
         #     raise RuntimeError("NormalizedConv only support padding='same'")
 
@@ -369,12 +368,11 @@ class ScaledAvgPool2d(nn.AvgPool2d, LipschitzModule):
             count_include_pad=count_include_pad,
             divisor_override=divisor_override,
         )
-        LipschitzModule.__init__(
-            self, k_coef_lip, math.sqrt(np.prod(np.asarray(self.kernel_size)))
-        )
+        LipschitzModule.__init__(self, k_coef_lip)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.avg_pool2d(input) * self._coefficient  # type: ignore
+        coeff = self._coefficient_lip * math.sqrt(np.prod(np.asarray(self.kernel_size)))
+        return F.avg_pool2d(input) * coeff  # type: ignore
 
 
 class ScaledGlobalAvgPool2d(nn.AdaptiveAvgPool2d, LipschitzModule):
@@ -402,18 +400,17 @@ class ScaledGlobalAvgPool2d(nn.AdaptiveAvgPool2d, LipschitzModule):
         nn.AdaptiveAvgPool2d doc.
         """
         nn.AdaptiveAvgPool2d.__init__(self, output_size)
-        LipschitzModule.__init__(self, k_coef_lip, None)
+        LipschitzModule.__init__(self, k_coef_lip)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        if self._correction_lip is None:
-            self._correction_lip = math.sqrt(input.shape[-2] * input.shape[-1])
+        coeff = math.sqrt(input.shape[-2] * input.shape[-1]) * self._coefficient_lip
 
-        return (  # type: ignore
+        return (
             F.adaptive_avg_pool2d(
                 input,
                 self.output_size,  # type: ignore
             )
-            * self._coefficient
+            * coeff
         )
 
 
@@ -496,15 +493,14 @@ class ScaledL2NormPooling2D(nn.AvgPool2d, LipschitzModule):
             count_include_pad=count_include_pad,
             divisor_override=divisor_override,
         )
-        LipschitzModule.__init__(
-            self, k_coef_lip, math.sqrt(np.prod(np.asarray(self.kernel_size)))
-        )
+        LipschitzModule.__init__(self, k_coef_lip)
         self.eps_grad_sqrt = eps_grad_sqrt
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
+        coeff = self._coefficient_lip * math.sqrt(np.prod(np.asarray(self.kernel_size)))
         return (  # type: ignore
             sqrt_with_gradeps(
                 nn.AvgPool2d.forward(self, torch.square(input)), self.eps_grad_sqrt
             )
-            * self._coefficient
+            * coeff
         )
