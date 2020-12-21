@@ -1,4 +1,13 @@
+# Generated files (Python)
+__pycache__
+.mypy_cache
+.ipynb_checkpoints
+*.egg-info
+
+# IDE
 .vscode/settings.json
+
+# Test files
 logs/*
 tests/.config/*
 .bash_history

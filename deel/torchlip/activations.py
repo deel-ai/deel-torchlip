@@ -38,10 +38,10 @@ class MaxMin(nn.Module, LipschitzModule):
 
         """
         nn.Module.__init__(self)
-        LipschitzModule.__init__(self, k_coef_lip, 1)
+        LipschitzModule.__init__(self, k_coef_lip)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.max_min(input, self._coefficient)
+        return F.max_min(input, self._coefficient_lip)
 
     def vanilla_export(self):
         return self
@@ -70,11 +70,11 @@ class GroupSort(nn.Module, LipschitzModule):
 
         """
         nn.Module.__init__(self)
-        LipschitzModule.__init__(self, k_coef_lip, 1.0)
+        LipschitzModule.__init__(self, k_coef_lip)
         self.group_size = group_size
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.group_sort(input, self.group_size, self._coefficient)
+        return F.group_sort(input, self.group_size, self._coefficient_lip)
 
     def vanilla_export(self):
         return self
@@ -126,10 +126,10 @@ class LipschitzPReLU(nn.PReLU, LipschitzModule):
         self, num_parameters: int = 1, init: float = 0.25, k_coef_lip: float = 1.0
     ):
         nn.PReLU.__init__(self, num_parameters=num_parameters, init=init)
-        LipschitzModule.__init__(self, k_coef_lip, 1.0)
+        LipschitzModule.__init__(self, k_coef_lip)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.lipschitz_prelu(input, self.weight, self._coefficient)
+        return F.lipschitz_prelu(input, self.weight, self._coefficient_lip)
 
     def vanilla_export(self):
         layer = LipschitzPReLU(num_parameters=self.num_parameters)

@@ -73,6 +73,7 @@ def kr_loss(
     """
 
     v0, v1 = true_values
+    target = target.view(input.shape)
     return torch.mean(input[target == v0]) - torch.mean(input[target == v1])
 
 
@@ -112,8 +113,12 @@ def hinge_margin_loss(
     Returns:
         The hinge margin loss.
     """
+    target = target.view(input.shape)
     return torch.mean(
-        torch.max(torch.zeros_like(input), min_margin - torch.sign(target) * input)
+        torch.max(
+            torch.zeros_like(input),
+            min_margin - torch.sign(target) * input,
+        )
     )
 
 
