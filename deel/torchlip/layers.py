@@ -121,10 +121,6 @@ class SpectralLinear(nn.Linear, LipschitzModule):
             bias=bias,
         )
         LipschitzModule.__init__(self, k_coef_lip)
-
-        # spectral normalization is performed during forward.
-        # spectral_norm is implemented via a hook that calculates
-        # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
             name="weight",
