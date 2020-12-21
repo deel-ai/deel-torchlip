@@ -5,8 +5,19 @@
 """
 """
 
-from torch.nn import init
+import torch
+
+from .utils import DEFAULT_NITER_SPECTRAL_INIT, DEFAULT_NITER_BJORCK
+from .normalizers import spectral_normalization, bjorck_normalization
 
 
-def spectral_(tensor):
-    init.orthogonal_(tensor)
+def spectral_(
+    tensor: torch.Tensor, n_power_iterations: int = DEFAULT_NITER_SPECTRAL_INIT
+):
+    with torch.no_grad():
+        tensor.copy_(spectral_normalization(tensor, None, n_power_iterations)[0])
+
+
+def bjorck_(tensor: torch.Tensor, n_iterations: int = DEFAULT_NITER_BJORCK):
+    with torch.no_grad():
+        tensor.copy_(bjorck_normalization(tensor, n_iterations))
