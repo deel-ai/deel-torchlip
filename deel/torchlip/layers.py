@@ -360,7 +360,7 @@ class SpectralConv2d(nn.Conv2d, LipschitzModule):
         dilation: _size_2_t = 1,
         groups: int = 1,
         bias: bool = True,
-        padding_mode: str = "same",
+        padding_mode: str = "zeros",
         k_coef_lip: float = 1.0,
         niter_spectral: int = DEFAULT_NITER_SPECTRAL,
         niter_bjorck: int = DEFAULT_NITER_BJORCK,
@@ -398,8 +398,8 @@ class SpectralConv2d(nn.Conv2d, LipschitzModule):
         """
         # if not ((dilation == (1, 1)) or (dilation == [1, 1]) or (dilation == 1)):
         #     raise RuntimeError("NormalizedConv does not support dilation rate")
-        if padding_mode != "same":
-            raise RuntimeError("NormalizedConv only support padding='same'")
+        # if padding_mode != "same":
+        #     raise RuntimeError("NormalizedConv only support padding='same'")
 
         nn.Conv2d.__init__(
             self,
@@ -409,6 +409,7 @@ class SpectralConv2d(nn.Conv2d, LipschitzModule):
             stride=stride,
             padding=padding,
             bias=bias,
+            padding_mode=padding_mode,
         )
         LipschitzModule.__init__(self, k_coef_lip, None)
         # self.bn = nn.BatchNorm2d(self.out_channels)
