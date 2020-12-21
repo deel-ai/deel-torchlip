@@ -202,7 +202,8 @@ class FrobeniusLinear(nn.Linear, LipschitzModule):
             out_features=self.out_features,
             bias=self.bias is not None,
         )
-        layer.weight.data = self.weight * self._coefficient
+        weight = self.weight / torch.norm(self.weight) * self._coefficient
+        layer.weight.data = weight * self._coefficient
         if self.bias is not None:
             layer.bias.data = self.bias.data
         return layer
