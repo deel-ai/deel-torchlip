@@ -1,5 +1,5 @@
 deel.torchlip.normalizers module
-===========================
+================================
 
 .. automodule:: deel.torchlip.normalizers
    :members:

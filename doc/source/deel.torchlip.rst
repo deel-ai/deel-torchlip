@@ -1,7 +1,7 @@
 .. _deel-torchlip-api:
 
 deel.torchlip package
-================
+=====================
 
 Submodules
 ----------

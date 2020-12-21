@@ -7,3 +7,7 @@ tests/.config/*
 .profile
 ray_bootstrap_key.pem
 ray_bootstrap_config.yaml
+
+
+# Sphinx documentation
+doc/build/
