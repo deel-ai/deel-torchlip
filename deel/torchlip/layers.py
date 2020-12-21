@@ -191,24 +191,19 @@ class FrobeniusLinear(nn.Linear, LipschitzModule):
             bias=bias,
         )
         LipschitzModule.__init__(self, k_coef_lip, 1.0)
-        self.niter_spectral = niter_spectral
-        init.orthogonal_(self.weight)
-        if self.bias is not None:
-            init.zeros_(self.bias)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         W_bar = self.weight / torch.norm(self.weight) * self._coefficient
         return F.linear(input, W_bar, self.bias)
 
     def vanilla_export(self):
-        self._kwargs["name"] = self.name
         layer = nn.Linear(
-            bias=self.bias,
             in_features=self.in_features,
             out_features=self.out_features,
+            bias=self.bias is not None,
         )
-        layer.reset_parameters(self)
-        layer.weight.data = self.weight * self._coefficient
+        weight = self.weight / torch.norm(self.weight) * self._coefficient
+        layer.weight.data = weight * self._coefficient
         if self.bias is not None:
             layer.bias.data = self.bias.data
         return layer
