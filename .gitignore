@@ -10,3 +10,13 @@ __pycache__
 # Test files
 logs/*
 tests/.config/*
+.bash_history
+.bash_logout
+.bashrc
+.profile
+ray_bootstrap_key.pem
+ray_bootstrap_config.yaml
+
+
+# Sphinx documentation
+doc/build/

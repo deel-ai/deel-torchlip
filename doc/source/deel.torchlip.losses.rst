@@ -1,5 +1,5 @@
 deel.torchlip.losses module
-======================
+===========================
 
 .. automodule:: deel.torchlip.losses
    :members:
