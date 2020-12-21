@@ -34,14 +34,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from torch.nn import init
 from torch.nn.utils import spectral_norm
 
-from torch.nn.modules.utils import _single
-from torch.nn.common_types import _size_1_t, _size_2_t, _size_3_t
-
-from .normalizers import bjorck_normalization
-from .init import spectral_
+from torch.nn.common_types import _size_2_t
 
 from .utils import (
     DEFAULT_NITER_BJORCK,
@@ -49,6 +44,7 @@ from .utils import (
     sqrt_with_gradeps,
     bjorck_norm,
     frobenius_norm,
+    lconv_norm,
 )
 
 
@@ -247,55 +243,15 @@ class SpectralConv2d(nn.Conv2d, LipschitzModule):
             bias=bias,
             padding_mode=padding_mode,
         )
-        LipschitzModule.__init__(self, k_coef_lip, None)
-        # self.bn = nn.BatchNorm2d(self.out_channels)
-        self.niter_spectral = niter_spectral
-        self.niter_bjorck = niter_bjorck
-        spectral_(self.weight)
-        if self.bias is not None:
-            init.zeros_(self.bias)
-        # spectral normalization is performed during forward.
-        # spectral_norm is implemented via a hook that calculates
-        # spectral norm and rescales weight before every :meth:~Module.forward call.
+        LipschitzModule.__init__(self, k_coef_lip)
         spectral_norm(
             self,
             name="weight",
-            n_power_iterations=self.niter_spectral,
+            n_power_iterations=niter_spectral,
         )
-        if self.niter_spectral < 1:
-            raise RuntimeError("niter_spectral has to be > 0")
-
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        if self._correction_lip is None:
-            self._correction_lip = compute_lconv_ip_coef(
-                self.kernel_size, input.shape[-3:], self.stride
-            )
-
-        W_bar = (
-            bjorck_normalization(self.weight, niter=self.niter_bjorck)
-            * self._coefficient
-        )
-        if self.padding_mode != "zeros":
-            return F.conv2d(
-                F.pad(
-                    input, self._reversed_padding_repeated_twice, mode=self.padding_mode
-                ),
-                W_bar,
-                self.bias,
-                self.stride,
-                (0, 0),
-                self.dilation,
-                self.groups,
-            )
-        return F.conv2d(
-            input,
-            W_bar,
-            self.bias,
-            self.stride,
-            self.padding,
-            self.dilation,
-            self.groups,
-        )
+        bjorck_norm(self, name="weight", n_iterations=niter_bjorck)
+        lconv_norm(self)
+        self.register_forward_pre_hook(self._hook)
 
     def vanilla_export(self):
         layer = nn.Conv2d(
@@ -306,14 +262,12 @@ class SpectralConv2d(nn.Conv2d, LipschitzModule):
             padding=self.padding,
             dilation=self.dilation,
             groups=self.groups,
-            bias=self.bias,
+            bias=self.bias is not None,
             padding_mode=self.padding_mode,
         )
-        weight = bjorck_normalization(self.weight, niter=self.niter_bjorck)
-        layer.weight.data = weight.data * self._coefficient
-
+        layer.weight.data = self.weight.detach()
         if self.bias is not None:
-            layer.bias.data = self.bias.data
+            layer.bias.data = self.bias.detach()
         return layer
 
 
@@ -349,33 +303,11 @@ class FrobeniusConv2d(nn.Conv2d, LipschitzModule):
             padding=padding,
             bias=bias,
         )
-        LipschitzModule.__init__(self, k_coef_lip, None)
+        LipschitzModule.__init__(self, k_coef_lip)
 
-    def reset_parameters(self) -> None:
-        init.orthogonal_(self.weight)
-        if self.bias is not None:
-            init.zeros_(self.bias)
-
-    def _compute_lip_coef(self, input_shape=None):
-        return compute_lconv_ip_coef(self.kernel_size, input_shape, self.stride)
-
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        if self._correction_lip is None:
-            self._correction_lip = compute_lconv_ip_coef(
-                self.kernel_size, input.shape[-3:], self.stride
-            )
-
-        W_bar = self.weight / torch.norm(self.weight)
-
-        return F.conv2d(
-            input,
-            W_bar * self._coefficient,
-            self.bias,
-            self.stride,
-            self.padding,
-            self.dilation,
-            self.groups,
-        )
+        frobenius_norm(self, name="weight")
+        lconv_norm(self)
+        self.register_forward_pre_hook(self._hook)
 
     def vanilla_export(self):
         layer = nn.Conv2d(
@@ -386,14 +318,12 @@ class FrobeniusConv2d(nn.Conv2d, LipschitzModule):
             padding=self.padding,
             dilation=self.dilation,
             groups=self.groups,
-            bias=self.bias,
+            bias=self.bias is not None,
             padding_mode=self.padding_mode,
         )
-        weight = self.weight / torch.norm(self.weight)
-        layer.weight.data = weight.data * self._coefficient
-
+        layer.weight.data = self.weight.detach()
         if self.bias is not None:
-            layer.bias.data = self.bias.data
+            layer.bias.data = self.bias.detach()
         return layer
 
 
