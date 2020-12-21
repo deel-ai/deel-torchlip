@@ -11,17 +11,24 @@ from ..normalizers import DEFAULT_NITER_BJORCK, bjorck_normalization
 
 class BjorckNorm:
     name: str
-    niter: int
+    n_iterations: int
+    first: bool
 
-    def __init__(self, name: str, niter: int):
+    def __init__(self, name: str, n_iterations: int):
         self.name = name
+        self.n_iterations = n_iterations
+        self.first = False
 
     def compute_weight(self, module: torch.nn.Module) -> torch.Tensor:
-        w: torch.Tensor = getattr(module, self.name)
-        return bjorck_normalization(w, self.niter)  # type: ignore
+        w: torch.Tensor
+        if self.first:
+            w = getattr(module, self.name + "_orig")
+        else:
+            w = getattr(module, self.name)
+        return bjorck_normalization(w, self.n_iterations)  # type: ignore
 
     @staticmethod
-    def apply(module, name: str, niter: int) -> "BjorckNorm":
+    def apply(module, name: str, n_iterations: int) -> "BjorckNorm":
         for k, hook in module._forward_pre_hooks.items():
             if isinstance(hook, BjorckNorm) and hook.name == name:
                 raise RuntimeError(
@@ -29,7 +36,14 @@ class BjorckNorm:
                     "the same parameter {}".format(name)
                 )
 
-        fn = BjorckNorm(name, niter)
+        fn = BjorckNorm(name, n_iterations)
+
+        if isinstance(getattr(module, name), torch.nn.Parameter):
+            weight = module._parameters[name]
+            fn.first = True
+            delattr(module, fn.name)
+            module.register_parameter(fn.name + "_orig", weight)
+            setattr(module, fn.name, weight.data)
 
         # Normalize weight before every forward().
         module.register_forward_pre_hook(fn)
@@ -49,7 +63,7 @@ T_module = TypeVar("T_module", bound=torch.nn.Module)
 
 
 def bjorck_norm(
-    module: T_module, name: str = "weight", niter: int = DEFAULT_NITER_BJORCK
+    module: T_module, name: str = "weight", n_iterations: int = DEFAULT_NITER_BJORCK
 ) -> T_module:
     r"""
     Applies Bjorck normalization to a parameter in the given module.
@@ -59,7 +73,7 @@ def bjorck_norm(
     Args:
         module: Containing module.
         name: Name of weight parameter.
-        niter: Number of iterations for the normalizaiton.
+        n_iterations: Number of iterations for the normalizaiton.
 
     Returns:
         The original module with the Bjorck normalization hook.
@@ -71,7 +85,7 @@ def bjorck_norm(
         Linear(in_features=20, out_features=40, bias=True)
 
     """
-    BjorckNorm.apply(module, name, niter)
+    BjorckNorm.apply(module, name, n_iterations)
     return module
 
 

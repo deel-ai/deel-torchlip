@@ -40,7 +40,7 @@ class Sequential(TorchSequential, LipschitzModule):
             k_coef_lip: the Lipschitz coefficient to ensure globally on the model.
         """
         TorchSequential.__init__(self, *args)
-        LipschitzModule.__init__(self, k_coef_lip, 1)
+        LipschitzModule.__init__(self, k_coef_lip)
 
         # Force the Lipschitz coefficient:
         n_layers = np.sum(

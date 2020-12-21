@@ -47,7 +47,8 @@ from .utils import (
     DEFAULT_NITER_BJORCK,
     DEFAULT_NITER_SPECTRAL,
     sqrt_with_gradeps,
-    compute_lconv_ip_coef,
+    bjorck_norm,
+    frobenius_norm,
 )
 
 
@@ -65,27 +66,11 @@ class LipschitzModule(abc.ABC):
     # The target coefficient:
     _coefficient_lip: float
 
-    # The correction coefficient for the layer:
-    _correction_lip: Optional[float] = None
-
-    def __init__(
-        self, coefficient_lip: float = 1.0, correction_lip: Optional[float] = None
-    ):
+    def __init__(self, coefficient_lip: float = 1.0):
         self._coefficient_lip = coefficient_lip
-        self._correction_lip = correction_lip
 
-    @property
-    def _coefficient(self):
-        """
-        Returns:
-            The multiplicative coefficient to be used on the result in order to ensure
-            k-Lipschitzity.
-        """
-        if self._correction_lip is None:
-            raise RuntimeError(
-                "Lipschitz correction must be computed before calling coefficient()."
-            )
-        return self._coefficient_lip * self._correction_lip
+    def _hook(self, module, inputs):
+        setattr(module, "weight", getattr(module, "weight") * self._coefficient_lip)
 
     @abc.abstractmethod
     def vanilla_export(self):
@@ -139,24 +124,18 @@ class SpectralLinear(nn.Linear, LipschitzModule):
             out_features=out_features,
             bias=bias,
         )
-        LipschitzModule.__init__(self, k_coef_lip, 1.0)
-        self.niter_spectral = niter_spectral
-        self.niter_bjorck = niter_bjorck
-        spectral_(self.weight)
-        if self.bias is not None:
-            init.zeros_(self.bias)
+        LipschitzModule.__init__(self, k_coef_lip)
+
         # spectral normalization is performed during forward.
         # spectral_norm is implemented via a hook that calculates
         # spectral norm and rescales weight before every :meth:~Module.forward call.
         spectral_norm(
             self,
             name="weight",
-            n_power_iterations=self.niter_spectral,
+            n_power_iterations=niter_spectral,
         )
-
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        W_bar = bjorck_normalization(self.weight, niter=self.niter_bjorck)
-        return F.linear(input, W_bar * self._coefficient, self.bias)
+        bjorck_norm(self, name="weight", n_iterations=niter_bjorck)
+        self.register_forward_pre_hook(self._hook)
 
     def vanilla_export(self) -> nn.Linear:
         layer = nn.Linear(
@@ -164,10 +143,9 @@ class SpectralLinear(nn.Linear, LipschitzModule):
             out_features=self.out_features,
             bias=self.bias is not None,
         )
-        weight = bjorck_normalization(self.weight, niter=self.niter_bjorck)
-        layer.weight.data = weight * self._coefficient
+        layer.weight.data = self.weight.detach()
         if self.bias is not None:
-            layer.bias.data = self.bias
+            layer.bias.data = self.bias.detach()
         return layer
 
 
@@ -190,11 +168,10 @@ class FrobeniusLinear(nn.Linear, LipschitzModule):
             out_features=out_features,
             bias=bias,
         )
-        LipschitzModule.__init__(self, k_coef_lip, 1.0)
+        LipschitzModule.__init__(self, k_coef_lip)
 
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        W_bar = self.weight / torch.norm(self.weight) * self._coefficient
-        return F.linear(input, W_bar, self.bias)
+        frobenius_norm(self, name="weight")
+        self.register_forward_pre_hook(self._hook)
 
     def vanilla_export(self):
         layer = nn.Linear(
@@ -202,10 +179,9 @@ class FrobeniusLinear(nn.Linear, LipschitzModule):
             out_features=self.out_features,
             bias=self.bias is not None,
         )
-        weight = self.weight / torch.norm(self.weight) * self._coefficient
-        layer.weight.data = weight * self._coefficient
+        layer.weight.data = self.weight.detach()
         if self.bias is not None:
-            layer.bias.data = self.bias.data
+            layer.bias.data = self.bias.detach()
         return layer
 
 

@@ -6,14 +6,13 @@
 Contains utility functions.
 """
 
-from typing import Optional, Tuple
+from typing import Optional
 
-import numpy as np
 import torch
-import torch.autograd
 
 from .bjorck_norm import bjorck_norm, remove_bjorck_norm  # noqa: F401
 from .frobenius_norm import frobenius_norm, remove_frobenius_norm  # noqa: F401
+from .lconv_norm import lconv_norm, remove_lconv_norm  # noqa: F401
 
 from .sqrt_eps import sqrt_with_gradeps  # noqa: F401
 

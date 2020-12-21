@@ -9,12 +9,18 @@ import torch
 
 class FrobeniusNorm:
     name: str
+    first: bool
 
     def __init__(self, name: str):
         self.name = name
+        self.first = False
 
     def compute_weight(self, module: torch.nn.Module) -> torch.Tensor:
-        w: torch.Tensor = getattr(module, self.name)
+        w: torch.Tensor
+        if self.first:
+            w = getattr(module, self.name + "_orig")
+        else:
+            w = getattr(module, self.name)
         return w / torch.norm(w)  # type: ignore
 
     @staticmethod
@@ -27,6 +33,13 @@ class FrobeniusNorm:
                 )
 
         fn = FrobeniusNorm(name)
+
+        if isinstance(getattr(module, name), torch.nn.Parameter):
+            weight = module._parameters[name]
+            fn.first = True
+            delattr(module, fn.name)
+            module.register_parameter(fn.name + "_orig", weight)
+            setattr(module, fn.name, weight.data)
 
         # Normalize weight before every forward().
         module.register_forward_pre_hook(fn)
