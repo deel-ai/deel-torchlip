@@ -136,7 +136,7 @@ if __name__ == "__main__":
         help="Address of Ray cluster for seamless distributed execution.",
     )
     args = parser.parse_args()
-    if ray.is_initialized() == False:
+    if not ray.is_initialized():
         ray.init(address="auto")
     # for early stopping
     sched = AsyncHyperBandScheduler()

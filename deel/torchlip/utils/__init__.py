@@ -59,7 +59,7 @@ def evaluate_lip_const(
     """
     Evaluate the Lipschitz constant of a model, with the naive method.
     Please note that the estimation of the lipschitz constant is done locally around
-    input sample. This may not correctly estimate the behaviour in the whole domain.
+    input sample. This may not correctly estimate the behavior in the whole domain.
 
     Args:
         model: Torch model used to make predictions.
@@ -96,9 +96,9 @@ def evaluate_lip_const(
 
 
 def compute_lconv_ip_coef(
-    kernel_size: Tuple[int, int],
+    kernel_size: Tuple[int, ...],
     input_shape: Tuple[int, ...],
-    strides: Tuple[int, int] = (1, 1),
+    strides: Tuple[int, ...] = (1, 1),
 ) -> float:
     # According to the file lipschitz_CNN.pdf
     stride = np.prod(strides)
@@ -132,4 +132,4 @@ def compute_lconv_ip_coef(
         zr2 = (alphaw2 + 1) * (k2_div2 - gamma2 + sn2 * alphaw2 / 2.0)
         coefLip = np.sqrt((h * w) / ((k1 * ho - zl1 - zr1) * (k2 * wo - zl2 - zr2)))
 
-    return coefLip
+    return coefLip  # type: ignore

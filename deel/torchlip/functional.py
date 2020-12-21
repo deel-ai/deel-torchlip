@@ -113,7 +113,7 @@ def hinge_margin_loss(
         The hinge margin loss.
     """
     return torch.mean(
-        torch.max(torch.zeros_like(input), min_margin - torch.sign(input * target))
+        torch.max(torch.zeros_like(input), min_margin - torch.sign(target) * input)
     )
 
 
@@ -122,7 +122,7 @@ def hkr_loss(
     target: torch.Tensor,
     alpha: float,
     min_margin: float = 1.0,
-    true_values: Tuple[int, int] = (0, 1),
+    true_values: Tuple[int, int] = (-1, 1),
 ) -> torch.Tensor:
     """
     Loss to estimate the wasserstein-1 distance with a hinge regularization using
@@ -144,5 +144,5 @@ def hkr_loss(
     # true value: positive value should be the first to be coherent with the
     # hinge loss (positive y_pred)
     return alpha * hinge_margin_loss(input, target, min_margin) - kr_loss(
-        input, target, true_values
+        input, target, (true_values[1], true_values[0])
     )
