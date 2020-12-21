@@ -70,7 +70,7 @@ class HKRLoss(torch.nn.Module):
         self,
         alpha: float,
         min_margin: float = 1.0,
-        true_values: Tuple[int, int] = (0, 1),
+        true_values: Tuple[int, int] = (-1, 1),
     ):
         """
         Args:
