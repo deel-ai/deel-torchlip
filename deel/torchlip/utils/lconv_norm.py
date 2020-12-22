@@ -50,6 +50,14 @@ def compute_lconv_coef(
 
 
 class LConvNorm:
+
+    name: str
+    first: bool
+
+    def __init__(self, name: str):
+        self.name = name
+        self.first = False
+
     @staticmethod
     def apply(module) -> "LConvNorm":
         for k, hook in module._forward_pre_hooks.items():
@@ -63,7 +71,14 @@ class LConvNorm:
                 "Can only apply lconv_norm hooks on 2D-convolutional layer."
             )
 
-        fn = LConvNorm()
+        fn = LConvNorm("weight")
+
+        if isinstance(getattr(module, fn.name), torch.nn.Parameter):
+            weight = module._parameters[fn.name]
+            fn.first = True
+            delattr(module, fn.name)
+            module.register_parameter(fn.name + "_orig", weight)
+            setattr(module, fn.name, weight.data)
 
         # Normalize weight before every forward().
         module.register_forward_pre_hook(fn)
@@ -76,15 +91,15 @@ class LConvNorm:
         pass
 
     def __call__(self, module: torch.nn.Conv2d, inputs: Any):
-        weight = module.weight
-        kernel_size = module.kernel_size
-        strides = module.stride
-
-        setattr(
-            module,
-            "weight",
-            weight * compute_lconv_coef(kernel_size, inputs[0].shape[-4:], strides),
+        name = self.name
+        if self.first:
+            name += "_orig"
+        weight: torch.Tensor = getattr(module, name)
+        coefficient = compute_lconv_coef(
+            module.kernel_size, inputs[0].shape[-4:], module.stride
         )
+
+        setattr(module, self.name, weight * coefficient)
 
 
 def lconv_norm(module: torch.nn.Conv2d) -> torch.nn.Conv2d:
