@@ -1,12 +1,15 @@
-r"""
-Kernel normalization for Lipschitz convolution. Normalize weights
-based on input shape and kernel size, see https://arxiv.org/abs/2006.06520
-"""
+# Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All
+# rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
+# CRIAQ and ANITI - https://www.deel.ai/
+# =====================================================================================
+
 
 from typing import Any, Tuple
 
 import numpy as np
 import torch
+
+from .hook_norm import HookNorm
 
 
 def compute_lconv_coef(
@@ -49,57 +52,29 @@ def compute_lconv_coef(
     return coefLip  # type: ignore
 
 
-class LConvNorm:
+class LConvNorm(HookNorm):
 
-    name: str
-    first: bool
-
-    def __init__(self, name: str):
-        self.name = name
-        self.first = False
+    """
+    Kernel normalization for Lipschitz convolution. Normalize weights
+    based on input shape and kernel size, see https://arxiv.org/abs/2006.06520
+    """
 
     @staticmethod
-    def apply(module) -> "LConvNorm":
-        for k, hook in module._forward_pre_hooks.items():
-            if isinstance(hook, LConvNorm):
-                raise RuntimeError(
-                    "Cannot register two lconv_norm hooks on the same module"
-                )
+    def apply(module: torch.nn.Module) -> "LConvNorm":
 
         if not isinstance(module, torch.nn.Conv2d):
             raise RuntimeError(
                 "Can only apply lconv_norm hooks on 2D-convolutional layer."
             )
 
-        fn = LConvNorm("weight")
+        return LConvNorm(module, "weight")
 
-        if isinstance(getattr(module, fn.name), torch.nn.Parameter):
-            weight = module._parameters[fn.name]
-            fn.first = True
-            delattr(module, fn.name)
-            module.register_parameter(fn.name + "_orig", weight)
-            setattr(module, fn.name, weight.data)
-
-        # Normalize weight before every forward().
-        module.register_forward_pre_hook(fn)
-
-        return fn
-
-    def remove(self, module: torch.nn.Module):
-        # Nothing to do here, just keeping the method to be
-        # consistent with torch hook classes.
-        pass
-
-    def __call__(self, module: torch.nn.Conv2d, inputs: Any):
-        name = self.name
-        if self.first:
-            name += "_orig"
-        weight: torch.Tensor = getattr(module, name)
+    def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
+        assert isinstance(module, torch.nn.Conv2d)
         coefficient = compute_lconv_coef(
             module.kernel_size, inputs[0].shape[-4:], module.stride
         )
-
-        setattr(module, self.name, weight * coefficient)
+        return self.weight(module) * coefficient
 
 
 def lconv_norm(module: torch.nn.Conv2d) -> torch.nn.Conv2d:

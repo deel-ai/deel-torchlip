@@ -1,58 +1,26 @@
-r"""
-Frobenius Normalization.
-"""
+# Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All
+# rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
+# CRIAQ and ANITI - https://www.deel.ai/
+# =====================================================================================
 
 from typing import Any, TypeVar
 
 import torch
 
+from .hook_norm import HookNorm
 
-class FrobeniusNorm:
-    name: str
-    first: bool
 
-    def __init__(self, name: str):
-        self.name = name
-        self.first = False
+class FrobeniusNorm(HookNorm):
+    def __init__(self, module: torch.nn.Module, name: str):
+        super().__init__(module, name)
 
-    def compute_weight(self, module: torch.nn.Module) -> torch.Tensor:
-        w: torch.Tensor
-        if self.first:
-            w = getattr(module, self.name + "_orig")
-        else:
-            w = getattr(module, self.name)
+    def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
+        w: torch.Tensor = self.weight(module)
         return w / torch.norm(w)  # type: ignore
 
     @staticmethod
-    def apply(module, name: str) -> "FrobeniusNorm":
-        for k, hook in module._forward_pre_hooks.items():
-            if isinstance(hook, FrobeniusNorm) and hook.name == name:
-                raise RuntimeError(
-                    "Cannot register two frobenius_norm hooks on "
-                    "the same parameter {}".format(name)
-                )
-
-        fn = FrobeniusNorm(name)
-
-        if isinstance(getattr(module, name), torch.nn.Parameter):
-            weight = module._parameters[name]
-            fn.first = True
-            delattr(module, fn.name)
-            module.register_parameter(fn.name + "_orig", weight)
-            setattr(module, fn.name, weight.data)
-
-        # Normalize weight before every forward().
-        module.register_forward_pre_hook(fn)
-
-        return fn
-
-    def remove(self, module: torch.nn.Module):
-        # Nothing to do here, just keeping the method to be
-        # consistent with torch hook classes.
-        pass
-
-    def __call__(self, module: torch.nn.Module, inputs: Any):
-        setattr(module, self.name, self.compute_weight(module))
+    def apply(module: torch.nn.Module, name: str) -> "FrobeniusNorm":
+        return FrobeniusNorm(module, name)
 
 
 T_module = TypeVar("T_module", bound=torch.nn.Module)

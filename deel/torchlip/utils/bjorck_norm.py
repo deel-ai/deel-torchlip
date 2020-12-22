@@ -1,62 +1,33 @@
-r"""
-Bjorck Normalization from https://arxiv.org/abs/1811.05381
-"""
+# Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All
+# rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
+# CRIAQ and ANITI - https://www.deel.ai/
+# =====================================================================================
 
 from typing import Any, TypeVar
 
 import torch
 
+from .hook_norm import HookNorm
 from ..normalizers import DEFAULT_NITER_BJORCK, bjorck_normalization
 
 
-class BjorckNorm:
-    name: str
+class BjorckNorm(HookNorm):
+    """
+    Bjorck Normalization from https://arxiv.org/abs/1811.05381
+    """
+
     n_iterations: int
-    first: bool
 
-    def __init__(self, name: str, n_iterations: int):
-        self.name = name
+    def __init__(self, module: torch.nn.Module, name: str, n_iterations: int):
+        super().__init__(module, name)
         self.n_iterations = n_iterations
-        self.first = False
 
-    def compute_weight(self, module: torch.nn.Module) -> torch.Tensor:
-        w: torch.Tensor
-        if self.first:
-            w = getattr(module, self.name + "_orig")
-        else:
-            w = getattr(module, self.name)
-        return bjorck_normalization(w, self.n_iterations)  # type: ignore
+    def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
+        return bjorck_normalization(self.weight(module), self.n_iterations)
 
     @staticmethod
-    def apply(module, name: str, n_iterations: int) -> "BjorckNorm":
-        for k, hook in module._forward_pre_hooks.items():
-            if isinstance(hook, BjorckNorm) and hook.name == name:
-                raise RuntimeError(
-                    "Cannot register two bjorck_norm hooks on "
-                    "the same parameter {}".format(name)
-                )
-
-        fn = BjorckNorm(name, n_iterations)
-
-        if isinstance(getattr(module, name), torch.nn.Parameter):
-            weight = module._parameters[name]
-            fn.first = True
-            delattr(module, fn.name)
-            module.register_parameter(fn.name + "_orig", weight)
-            setattr(module, fn.name, weight.data)
-
-        # Normalize weight before every forward().
-        module.register_forward_pre_hook(fn)
-
-        return fn
-
-    def remove(self, module: torch.nn.Module):
-        # Nothing to do here, just keeping the method to be
-        # consistent with torch hook classes.
-        pass
-
-    def __call__(self, module: torch.nn.Module, inputs: Any):
-        setattr(module, self.name, self.compute_weight(module))
+    def apply(module: torch.nn.Module, name: str, n_iterations: int) -> "BjorckNorm":
+        return BjorckNorm(module, name, n_iterations)
 
 
 T_module = TypeVar("T_module", bound=torch.nn.Module)
