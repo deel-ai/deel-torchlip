@@ -7,21 +7,24 @@ from typing import Tuple
 
 import torch
 
+from .module import LipschitzModule
 
-class InvertibleDownSampling(torch.nn.Module):
-    def __init__(
-        self,
-        pool_size: Tuple[int, int],
-    ):
-        super().__init__()
-        self.pool_size = pool_size
+
+class InvertibleDownSampling(torch.nn.Module, LipschitzModule):
+    def __init__(self, kernel_size: Tuple[int, int], k_coef_lip: float = 1.0):
+        torch.nn.Module.__init__(self)
+        LipschitzModule.__init__(self, k_coef_lip)
+        self.kernel_size = kernel_size
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return torch.cat(
-            tuple(
-                input[:, :, i :: self.pool_size[0], j :: self.pool_size[1]]
-                for i in range(self.pool_size[0])
-                for j in range(self.pool_size[1])
-            ),
-            dim=1,
+        return (
+            torch.cat(
+                tuple(
+                    input[:, :, i :: self.kernel_size[0], j :: self.kernel_size[1]]
+                    for i in range(self.kernel_size[0])
+                    for j in range(self.kernel_size[1])
+                ),
+                dim=1,
+            )
+            * self._coefficient_lip
         )
