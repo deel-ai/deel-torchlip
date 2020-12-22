@@ -9,10 +9,10 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
-from deel.torchlip.activations import GroupSort2
-from deel.torchlip.layers import (
+from deel.torchlip import (
     SpectralConv2d,
     SpectralLinear,
+    GroupSort2,
 )
 
 # from deel.torchlip.utils import evaluate_lip_const

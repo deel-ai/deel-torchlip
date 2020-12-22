@@ -2,6 +2,7 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
+
 import math
 import os
 import pprint
@@ -9,15 +10,15 @@ import unittest
 
 import numpy as np
 import torch.autograd as autograd
-from deel.torchlip.layers import (
+from deel.torchlip import (
     FrobeniusConv2d,
     FrobeniusLinear,
     ScaledAvgPool2d,
     SpectralConv2d,
     SpectralLinear,
     LipschitzModule,
+    Sequential,
 )
-from deel.torchlip.module import Sequential
 from deel.torchlip.utils import evaluate_lip_const
 from torch import Tensor, abs, from_numpy, load, manual_seed, no_grad, save
 from torch.nn import Conv1d, Conv2d, Conv3d, Linear, MSELoss
