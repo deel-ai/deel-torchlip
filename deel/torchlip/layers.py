@@ -368,7 +368,10 @@ class ScaledAvgPool2d(nn.AvgPool2d, LipschitzModule):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         coeff = self._coefficient_lip * math.sqrt(np.prod(np.asarray(self.kernel_size)))
-        return F.avg_pool2d(input) * coeff  # type: ignore
+        return nn.AvgPool2d.forward(self, input) * coeff  # type: ignore
+
+    def vanilla_export(self):
+        return self
 
 
 class ScaledGlobalAvgPool2d(nn.AdaptiveAvgPool2d, LipschitzModule):
