@@ -7,7 +7,7 @@
 
 import torch
 
-from .utils import DEFAULT_NITER_SPECTRAL_INIT, DEFAULT_NITER_BJORCK
+from .normalizers import DEFAULT_NITER_SPECTRAL_INIT, DEFAULT_NITER_BJORCK, DEFAULT_BETA
 from .normalizers import spectral_normalization, bjorck_normalization
 
 
@@ -18,6 +18,10 @@ def spectral_(
         tensor.copy_(spectral_normalization(tensor, None, n_power_iterations)[0])
 
 
-def bjorck_(tensor: torch.Tensor, n_iterations: int = DEFAULT_NITER_BJORCK):
+def bjorck_(
+    tensor: torch.Tensor,
+    n_iterations: int = DEFAULT_NITER_BJORCK,
+    beta: float = DEFAULT_BETA,
+):
     with torch.no_grad():
-        tensor.copy_(bjorck_normalization(tensor, n_iterations))
+        tensor.copy_(bjorck_normalization(tensor, n_iterations, beta))

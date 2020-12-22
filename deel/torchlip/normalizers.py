@@ -18,7 +18,7 @@ DEFAULT_BETA = 0.5
 
 
 def bjorck_normalization(
-    w: torch.Tensor, niter: int = DEFAULT_NITER_BJORCK
+    w: torch.Tensor, niter: int = DEFAULT_NITER_BJORCK, beta: float = DEFAULT_BETA
 ) -> torch.Tensor:
     """
     Apply Bjorck normalization on w.
@@ -38,7 +38,7 @@ def bjorck_normalization(
     cout = w.size(0)
     w_mat = w.reshape(cout, -1)
     for i in range(niter):
-        w_mat = (1.0 + DEFAULT_BETA) * w_mat - DEFAULT_BETA * torch.mm(
+        w_mat = (1.0 + beta) * w_mat - beta * torch.mm(
             w_mat, torch.mm(w_mat.t(), w_mat)
         )
     w = w_mat.reshape(shape)
