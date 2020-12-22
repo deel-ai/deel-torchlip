@@ -7,6 +7,7 @@ This module contains equivalents for Model and Sequential. These classes add sup
 for condensation and vanilla exportation.
 """
 
+import abc
 import copy
 import logging
 import math
@@ -16,9 +17,38 @@ from typing import Any
 import numpy as np
 from torch.nn import Sequential as TorchSequential
 
-from .layers import LipschitzModule
-
 logger = logging.getLogger("deel.torchlip")
+
+
+class LipschitzModule(abc.ABC):
+    """
+    This class allow to set lipschitz factor of a layer. Lipschitz layer must inherit
+    this class to allow user to set the lipschitz factor.
+
+    Warning:
+         This class only regroup useful functions when developing new Lipschitz layers.
+         But it does not ensure any property about the layer. This means that
+         inheriting from this class won't ensure anything about the lipschitz constant.
+    """
+
+    # The target coefficient:
+    _coefficient_lip: float
+
+    def __init__(self, coefficient_lip: float = 1.0):
+        self._coefficient_lip = coefficient_lip
+
+    def _hook(self, module, inputs):
+        setattr(module, "weight", getattr(module, "weight") * self._coefficient_lip)
+
+    @abc.abstractmethod
+    def vanilla_export(self):
+        """
+        Convert this layer to a corresponding vanilla torch layer (when possible).
+
+        Returns:
+             A vanilla torch version of this layer.
+        """
+        pass
 
 
 class Sequential(TorchSequential, LipschitzModule):
@@ -51,7 +81,7 @@ class Sequential(TorchSequential, LipschitzModule):
                 module._coefficient_lip = math.pow(k_coef_lip, 1 / n_layers)
             else:
                 logger.warning(
-                    "Sequential model contains a layer wich is not a Lipschitsz layer: {}".format(  # noqa: E501
+                    "Sequential model contains a layer which is not a Lipschitz layer: {}".format(  # noqa: E501
                         module
                     )
                 )

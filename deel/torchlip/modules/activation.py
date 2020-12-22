@@ -13,8 +13,8 @@ from typing import Optional
 import torch
 import torch.nn as nn
 
-from .layers import LipschitzModule
-from . import functional as F
+from .module import LipschitzModule
+from .. import functional as F
 
 
 class MaxMin(nn.Module, LipschitzModule):

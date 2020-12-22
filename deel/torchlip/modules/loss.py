@@ -7,7 +7,7 @@ from typing import Tuple
 
 import torch
 
-from . import functional as F
+from .. import functional as F
 
 
 class KRLoss(torch.nn.Module):
