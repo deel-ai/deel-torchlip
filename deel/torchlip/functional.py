@@ -3,12 +3,67 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
 
 import torch
 import torch.nn.functional as F
+
+# Up / Down sampling
+
+
+def invertible_upsample(
+    input: torch.Tensor, kernel_size: Union[int, Tuple[int, ...]]
+) -> torch.Tensor:
+    """
+    Upsamples the input in an invertible way, the number of elements in the
+    output tensor is the same as the number of elements in the input tensor.
+
+    The number of input channels must be a multiple of the product of the
+    kernel sizes.
+
+    Args:
+        input: A tensor of shape (N, C, W), (N, C, W, H) or (N, C, D, W, H)
+            to upsample.
+        kernel_size: The upsample scale. If a single-value is passed, the
+            same value will be used alongside all dimensions, otherwise the
+            length of ``kernel_size`` must match the number of dimensions
+            of the input (1, 2 or 3).
+
+    Raises:
+        ValueError: If there is a mismatch between ``kernel_size`` and the input
+            shape.
+    """
+
+    # number of dimensions
+    ndims = len(input.shape) - 2
+    ks: Tuple[int, ...]
+    if isinstance(kernel_size, int):
+        ks = (kernel_size,) * ndims
+    else:
+        ks = tuple(kernel_size)
+
+    if len(ks) != ndims:
+        raise ValueError(
+            f"Expected {len(ks) + 2}-dimensional input for kernel size {ks}, but "
+            f"got {ndims + 2}-dimensional input of size {input.shape} instead"
+        )
+
+    ncout = input.shape[1] // np.prod(ks)
+    input = input.reshape((-1, ncout) + ks + input.shape[-ndims:])
+
+    # order of the permutation
+    perm = [0, 1]
+    for i in range(ndims):
+        perm += [2 + i, 2 + i + ndims]
+    input = input.permute(*perm)
+
+    for i in range(ndims):
+        input = input.reshape(input.shape[: 2 + i] + (-1,) + input.shape[2 + i + 2 :])
+
+    return input
+
 
 # Activations
 
