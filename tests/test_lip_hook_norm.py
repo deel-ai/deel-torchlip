@@ -22,8 +22,6 @@ def test_bjorck_norm():
     x = torch.rand(2)
     m(x)
     w2 = m.weight
-    print(" W_bar_ref {}".format(w1))
-    print(" model weight {}".format(w2))
     np.testing.assert_array_equal(w1.data, w2.data)
 
 
@@ -38,8 +36,6 @@ def test_frobenius_norm():
     x = torch.rand(2)
     m(x)
     w2 = m.weight
-    print("w1  {}".format(w1))
-    print("w2 {}".format(w2))
     np.testing.assert_array_equal(w1.data, w2.data)
 
 
@@ -54,9 +50,6 @@ def test_lconv_norm():
     x = torch.rand(1, 1, 5, 5)
     m(x)
     w2 = m.weight
-
-    print("w1  {}".format(w1))
-    print("w2 {}".format(w2))
     np.testing.assert_array_equal(w1.data, w2.data)
 
 
