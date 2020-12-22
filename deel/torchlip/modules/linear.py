@@ -59,6 +59,11 @@ class SpectralLinear(torch.nn.Linear, LipschitzModule):
             bias=bias,
         )
         LipschitzModule.__init__(self, k_coef_lip)
+
+        torch.nn.init.orthogonal_(self.weight)
+        if self.bias is not None:
+            self.bias.data.fill_(0.0)
+
         spectral_norm(
             self,
             name="weight",
@@ -98,6 +103,10 @@ class FrobeniusLinear(torch.nn.Linear, LipschitzModule):
             bias=bias,
         )
         LipschitzModule.__init__(self, k_coef_lip)
+
+        torch.nn.init.orthogonal_(self.weight)
+        if self.bias is not None:
+            self.bias.data.fill_(0.0)
 
         frobenius_norm(self, name="weight")
         self.register_forward_pre_hook(self._hook)
