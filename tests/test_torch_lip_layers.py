@@ -261,14 +261,6 @@ def train_k_lip_model(
     # save the model
     model_checkpoint_path = os.path.join(logdir, "model.h5")
     save(model, model_checkpoint_path)
-    print("State_dict model =====> {}".format(model[0]))
-    m1 = SpectralLinear(2, 2)
-    print(
-        "mo1 State_dict model[0] =====> {}".format(
-            m1.load_state_dict(model[0].state_dict())
-        )
-    )
-
     del model
 
     model = load(model_checkpoint_path)
@@ -289,9 +281,9 @@ def train_k_lip_model(
     from_empirical_lip_const = evaluate_lip_const(model=model, x=x, seed=42)
     return (
         mse,
-        empirical_lip_const.numpy(),
+        empirical_lip_const,
         from_disk_mse,
-        from_empirical_lip_const.numpy(),
+        from_empirical_lip_const,
     )
 
 
@@ -451,7 +443,7 @@ class LipschitzModulesTest(unittest.TestCase):
             ]
         )
 
-    def _test_frobenius_linear(self):
+    def test_frobenius_linear(self):
         self._apply_tests_bank(
             [
                 dict(
@@ -505,7 +497,7 @@ class LipschitzModulesTest(unittest.TestCase):
             ]
         )
 
-    def _test_spectralConv1d(self):
+    def test_spectralConv1d(self):
         self._apply_tests_bank(
             [
                 dict(
@@ -560,7 +552,7 @@ class LipschitzModulesTest(unittest.TestCase):
             ]
         )
 
-    def _test_spectralConv2d(self):
+    def test_spectralConv2d(self):
         self._apply_tests_bank(
             [
                 dict(
@@ -676,7 +668,7 @@ class LipschitzModulesTest(unittest.TestCase):
             ]
         )
 
-    def _test_frobeniusConv2d(self):
+    def test_frobeniusConv2d(self):
         # tests only checks that lip cons is enforced
         self._apply_tests_bank(
             [
