@@ -13,9 +13,7 @@ from deel.torchlip.layers import (
     FrobeniusConv2d,
     FrobeniusLinear,
     ScaledAvgPool2d,
-    SpectralConv1d,
     SpectralConv2d,
-    SpectralConv3d,
     SpectralLinear,
     LipschitzModule,
 )
