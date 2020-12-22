@@ -83,7 +83,7 @@ class LConvNorm:
         setattr(
             module,
             "weight",
-            weight * compute_lconv_coef(kernel_size, inputs.shape[-4:], strides),
+            weight * compute_lconv_coef(kernel_size, inputs[0].shape[-4:], strides),
         )
 
 
