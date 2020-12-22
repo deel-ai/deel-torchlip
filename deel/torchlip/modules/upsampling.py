@@ -5,7 +5,6 @@
 
 from typing import Tuple, Union
 
-import numpy as np
 import torch
 
 from .. import functional as F

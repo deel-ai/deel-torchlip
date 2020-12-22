@@ -7,6 +7,7 @@ from typing import Tuple
 
 import torch
 
+from .. import functional as F
 from .module import LipschitzModule
 
 
@@ -17,14 +18,4 @@ class InvertibleDownSampling(torch.nn.Module, LipschitzModule):
         self.kernel_size = kernel_size
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return (
-            torch.cat(
-                tuple(
-                    input[:, :, i :: self.kernel_size[0], j :: self.kernel_size[1]]
-                    for i in range(self.kernel_size[0])
-                    for j in range(self.kernel_size[1])
-                ),
-                dim=1,
-            )
-            * self._coefficient_lip
-        )
+        return F.invertible_downsample(input, self.kernel_size) * self._coefficient_lip
