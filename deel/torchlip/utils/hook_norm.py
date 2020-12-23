@@ -65,9 +65,11 @@ class HookNorm:
         return self._name
 
     def remove(self, module: torch.nn.Module):
-        # Nothing to do here, just keeping the method to be consistent with torch
-        # hook classes.
-        pass
+        # If this was the first layer to hook, we reset the weights.
+        if self._first:
+            weight = getattr(module, self._name)
+            delattr(module, self._name)
+            module.register_parameter(self._name, torch.nn.Parameter(weight.detach()))
 
     @abstractmethod
     def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
