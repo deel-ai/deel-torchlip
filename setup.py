@@ -19,6 +19,7 @@ docs_requires = [
     "sphinx_rtd_theme",
     "sphinx_markdown_builder",
     "ipython",  # required for Pygments
+    "nbsphinx",
 ]
 
 setuptools.setup(

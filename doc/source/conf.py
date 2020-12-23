@@ -46,6 +46,7 @@ extensions = [
     "sphinx_markdown_builder",
     "sphinx_rtd_theme",
     "recommonmark",
+    "nbsphinx",
 ]
 
 autoclass_content = "both"

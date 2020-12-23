@@ -75,8 +75,8 @@ Indices and tables
    :glob:
 
    basic_example.rst
-   wasserstein_toy.rst
-   wassersteinClassif_toy.rst
-   wassersteinClassif_MNIST08.rst
+   notebooks/wasserstein_toy.ipynb
+   notebooks/wasserstein_toy_classification.ipynb
+   notebooks/wasserstein_classification_MNIST08.ipynb
 
    deel.torchlip
