@@ -29,24 +29,23 @@ class ScaledAvgPool2d(torch.nn.AvgPool2d, LipschitzModule):
         Average pooling operation for spatial data, but with a lipschitz bound.
 
         Args:
-            kernel_size: the size of the window
-            stride: the stride of the window. Default value is :attr:`kernel_size`
-            padding: implicit zero padding to be added on both sides
-            ceil_mode: when True, will use `ceil` instead of `floor` to compute
-            the output shape
-            count_include_pad: when True, will include the zero-padding in the
-            averaging calculation
-            divisor_override: if specified, it will be used as divisor,
-            otherwise :attr:`kernel_size` will be used
-            k_coef_lip: the lipschitz factor to ensure
+            kernel_size: The size of the window.
+            stride: The stride of the window. Must be None or equal to
+                ``kernel_size``. Default value is ``kernel_size``.
+            padding: Implicit zero-padding to be added on both sides. Must
+                be zero.
+            ceil_mode: When True, will use ceil instead of floor to compute the output
+                shape.
+            count_include_pad: When True, will include the zero-padding in the averaging
+                calculation.
+            divisor_override: If specified, it will be used as divisor, otherwise
+                ``kernel_size`` will be used.
+            k_coef_lip: The Lipschitz factor to ensure. The output will be scaled
+                by this factor.
 
         This documentation reuse the body of the original torch.nn.AveragePooling2D
         doc.
         """
-        if stride is not None:
-            raise RuntimeError("stride must be equal to pool_size.")
-        if padding != 0:
-            raise RuntimeError(f"{type(self)} does not support padding.")
         torch.nn.AvgPool2d.__init__(
             self,
             kernel_size=kernel_size,
@@ -58,15 +57,20 @@ class ScaledAvgPool2d(torch.nn.AvgPool2d, LipschitzModule):
         )
         LipschitzModule.__init__(self, k_coef_lip)
 
+        if self.stride != self.kernel_size:
+            raise RuntimeError("stride must be equal to kernel_size.")
+        if np.sum(self.padding) != 0:
+            raise RuntimeError(f"{type(self)} does not support padding.")
+
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         coeff = self._coefficient_lip * math.sqrt(np.prod(np.asarray(self.kernel_size)))
-        return torch.nn.AvgPool2d.forward(self, input) * coeff  # type: ignore
+        return torch.nn.AvgPool2d.forward(self, input) * coeff
 
     def vanilla_export(self):
         return self
 
 
-class ScaledGlobalAvgPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
+class ScaledAdaptiveAvgPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
     def __init__(
         self,
         output_size: _size_2_t,
@@ -80,12 +84,12 @@ class ScaledGlobalAvgPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
         The number of output features is equal to the number of input planes.
 
         Args:
-            output_size: the target output size of the image of the form H x W.
-                        Can be a tuple (H, W) or a single H for a square image H x H.
-                        H and W can be either a ``int``, or ``None`` which means the
-                        size will be the same as that of the input.
-            return_indices: if ``True``, will return the indices along with the outputs.
-                            Useful to pass to nn.MaxUnpool2d. Default: ``False``
+            output_size: The target output size of the image of the form H x W.
+                Can be a tuple (H, W) or a single H for a square image H x H.
+                H and W can be either a ``int``, or ``None`` which means the
+                size will be the same as that of the input.
+            k_coef_lip: The Lipschitz factor to ensure. The output will be scaled
+                by this factor.
 
         This documentation reuse the body of the original
         nn.AdaptiveAvgPool2d doc.
@@ -95,7 +99,6 @@ class ScaledGlobalAvgPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         coeff = math.sqrt(input.shape[-2] * input.shape[-1]) * self._coefficient_lip
-
         return torch.nn.AdaptiveAvgPool2d.forward(self, input) * coeff
 
 
@@ -113,43 +116,28 @@ class ScaledL2NormPooling2D(torch.nn.AvgPool2d, LipschitzModule):
     ):
         """
         Average pooling operation for spatial data, with a lipschitz bound. This
-        pooling operation is norm preserving (aka gradient=1 almost everywhere).
+        pooling operation is norm preserving (gradient=1 almost everywhere).
 
-        [1]Y.-L.Boureau, J.Ponce, et Y.LeCun, « A Theoretical Analysis of Feature
+        [1] Y.-L.Boureau, J.Ponce, et Y.LeCun, « A Theoretical Analysis of Feature
         Pooling in Visual Recognition »,p.8.
 
-        Arguments:
-            pool_size: integer or tuple of 2 integers,
-                factors by which to downscale (vertical, horizontal).
-                `(2, 2)` will halve the input in both spatial dimension.
-                If only one integer is specified, the same window length
-                will be used for both dimensions.
-            strides: Integer, tuple of 2 integers, or None.
-                Strides values.
-                If None, it will default to `pool_size`.
-            padding: One of `"valid"` or `"same"` (case-insensitive).
-            k_coef_lip: the lipschitz factor to ensure
+        Args:
+            kernel_size: The size of the window.
+            stride: The stride of the window. Must be None or equal to
+                ``kernel_size``. Default value is ``kernel_size``.
+            padding: Implicit zero-padding to be added on both sides. Must
+                be zero.
+            ceil_mode: When True, will use ceil instead of floor to compute the output
+                shape.
+            count_include_pad: When True, will include the zero-padding in the averaging
+                calculation.
+            divisor_override: If specified, it will be used as divisor, otherwise
+                ``kernel_size`` will be used.
+            k_coef_lip: The lipschitz factor to ensure. The output will be
+                scaled by this factor.
             eps_grad_sqrt: Epsilon value to avoid numerical instability
                 due to non-defined gradient at 0 in the sqrt function
-
-        Input shape:
-            - If `data_format='channels_last'`:
-                4D tensor with shape `(batch_size, rows, cols, channels)`.
-            - If `data_format='channels_first'`:
-                4D tensor with shape `(batch_size, channels, rows, cols)`.
-
-        Output shape:
-            - If `data_format='channels_last'`:
-                4D tensor with shape `(batch_size, pooled_rows, pooled_cols, channels)`.
-            - If `data_format='channels_first'`:
-                4D tensor with shape `(batch_size, channels, pooled_rows, pooled_cols)`.
         """
-        if stride is not None:
-            raise RuntimeError("stride must be equal to pool_size")
-        if padding != 0:
-            raise RuntimeError("ScaledAveragePooling2D only support padding='valid'")
-        if eps_grad_sqrt < 0.0:
-            raise RuntimeError("eps_grad_sqrt must be positive")
         torch.nn.AvgPool2d.__init__(
             self,
             kernel_size=kernel_size,
@@ -161,6 +149,13 @@ class ScaledL2NormPooling2D(torch.nn.AvgPool2d, LipschitzModule):
         )
         LipschitzModule.__init__(self, k_coef_lip)
         self.eps_grad_sqrt = eps_grad_sqrt
+
+        if self.stride != self.kernel_size:
+            raise RuntimeError("stride must be equal to kernel_size.")
+        if np.sum(self.padding) != 0:
+            raise RuntimeError("ScaledL2NormPooling2D does not support padding.")
+        if eps_grad_sqrt < 0.0:
+            raise RuntimeError("eps_grad_sqrt must be positive")
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         coeff = self._coefficient_lip * math.sqrt(np.prod(np.asarray(self.kernel_size)))
