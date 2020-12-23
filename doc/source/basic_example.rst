@@ -23,23 +23,23 @@ The following table indicates which layers are safe to use in a Lipshitz network
 
    * - layer
      - 1-lip?
-     - deel-lip equivalent
+     - torchlip equivalent
      - comments
-   * - :class:`Dense`
+   * - :class:`Linear`
      - no
-     - :class:`.SpectralDense` \ :raw-html-m2r:`<br>`\ :class:`.FrobeniusDense`
-     - :class:`.SpectralDense` and :class:`.FrobeniusDense` are similar when there is a single output.
-   * - :class:`Conv2D`
+     - :class:`.SpectralLinear` \ :raw-html-m2r:`<br>`\ :class:`.FrobeniusLinear`
+     - :class:`.SpectralLinear` and :class:`.FrobeniusLinear` are similar when there is a single output.
+   * - :class:`Conv2d`
      - no
-     - :class:`.SpectralConv2D` \ :raw-html-m2r:`<br>`\ :class:`.FrobeniusConv2D`
-     - :class:`.SpectralConv2D` also implements Björck normalization.
+     - :class:`.SpectralConv2d` \ :raw-html-m2r:`<br>`\ :class:`.FrobeniusConv2d`
+     - :class:`.SpectralConv2d` also implements Björck normalization.
    * - :class:`MaxPooling`\ :raw-html-m2r:`<br>`\ :class:`GlobalMaxPooling`
      - yes
      - n/a
      -
-   * - :class:`AveragePooling2D`\ :raw-html-m2r:`<br>`\ :class:`GlobalAveragePooling2D`
+   * - :class:`AvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`AdaptiveAvgPool2d`
      - no
-     - :class:`.ScaledAveragePooling2D`\ :raw-html-m2r:`<br>`\ :class:`.ScaledGlobalAveragePooling2D`
+     - :class:`.ScaledAvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`.ScaledAdaptiveAvgPool2d`
      - The lipschitz constant is bounded by ``sqrt(pool_h * pool_h)``.
    * - :class:`Flatten`
      - yes

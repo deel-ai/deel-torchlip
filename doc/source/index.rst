@@ -1,38 +1,35 @@
-.. keras lipschitz layers documentation master file, created by
+.. pytorch lipschitz modules documentation master file, created by
    sphinx-quickstart on Mon Feb 17 16:42:54 2020.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to deel-lip documentation!
+Welcome to deel-torchlip documentation!
 ==================================================
 
 Controlling the Lipschitz constant of a layer or a whole neural network has many applications ranging
 from adversarial robustness to Wasserstein distance estimation.
 
-This library provides implementation of **k-Lispchitz layers for** ``keras``.
+This library provides implementation of **k-Lispchitz layers for** ``pytorch``.
 
 The library contains:
 ---------------------
 
- * k-Lipschitz variant of keras layers such as `Dense`, `Conv2D` and `Pooling`,
- * activation functions compatible with `keras`,
- * kernel initializers and kernel constraints for `keras`,
- * loss functions when working with Wasserstein distance estimations,
- * tools to monitor the singular values of kernels during training,
- * tools to convert k-Lipschitz network to regular network for faster evaluation.
-
+ * k-Lipschitz variant of pytorch layers such as `Linear`, `Conv2d` and `AvgPool2d`,
+ * activation functions compatible with `pytorch`,
+ * kernel initializers for `pytorch`,
+ * loss functions when working with Wasserstein distance estimations.
 
 Installation
 ------------
 
-You can install ``deel-lip`` directly from pypi:
+You can install ``deel-torchlip`` directly from pypi:
 
 .. code-block:: bash
 
-   pip install deel-lip
+   pip install torchlip
 
-In order to use ``deel-lip``, you also need a `valid tensorflow installation <https://www.tensorflow.org/install>`_.
-``deel-lip`` supports tensorflow from 2.0 to 2.2.
+In order to use ``torchlip``, you also need a `valid pytorch installation <https://pytorch.org/get-started/locally/#installing-on-linux>`_.
+``torchlip`` supports torch 1.7.0 +
 
 Cite this work
 --------------
