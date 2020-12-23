@@ -1,5 +1,5 @@
 deel.torchlip.init module
-=========================
+================================
 
 .. automodule:: deel.torchlip.init
    :members:

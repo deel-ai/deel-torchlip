@@ -1,4 +1,4 @@
-.. _deel-torchlip-api:
+.. _torchlip-api:
 
 deel.torchlip package
 =====================
@@ -9,13 +9,11 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   deel.torchlip.activations
-   deel.torchlip.init
-   deel.torchlip.layers
-   deel.torchlip.losses
-   deel.torchlip.module
-   deel.torchlip.normalizers
+   deel.torchlip.modules
    deel.torchlip.utils
+   deel.torchlip.functional
+   deel.torchlip.init
+   deel.torchlip.normalizers
 
 Module contents
 ---------------

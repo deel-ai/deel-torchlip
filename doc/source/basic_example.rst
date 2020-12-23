@@ -63,9 +63,10 @@ Here is a simple example showing how to build a 1-Lipschitz network:
 .. code-block:: python
 
     from deel.torchlip.initializers import BjorckInitializer
-    from deel.torchlip.layers import SpectralLinear, SpectralConv2d
-    from deel.torchlip.module import Sequential
-    from deel.torchlip.activations import PReLUlip
+    from deel.torchlip.modules.linear import SpectralLinear
+    from deel.torchlip.modules.conv SpectralConv2d
+    from deel.torchlip.modules.module import Sequential
+    from deel.torchlip.modules.activations import PReLUlip
     from torch.nn import MaxPool2d, Flatten, Softmax
 
     # from tensorflow.keras.layers import Input, Lambda, Flatten, MaxPool2D
@@ -120,4 +121,4 @@ Here is a simple example showing how to build a 1-Lipschitz network:
         loss="categorical_crossentropy", optimizer=optimizer, metrics=["accuracy"]
     )
 
-See :ref:`deel-torchlip-api` for a complete API description.
+See :ref:`torchlip-api` for a complete API description.

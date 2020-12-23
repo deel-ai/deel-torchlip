@@ -4,17 +4,15 @@
 # =====================================================================================
 
 import torch
-
 from torch.nn.utils import spectral_norm
 
-
+from .module import LipschitzModule
 from ..utils import (
     DEFAULT_NITER_BJORCK,
     DEFAULT_NITER_SPECTRAL,
     bjorck_norm,
     frobenius_norm,
 )
-from .module import LipschitzModule
 
 
 class SpectralLinear(torch.nn.Linear, LipschitzModule):

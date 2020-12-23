@@ -18,7 +18,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "deel-lip-torchlip"
+project = "torchlip"
 copyright = (
     "2020, IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III"
     " - All rights reserved. DEEL is a research program operated by IVADO, "

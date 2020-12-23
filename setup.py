@@ -28,7 +28,7 @@ docs_requires = [
 ]
 
 setuptools.setup(
-    name="deel-torchlip",
+    name="torchlip",
     version="0.0.1",
     author=", ".join(
         [

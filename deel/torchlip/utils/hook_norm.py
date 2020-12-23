@@ -4,7 +4,7 @@
 # =====================================================================================
 
 from abc import abstractmethod
-from typing import Any, Union
+from typing import Any
 
 import inflection
 import torch

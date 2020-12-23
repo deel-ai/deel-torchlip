@@ -10,7 +10,7 @@ import unittest
 
 import numpy as np
 import torch.autograd as autograd
-from deel.torchlip import (
+from deel.torchlip.modules import (
     FrobeniusConv2d,
     FrobeniusLinear,
     ScaledAvgPool2d,
@@ -496,61 +496,6 @@ class LipschitzModulesTest(unittest.TestCase):
             ]
         )
 
-    def test_spectralConv1d(self):
-        self._apply_tests_bank(
-            [
-                dict(
-                    layer_type=SpectralConv1d,
-                    layer_params={
-                        "in_channels": 1,
-                        "out_channels": 2,
-                        "kernel_size": (3, 3),
-                        "bias": False,
-                    },
-                    batch_size=1000,
-                    steps_per_epoch=125,
-                    epochs=5,
-                    in_features=4,
-                    out_features=4,
-                    input_shape=(1, 5, 5),
-                    k_lip_data=1.0,
-                    k_lip_model=1.0,
-                ),
-                dict(
-                    layer_type=SpectralConv1d,
-                    layer_params={
-                        "in_channels": 1,
-                        "out_channels": 2,
-                        "kernel_size": (3, 3),
-                    },
-                    batch_size=1000,
-                    steps_per_epoch=125,
-                    epochs=5,
-                    in_features=4,
-                    out_features=4,
-                    input_shape=(1, 5, 5),
-                    k_lip_data=5.0,
-                    k_lip_model=1.0,
-                ),
-                dict(
-                    layer_type=SpectralConv1d,
-                    layer_params={
-                        "in_channels": 1,
-                        "out_channels": 2,
-                        "kernel_size": (3, 3),
-                    },
-                    batch_size=1000,
-                    steps_per_epoch=125,
-                    epochs=5,
-                    in_features=4,
-                    out_features=4,
-                    input_shape=(1, 5, 5),
-                    k_lip_data=1.0,
-                    k_lip_model=5.0,
-                ),
-            ]
-        )
-
     def test_spectralConv2d(self):
         self._apply_tests_bank(
             [
@@ -593,67 +538,6 @@ class LipschitzModulesTest(unittest.TestCase):
                         "in_channels": 1,
                         "out_channels": 2,
                         "kernel_size": (3, 3),
-                    },
-                    batch_size=1000,
-                    steps_per_epoch=125,
-                    epochs=5,
-                    in_features=4,
-                    out_features=4,
-                    input_shape=(1, 5, 5),
-                    k_lip_data=1.0,
-                    k_lip_model=5.0,
-                ),
-            ]
-        )
-
-    def _test_spectralConv3d(self):  # TBC
-        self._apply_tests_bank(
-            [
-                dict(
-                    layer_type=SpectralConv3d,
-                    layer_params={
-                        "in_channels": 1,
-                        "out_channels": 2,
-                        "kernel_size": (3, 3, 3),
-                        "bias": False,
-                        "stride": (2, 1, 1),
-                        "dilation": (1, 1, 1),
-                    },
-                    batch_size=1000,
-                    steps_per_epoch=125,
-                    epochs=5,
-                    in_features=4,
-                    out_features=4,
-                    input_shape=(1, 5, 5),
-                    k_lip_data=1.0,
-                    k_lip_model=1.0,
-                ),
-                dict(
-                    layer_type=SpectralConv3d,
-                    layer_params={
-                        "in_channels": 1,
-                        "out_channels": 2,
-                        "kernel_size": (3, 3, 3),
-                        "stride": (2, 1, 1),
-                        "dilation": (1, 1, 1),
-                    },
-                    batch_size=1000,
-                    steps_per_epoch=125,
-                    epochs=5,
-                    in_features=4,
-                    out_features=4,
-                    input_shape=(1, 5, 5),
-                    k_lip_data=5.0,
-                    k_lip_model=1.0,
-                ),
-                dict(
-                    layer_type=SpectralConv3d,
-                    layer_params={
-                        "in_channels": 1,
-                        "out_channels": 2,
-                        "kernel_size": (3, 3, 3),
-                        "stride": (2, 1, 1),
-                        "dilation": (1, 1, 1),
                     },
                     batch_size=1000,
                     steps_per_epoch=125,
