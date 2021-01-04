@@ -1,17 +1,17 @@
 deel.torchlip.utils
 ===================
 
-Submodules
-----------
+.. Submodules
+.. ----------
 
-.. toctree::
-   :maxdepth: 4
+.. .. toctree::
+..    :maxdepth: 4
 
-   deel.torchlip.utils.bjorck_norm
-   deel.torchlip.utils.frobenius_norm
-   deel.torchlip.utils.hook_norm
-   deel.torchlip.utils.lconv_norm
-   deel.torchlip.utils.sqrt_eps
+..    deel.torchlip.utils.bjorck_norm
+..    deel.torchlip.utils.frobenius_norm
+..    deel.torchlip.utils.hook_norm
+..    deel.torchlip.utils.lconv_norm
+..    deel.torchlip.utils.sqrt_eps
 
 Module contents
 ---------------
@@ -20,3 +20,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :member-order: bysource

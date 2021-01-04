@@ -9,11 +9,13 @@ Submodules
 .. toctree::
    :maxdepth: 4
 
-   deel.torchlip.modules
    deel.torchlip.utils
    deel.torchlip.functional
    deel.torchlip.init
    deel.torchlip.normalizers
+
+.. toctree::
+   :hidden:
 
 Module contents
 ---------------
@@ -22,3 +24,4 @@ Module contents
    :members:
    :undoc-members:
    :show-inheritance:
+   :member-order: bysource

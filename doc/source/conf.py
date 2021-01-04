@@ -18,9 +18,11 @@
 
 # -- Project information -----------------------------------------------------
 
+import pytorch_sphinx_theme
+
 project = "torchlip"
 copyright = (
-    "2020, IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III"
+    "2020, IRT Antoine de Saint Exupéry"
     " - All rights reserved. DEEL is a research program operated by IVADO, "
     "IRT Saint Exupéry, CRIAQ and ANITI."
 )
@@ -42,15 +44,20 @@ release = "1.0.0"
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
     "sphinx.ext.napoleon",
-    "sphinx_markdown_builder",
-    "sphinx_rtd_theme",
-    "recommonmark",
+    "sphinx.ext.viewcode",
+    "sphinxcontrib.katex",
     "nbsphinx",
 ]
 
 autoclass_content = "both"
 autoapi_root = "../deel"
+
+nbsphinx_requirejs_path = ""
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -64,6 +71,8 @@ exclude_patterns = [
     "..\\deel\\torchlip\\tests\\*",
 ]
 
+pygments_style = "sphinx"
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -75,22 +84,27 @@ exclude_patterns = [
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ["_static"]
 
-html_theme = "sphinx_rtd_theme"
-
-html_logo = "logo_white.svg"
-
+html_theme = "pytorch_sphinx_theme"
+html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
 
 html_theme_options = {
-    # Toc options
     "collapse_navigation": False,
+    "display_version": True,
+    "logo_only": True,
     "titles_only": False,
+    "canonical_url": "https://torchlip.readthedocs.io/en/latest/",
 }
 
-html_sidebars = {
-    "**": ["globaltoc.html", "relations.html", "sourcelink.html", "searchbox.html"]
-}
-
+html_logo = "_static/images/logo_white.svg"
 html_static_path = ["_static"]
+
+# html_theme = "sphinx_rtd_theme"
+
+# html_sidebars = {
+#     "**": ["globaltoc.html", "relations.html", "sourcelink.html", "searchbox.html"]
+# }
+
+html_context = {"get_started": "/", "github_url": "https://github.com/deel-ai/torchlip"}
 
 html_context = {
     "css_files": [

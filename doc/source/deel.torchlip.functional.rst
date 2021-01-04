@@ -5,3 +5,4 @@ deel.torchlip.functional module
    :members:
    :undoc-members:
    :show-inheritance:
+   :member-order: bysource

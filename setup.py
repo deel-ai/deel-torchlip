@@ -20,6 +20,8 @@ docs_requires = [
     "sphinx_markdown_builder",
     "ipython",  # required for Pygments
     "nbsphinx",
+    "sphinxcontrib_katex",
+    "pytorch_sphinx_theme @ git+https://github.com/pytorch/pytorch_sphinx_theme.git",
 ]
 
 setuptools.setup(
