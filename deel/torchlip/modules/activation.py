@@ -41,7 +41,7 @@ class MaxMin(nn.Module, LipschitzModule):
         LipschitzModule.__init__(self, k_coef_lip)
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.max_min(input, self._coefficient_lip)
+        return F.max_min(input) * self._coefficient_lip
 
     def vanilla_export(self):
         return self
@@ -74,7 +74,7 @@ class GroupSort(nn.Module, LipschitzModule):
         self.group_size = group_size
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.group_sort(input, self.group_size, self._coefficient_lip)
+        return F.group_sort(input, self.group_size) * self._coefficient_lip
 
     def vanilla_export(self):
         return self

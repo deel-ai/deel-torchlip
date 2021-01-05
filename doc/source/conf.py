@@ -59,6 +59,8 @@ autoapi_root = "../deel"
 
 nbsphinx_requirejs_path = ""
 
+katex_prerender = True
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
@@ -106,8 +108,6 @@ html_static_path = ["_static"]
 
 html_context = {"get_started": "/", "github_url": "https://github.com/deel-ai/torchlip"}
 
-html_context = {
-    "css_files": [
-        "_static/theme_overrides.css",
-    ],  # override wide tables in RTD theme
-}
+html_css_files = [
+    "css/theme_overrides.css",
+]

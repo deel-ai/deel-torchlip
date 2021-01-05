@@ -121,13 +121,44 @@ def invertible_upsample(
 # Activations
 
 
-def max_min(input: torch.Tensor, k_coef_lip: float = 1.0) -> torch.Tensor:
-    return torch.cat((F.relu(input), F.relu(-input)), dim=1) * k_coef_lip
+def max_min(input: torch.Tensor, dim: Optional[int] = None) -> torch.Tensor:
+    r"""
+    Applies max-min activation on the given tensor.
+
+    If ``input`` is a tensor of shape :math:`(N, C)` and ``dim`` is
+    ``None``, the output can be described as:
+
+    .. math::
+        \text{out}(N_i, C_{2j}) = \max(\text{input}(N_i, C_j), 0)\\
+        \text{out}(N_i, C_{2j + 1}) = \max(-\text{input}(N_i, C_j), 0)
+
+    where :math:`N` is the batch size and :math:`C` is the size of the
+    tensor.
+
+    Args:
+        input:  A tensor of arbitrary shape.
+        dim: The dimension to apply max-min. If None, will apply to the
+            0th dimension if the shape of input is :math:`(C)` or to the
+            first if its :math:`(N, C, *)`.
+
+    Returns:
+        A tensor of shape :math:`(2C)` or :math:`(N, 2C, *)` depending
+        on the shape of the input.
+
+    Note:
+        M. Blot, M. Cord, et N. Thome, « Max-min convolutional neural networks
+        for image classification », in 2016 IEEE International Conference on Image
+        Processing (ICIP), Phoenix, AZ, USA, 2016, p. 3678‑3682.
+    """
+    if dim is None:
+        if len(input.shape) == 1:
+            dim = 0
+        else:
+            dim = 1
+    return torch.cat((F.relu(input), F.relu(-input)), dim=dim)
 
 
-def group_sort(
-    input: torch.Tensor, group_size: Optional[int] = None, k_coef_lip: float = 1.0
-) -> torch.Tensor:
+def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.Tensor:
     if group_size is None or group_size > input.shape[1]:
         group_size = input.shape[1]
 
@@ -143,15 +174,15 @@ def group_sort(
         newv = newv.reshape(input.shape)
         return newv
 
-    return torch.sort(fv)[0].reshape(input.shape) * k_coef_lip
+    return torch.sort(fv)[0].reshape(input.shape)
 
 
-def group_sort_2(input: torch.Tensor, k_coef_lip: float = 1.0) -> torch.Tensor:
-    return group_sort(input, 2, k_coef_lip)
+def group_sort_2(input: torch.Tensor) -> torch.Tensor:
+    return group_sort(input, 2)
 
 
-def full_sort(input: torch.Tensor, k_coef_lip: float = 1.0) -> torch.Tensor:
-    return group_sort(input, None, k_coef_lip)
+def full_sort(input: torch.Tensor) -> torch.Tensor:
+    return group_sort(input, None)
 
 
 def lipschitz_prelu(
