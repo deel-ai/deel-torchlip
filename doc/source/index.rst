@@ -13,8 +13,8 @@ from adversarial robustness to Wasserstein distance estimation.
 
 This library provides implementation of **k-Lispchitz layers for** PyTorch.
 
-The library contains:
----------------------
+Content of the library
+----------------------
 
 * k-Lipschitz variant of PyTorch layers such as ``Linear``, ``Conv2d`` and ``AvgPool2d``,
 * activation functions compatible with ``pytorch``,
@@ -61,22 +61,15 @@ Cite this work
       Eprint = {arXiv:2006.06520},
    }
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
 .. toctree::
+   :hidden:
    :titlesonly:
    :maxdepth: 4
-   :caption: Contents:
+   :caption: Shortcuts
    :glob:
 
+   self
    basic_example.rst
    notebooks/wasserstein_toy.ipynb
    notebooks/wasserstein_toy_classification.ipynb
    notebooks/wasserstein_classification_MNIST08.ipynb
-
-..   deel.torchlip

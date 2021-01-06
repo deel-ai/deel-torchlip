@@ -1,8 +1,36 @@
-deel.torchlip.functional module
-===============================
+.. role:: hidden
+    :class: hidden-section
 
-.. automodule:: deel.torchlip.functional
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
+deel.torchlip.functional
+========================
+
+.. currentmodule:: deel.torchlip.functional
+
+Non-linear activation functions
+-------------------------------
+
+:hidden:`invertible down/up sample`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: invertible_downsample
+.. autofunction:: invertible_upsample
+
+:hidden:`max_min`
+~~~~~~~~~~~~~~~~~
+
+.. autofunction:: max_min
+
+:hidden:`group_sort`
+~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: group_sort
+.. autofunction:: group_sort_2
+.. autofunction:: full_sort
+
+Loss functions
+--------------
+
+.. autofunction:: kr_loss
+.. autofunction:: neg_kr_loss
+.. autofunction:: hinge_margin_loss
+.. autofunction:: hkr_loss
