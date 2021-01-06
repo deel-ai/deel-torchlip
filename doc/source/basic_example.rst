@@ -4,32 +4,47 @@ Example and usage
 
 In order to make things simple the following rules have been followed during development:
 
-* ``deel-lip`` follows the ``keras`` package structure.
-* All elements (layers, activations, initializers, ...) are compatible with standard the ``keras`` elements.
-* When a k-Lipschitz layer overrides a standard keras layer, it uses the same interface and the same parameters.
+* ``deel-torchlip`` follows the ``torch.nn`` package structure.
+* When a k-Lipschitz module overrides a standard ``torch.nn`` module, it uses the same
+  interface and the same parameters.
   The only difference is a new parameter to control the Lipschitz constant of a layer.
 
-Which layers are safe to use?
------------------------------
+Which modules are safe to use?
+------------------------------
 
-The following table indicates which layers are safe to use in a Lipshitz network, and which are not.
+Module from ``torchlip`` are mostly wrappers around initializers and normalization hooks
+that ensure their 1-Lipschitz property.
+For instance, the :class:`SpectralLinear` module is simply a :class:`torch.nn.Linear` module
+, with automatic orthogonal initialization and hooks:
+
+.. code-block:: python
+
+    # This code is about equivalent to SpectralLinear(16, 32)
+    m = torch.nn.Linear(16, 32)
+    torch.nn.init.orthogonal_(m.weight)
+    m.bias.data.fill_(0.0)
+
+    torch.nn.utils.spectral_norm(m, "weight", 3)
+    torchlip.utils.bjorck_norm(m, "weight", 15)
+
+
+The following table indicates which module are safe to use in a Lipschitz network, and which are not.
 
 .. role:: raw-html-m2r(raw)
    :format: html
 
-
 .. list-table::
    :header-rows: 1
 
-   * - layer
-     - 1-lip?
-     - torchlip equivalent
+   * - ``torch.nn``
+     - 1-Lipschitz?
+     - ``torchlip`` equivalent
      - comments
-   * - :class:`Linear`
+   * - :class:`torch.nn.Linear`
      - no
      - :class:`.SpectralLinear` \ :raw-html-m2r:`<br>`\ :class:`.FrobeniusLinear`
      - :class:`.SpectralLinear` and :class:`.FrobeniusLinear` are similar when there is a single output.
-   * - :class:`Conv2d`
+   * - :class:`torch.nn.Conv2d`
      - no
      - :class:`.SpectralConv2d` \ :raw-html-m2r:`<br>`\ :class:`.FrobeniusConv2d`
      - :class:`.SpectralConv2d` also implements Björck normalization.
@@ -37,7 +52,7 @@ The following table indicates which layers are safe to use in a Lipshitz network
      - yes
      - n/a
      -
-   * - :class:`AvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`AdaptiveAvgPool2d`
+   * - :class:`torch.nn.AvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`torch.nn.AdaptiveAvgPool2d`
      - no
      - :class:`.ScaledAvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`.ScaledAdaptiveAvgPool2d`
      - The lipschitz constant is bounded by ``sqrt(pool_h * pool_h)``.
@@ -45,11 +60,11 @@ The following table indicates which layers are safe to use in a Lipshitz network
      - yes
      - n/a
      -
-   * - :class:`Dropout`
+   * - :class:`torch.nn.Dropout`
      - no
      - None
      - The lipschitz constant is bounded by the dropout factor.
-   * - :class:`BatchNorm`
+   * - :class:`torch.nn.BatchNorm1d` \ :raw-html-m2r:`<br>` \ :class:`torch.nn.BatchNorm2d` \ :raw-html-m2r:`<br>` \ :class:`torch.nn.BatchNorm3d`
      - no
      - None
      - We suspect that layer normalization already limits internal covariate shift.
@@ -62,63 +77,34 @@ Here is a simple example showing how to build a 1-Lipschitz network:
 
 .. code-block:: python
 
-    from deel.torchlip.initializers import BjorckInitializer
-    from deel.torchlip.modules.linear import SpectralLinear
-    from deel.torchlip.modules.conv SpectralConv2d
-    from deel.torchlip.modules.module import Sequential
-    from deel.torchlip.modules.activations import PReLUlip
-    from torch.nn import MaxPool2d, Flatten, Softmax
+    import torch
+    from deel import torchlip
 
-    # from tensorflow.keras.layers import Input, Lambda, Flatten, MaxPool2D
-    # from tensorflow.keras import backend as K
-    # from tensorflow.keras.optimizers import Adam
-
-    # Sequential (resp Model) from deel.model has the same properties as any lipschitz
-    # layer ( condense, setting of the lipschitz factor etc...). It act only as a container.
-    model = Sequential(
-        [
-            # Input(shape=(28, 28)),
-            # Lipschitz layer preserve the API of their superclass ( here Conv2D )
-            # an optional param is available: k_coef_lip which control the lipschitz
-            # constant of the layer
-            SpectralConv2d(
-                in_channels=1,
-                out_channels=2,
-                kernel_size=(3, 3),
-                padding="same",
-            ),
-            SpectralConv2d(
-                in_channels=1,
-                out_channels=2,
-                kernel_size=(3, 3),
-                padding="same",
-            ),
-            MaxPool2d(kernel_size=(2, 2)),
-            SpectralConv2d(
-                in_channels=1,
-                out_channels=2,
-                kernel_size=(3, 3),
-                padding="same",
-            ),
-            SpectralConv2d(
-                in_channels=1,
-                out_channels=2,
-                kernel_size=(3, 3),
-                padding="same",
-            ),
-            MaxPool2d(kernel_size=(2, 2)),
-            Flatten(),
-            SpectralLinear(256),
-            SpectralLinear(10),
-            Softmax(),
-        ],
-        k_coef_lip=0.5,
-        name="testing",
+    # torchlip layers can be used like any torch.nn layers in
+    # Sequential or other types of container modules.
+    model = torch.nn.Sequential(
+        torchlip.SpectralConv2d(1, 32, (3, 3), padding=1),
+        torchlip.SpectralConv2d(32, 32, (3, 3), padding=1),
+        torch.nn.MaxPool2d(kernel_size=(2, 2)),
+        torchlip.SpectralConv2d(32, 32, (3, 3), padding=1),
+        torchlip.SpectralConv2d(32, 32, (3, 3), padding=1),
+        torch.nn.MaxPool2d(kernel_size=(2, 2)),
+        torch.nn.Flatten(),
+        torchlip.SpectralLinear(1568, 256),
+        torchlip.SpectralLinear(256, 1)
     )
 
-    optimizer = Adam(lr=0.001)
-    model.compile(
-        loss="categorical_crossentropy", optimizer=optimizer, metrics=["accuracy"]
-    )
+    # Training can be done as usual, except that we are doing
+    # binary classification with -1 and +1 labels to the target
+    # must be fixed from the dataset.
+    optimizer = torch.optim.Adam(lr=0.01, params=model.parameters())
+    for data, target in mnist_08:
+        data, target = data.to(device), target.to(device)
+        optimizer.zero_grad()
+        output = model(data)
+        loss = hkr_loss(output, target, alpha=10, min_margin=1)
+        loss.backward()
+        optimizer.step()
+
 
 See :ref:`torchlip-api` for a complete API description.
