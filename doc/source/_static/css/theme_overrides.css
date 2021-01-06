@@ -16,7 +16,9 @@
    }
 }
 
-.function dt .reference.external {
+.function dt .reference.external,
+.class .attribute dt .reference.external,
+.class dt .reference.external {
    position: relative;
    padding-right: initial;
    right: auto;
