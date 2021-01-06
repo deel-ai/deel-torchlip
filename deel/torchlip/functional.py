@@ -17,12 +17,14 @@ def invertible_downsample(
     input: torch.Tensor, kernel_size: Union[int, Tuple[int, ...]]
 ) -> torch.Tensor:
     """
-    Downsamples the input in an invertible way. The number of elements in the
-    output tensor is the same as the number of elements in the input tensor.
+    Downsamples the input in an invertible way.
+
+    The number of elements in the output tensor is the same as the
+    number of elements in the input tensor.
 
     Args:
-        input: A tensor of shape (N, C, W), (N, C, W, H) or (N, C, D, W, H)
-            to downsample.
+        input: A tensor of shape :math:`(N, C, W)`, :math:`(N, C, W, H)` or
+            :math:`(N, C, D, W, H)` to downsample.
         kernel_size: The downsample scale. If a single-value is passed, the
             same value will be used alongside all dimensions, otherwise the
             length of ``kernel_size`` must match the number of dimensions
@@ -31,6 +33,18 @@ def invertible_downsample(
     Raises:
         ValueError: If there is a mismatch between ``kernel_size`` and the input
             shape.
+
+    Examples:
+
+        >>> x = torch.rand(16, 16, 32, 32)
+        >>> x.shape
+        (16, 16, 32, 32)
+        >>> y = invertible_downsample(x, (2, 4))
+        >>> y.shape
+        (16, 128, 16, 8)
+
+    See Also:
+        :py:func:`invertible_upsample`
     """
 
     # number of dimensions
@@ -69,16 +83,22 @@ def invertible_downsample(
 def invertible_upsample(
     input: torch.Tensor, kernel_size: Union[int, Tuple[int, ...]]
 ) -> torch.Tensor:
-    """
+    r"""
     Upsamples the input in an invertible way. The number of elements in the
     output tensor is the same as the number of elements in the input tensor.
 
     The number of input channels must be a multiple of the product of the
-    kernel sizes.
+    kernel sizes, i.e.
+
+    .. math::
+        C \equiv 0 \mod (k_1 * \ldots{} * k_l)
+
+    where :math:`C` is the number of inputs channels and :math:`k_i` the kernel
+    size for dimension :math:`i` and :math:`l` the number of dimensions.
 
     Args:
-        input: A tensor of shape (N, C, W), (N, C, W, H) or (N, C, D, W, H)
-            to upsample.
+        input: A tensor of shape :math:`(N, C, W)`, :math:`(N, C, W, H)` or
+            :math:`(N, C, D, W, H)` to upsample.
         kernel_size: The upsample scale. If a single-value is passed, the
             same value will be used alongside all dimensions, otherwise the
             length of ``kernel_size`` must match the number of dimensions
@@ -87,6 +107,18 @@ def invertible_upsample(
     Raises:
         ValueError: If there is a mismatch between ``kernel_size`` and the input
             shape.
+
+    Examples:
+
+        >>> x = torch.rand(16, 128, 16, 8)
+        >>> x.shape
+        (16, 128, 16, 8)
+        >>> y = invertible_upsample(x, (2, 4))
+        >>> y.shape
+        (16, 16, 32, 32)
+
+    See Also:
+        :py:func:`invertible_downsample`
     """
 
     # number of dimensions
@@ -159,6 +191,13 @@ def max_min(input: torch.Tensor, dim: Optional[int] = None) -> torch.Tensor:
 
 
 def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.Tensor:
+    r"""
+    Applies GroupSort activation on the given tensor.
+
+    See Also:
+        :py:func:`group_sort_2`
+        :py:func:`full_sort`
+    """
     if group_size is None or group_size > input.shape[1]:
         group_size = input.shape[1]
 
@@ -178,16 +217,41 @@ def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.T
 
 
 def group_sort_2(input: torch.Tensor) -> torch.Tensor:
+    r"""
+    Applies GroupSort-2 activation on the given tensor. This function is equivalent
+    to ``group_sort(input, 2)``.
+
+    See Also:
+        :py:func:`group_sort`
+    """
     return group_sort(input, 2)
 
 
 def full_sort(input: torch.Tensor) -> torch.Tensor:
+    r"""
+    Applies FullSort activation on the given tensor. This function is equivalent
+    to ``group_sort(input, None)``.
+
+    See Also:
+        :py:func:`group_sort`
+    """
     return group_sort(input, None)
 
 
 def lipschitz_prelu(
     input: torch.Tensor, weight: torch.Tensor, k_coef_lip: float = 1.0
 ) -> torch.Tensor:
+    r"""
+    Applies k-Lipschitz version of PReLU by clamping the weights
+
+    .. math::
+        \text{LipschitzPReLU}(x) =
+        \begin{cases}
+        x, & \text{ if } x \geq 0 \\
+        \min(\max(a, -k), k) * x, & \text{ otherwise }
+        \end{cases}
+
+    """
     return F.prelu(input, torch.clamp(weight, -k_coef_lip, +k_coef_lip))
 
 
@@ -199,16 +263,25 @@ def kr_loss(
     target: torch.Tensor,
     true_values: Tuple[int, int] = (0, 1),
 ) -> torch.Tensor:
-    """
-    Loss to estimate wasserstein-1 distance using Kantorovich-Rubinstein duality.
+    r"""
+    Loss to estimate the Wasserstein-1 distance using Kantorovich-Rubinstein duality,
+    as per
+
+    .. math::
+        \mathcal{W}(\mu, \nu) = \sup\limits_{f\in{}Lip_1(\Omega)}
+            \underset{\mathbf{x}\sim{}\mu}{\mathbb{E}}[f(\mathbf{x})]
+            - \underset{\mathbf{x}\sim{}\nu}{\mathbb{E}}[f(\mathbf{x})]
+
+    where :math:`\mu` and :math:`\nu` are the distributions corresponding to the
+    two possible labels as specific by ``true_values``.
 
     Args:
         input: Tensor of arbitrary shape.
         target: Tensor of the same shape as input.
-        true_values: tuple containing the two label for each predicted class.
+        true_values: Tuple containing the two label for the predicted class.
 
     Returns:
-        The Wasserstein-1 loss.
+        The Wasserstein-1 loss between ``input`` and ``target``.
     """
 
     v0, v1 = true_values
@@ -228,10 +301,13 @@ def neg_kr_loss(
     Args:
         input: Tensor of arbitrary shape.
         target: Tensor of the same shape as input.
-        true_values: tuple containing the two label for each predicted class.
+        true_values: Tuple containing the two label for the predicted classes.
 
     Returns:
-        The negative Wasserstein-1 loss.
+        The negative Wasserstein-1 loss between ``input`` and ``target``.
+
+    See Also:
+        :py:func:`kr_loss`
     """
     return -kr_loss(input, target, true_values)
 
@@ -241,12 +317,17 @@ def hinge_margin_loss(
     target: torch.Tensor,
     min_margin: float = 1,
 ) -> torch.Tensor:
-    """
-    Compute the hinge margin loss.
+    r"""
+    Compute the hinge margin loss as per
+
+    .. math::
+        \underset{\mathbf{x}}{\mathbb{E}}
+        [\max(0, 1 - \mathbf{y} f(\mathbf{x}))]
 
     Args:
         input: Tensor of arbitrary shape.
-        target: Tensor of the same shape as input.
+        target: Tensor of the same shape as input containing
+            target labels (-1 and +1).
         min_margin: The minimal margin to enforce.
 
     Returns:
@@ -281,6 +362,10 @@ def hkr_loss(
 
     Returns:
         The regularized Wasserstein-1 loss.
+
+    See Also:
+        :py:func:`hinge_margin_loss`
+        :py:func:`kr_loss`
     """
     if alpha == np.inf:  # alpha negative hinge only
         return hinge_margin_loss(input, target, min_margin)
