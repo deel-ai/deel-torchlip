@@ -31,8 +31,11 @@ class SqrtEpsGrad(torch.autograd.Function):
 
 
 def sqrt_with_gradeps(input: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
-    """
-    Square-root of input with a valid gradient at 0.
+    r"""
+    Square-root of input with a "valid" gradient at 0.
+
+    .. math::
+        \frac{\partial f}{\partial x} = \frac{1}{2\sqrt{x}+\epsilon}
 
     Args:
         input: Tensor of arbitrary shape.
@@ -40,6 +43,6 @@ def sqrt_with_gradeps(input: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:
 
     Returns:
         A tensor whose value is the square-root of the input but whose associated
-        autograd functions is `SqrtEpsGrad`.
+        autograd functions is :py:class:`SqrtEpsGrad`.
     """
     return SqrtEpsGrad.apply(input, eps)  # type: ignore

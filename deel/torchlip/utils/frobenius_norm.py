@@ -31,7 +31,10 @@ def frobenius_norm(module: T_module, name: str = "weight") -> T_module:
     Applies Frobenius normalization to a parameter in the given module.
 
     .. math::
-         \mathbf{w} = \dfrac{\mathbf{w}}{\Vert{}\mathbf{w}\Vert{}}
+         \mathbf{W} = \dfrac{\mathbf{W}}{\Vert{}\mathbf{W}\Vert{}}
+
+    This is implemented via a hook that applies Bjorck normalization before every
+    ``forward()`` call.
 
     Args:
         module: Containing module.
@@ -53,13 +56,14 @@ def frobenius_norm(module: T_module, name: str = "weight") -> T_module:
 
 def remove_frobenius_norm(module: T_module, name: str = "weight") -> T_module:
     r"""
-    Removes the Frobenius normalization hook from a module.
+    Removes the Frobenius normalization reparameterization from a module.
 
     Args:
         module: Containing module.
         name: Name of weight parameter.
 
     Example:
+
         >>> m = frobenius_norm(nn.Linear(20, 40))
         >>> remove_frobenius_norm(m)
     """

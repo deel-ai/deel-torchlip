@@ -50,6 +50,7 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
     "sphinxcontrib.katex",
     "nbsphinx",
 ]
@@ -58,8 +59,9 @@ autoclass_content = "both"
 autoapi_root = "../deel"
 
 nbsphinx_requirejs_path = ""
-
 katex_prerender = True
+
+intersphinx_mapping = {"torch": ("https://pytorch.org/docs/stable", None)}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

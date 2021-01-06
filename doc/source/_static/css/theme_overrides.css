@@ -15,3 +15,10 @@
       overflow: visible !important;
    }
 }
+
+.function dt .reference.external {
+   position: relative;
+   padding-right: initial;
+   right: auto;
+   top: auto;
+}

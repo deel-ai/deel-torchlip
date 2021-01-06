@@ -1,23 +1,33 @@
+.. role:: hidden
+    :class: hidden-section
+
 deel.torchlip.utils
 ===================
 
-.. Submodules
-.. ----------
+.. currentmodule:: deel.torchlip.utils
 
-.. .. toctree::
-..    :maxdepth: 4
+Normalization hooks
+-------------------
 
-..    deel.torchlip.utils.bjorck_norm
-..    deel.torchlip.utils.frobenius_norm
-..    deel.torchlip.utils.hook_norm
-..    deel.torchlip.utils.lconv_norm
-..    deel.torchlip.utils.sqrt_eps
+:hidden:`Bjorck normalization`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Module contents
----------------
+.. autofunction:: bjorck_norm
+.. autofunction:: remove_bjorck_norm
 
-.. automodule:: deel.torchlip.utils
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
+:hidden:`Frobenius normalization`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: frobenius_norm
+.. autofunction:: remove_frobenius_norm
+
+:hidden:`L-Conv normalization`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. autofunction:: lconv_norm
+.. autofunction:: remove_lconv_norm
+
+Utilities
+---------
+
+.. autofunction:: sqrt_with_gradeps

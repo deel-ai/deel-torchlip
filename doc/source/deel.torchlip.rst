@@ -1,7 +1,7 @@
 .. _torchlip-api:
 
-deel.torchlip package
-=====================
+deel.torchlip
+=============
 
 Submodules
 ----------
@@ -13,9 +13,6 @@ Submodules
    deel.torchlip.functional
    deel.torchlip.init
    deel.torchlip.normalizers
-
-.. toctree::
-   :hidden:
 
 Module contents
 ---------------

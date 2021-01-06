@@ -80,12 +80,17 @@ class LConvNorm(HookNorm):
 def lconv_norm(module: torch.nn.Conv2d) -> torch.nn.Conv2d:
     r"""
     Applies Lipschitz normalization to a kernel in the given convolutional.
+    This is implemented via a hook that multiplies the kernel by a value computed
+    from the input shape before every ``forward()`` call.
+
+    See `Achieving robustness in classification using optimal transport with hinge
+    regularization <https://arxiv.org/abs/2006.06520>`_.
 
     Args:
         module: Containing module.
 
     Returns:
-        The original module with the Frobenius normalization hook.
+        The original module with the Lipschitz normalization hook.
 
     Example::
 

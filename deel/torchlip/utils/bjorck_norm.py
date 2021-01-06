@@ -39,7 +39,17 @@ def bjorck_norm(
     r"""
     Applies Bjorck normalization to a parameter in the given module.
 
-    See https://arxiv.org/abs/1811.05381
+    Bjorck normalization ensures that all eigen values of a vectors remain close or
+    equal to one during training. If the dimension of the weight tensor is greater than
+    2, it is reshaped to 2D for iteration.
+    This is implemented via a hook that applies Bjorck normalization before every
+    ``forward()`` call.
+
+    .. note::
+        It is recommended to use :py:func:`torch.nn.utils.spectral_norm` before
+        this hook to greatly reduce the number of iterations required.
+
+    See `Sorting out Lipschitz function approximation <https://arxiv.org/abs/1811.05381>`_.
 
     Args:
         module: Containing module.
@@ -62,7 +72,7 @@ def bjorck_norm(
 
 def remove_bjorck_norm(module: T_module, name: str = "weight") -> T_module:
     r"""
-    Removes the Bjorck normalization hook from a module.
+    Removes the Bjorck normalization reparameterization from a module.
 
     Args:
         module: Containing module.

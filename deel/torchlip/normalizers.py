@@ -20,17 +20,27 @@ DEFAULT_BETA = 0.5
 def bjorck_normalization(
     w: torch.Tensor, niter: int = DEFAULT_NITER_BJORCK, beta: float = DEFAULT_BETA
 ) -> torch.Tensor:
-    """
-    Apply Bjorck normalization on w.
+    r"""
+    Apply Bjorck normalization on the kernel as per
+
+    .. math::
+        \begin{array}{l}
+            W_0 = W \\
+            W_{n + 1} = (1 + \beta) W_{n} - \beta W_n W_n^T W_n \\
+            \overline{W} = W_{N}
+        \end{array}
+
+    where :math:`W` is the kernel of shape :math:`(C, *)`, with :math:`C` the number
+    of channels.
 
     Args:
         w: Weights to normalize. For the normalization to work properly, the greatest
-            eigen value of w must be approximately 1.
+            eigen value of ``w`` must be approximately 1.
         niter: Number of iterations.
+        beta: Value of :math:`\beta` to use.
 
     Returns:
-        The weights after Bjorck normalization.
-
+        The weights :math:`\overline{W}` after Bjorck normalization.
     """
     if niter == 0:
         return w
@@ -71,17 +81,24 @@ def spectral_normalization(
     u: Optional[torch.Tensor] = None,
     niter: int = DEFAULT_NITER_SPECTRAL,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """
-    Normalize the kernel to have it's max eigenvalue == 1.
+    r"""
+    Apply spectral normalization on the given kernel :math:`W` to set its greatest
+    eigen value to approximately 1.
+
+    .. note::
+        This function is provided for completeness ``torchlip`` layers use
+        the :py:func:`torch.nn.utils.spectral_norm` hook instead.
 
     Args:
         kernel: The kernel to normalize.
-        u: Initialization for the maximum eigen vector.
+        u: Initialization for the maximum eigen vector. If ``None``, it will
+            be randomly initialized from a normal distribution and twice
+            as much iterations will be performed.
         niter: Number of iteration. If u is not specified, we perform
             twice as much iterations.
 
     Returns:
-        The normalized kernel W_bar, the maximum eigen vector, and the
+        The normalized kernel :math:`\overline{W}`, the greatest eigen vector, and the
         largest eigen value.
     """
 
