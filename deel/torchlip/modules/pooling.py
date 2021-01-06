@@ -102,7 +102,7 @@ class ScaledAdaptiveAvgPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
         return torch.nn.AdaptiveAvgPool2d.forward(self, input) * coeff
 
 
-class ScaledL2NormPooling2D(torch.nn.AvgPool2d, LipschitzModule):
+class ScaledL2NormPool2d(torch.nn.AvgPool2d, LipschitzModule):
     def __init__(
         self,
         kernel_size: _size_2_t,

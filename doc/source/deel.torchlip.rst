@@ -1,10 +1,14 @@
+:orphan:
+
+.. role:: hidden
+    :class: hidden-section
+
 .. _torchlip-api:
 
 deel.torchlip
 =============
 
-Submodules
-----------
+.. currentmodule:: deel.torchlip
 
 .. toctree::
    :maxdepth: 4
@@ -14,11 +18,48 @@ Submodules
    deel.torchlip.init
    deel.torchlip.normalizers
 
-Module contents
----------------
+Containers
+----------
 
-.. automodule:: deel.torchlip
+.. autoclass:: LipschitzModule
    :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
+.. autoclass:: Sequential
+
+
+Convolution Layers
+------------------
+
+.. autoclass:: SpectralConv2d
+.. autoclass:: FrobeniusConv2d
+
+Pooling Layers
+--------------
+
+.. autoclass:: ScaledAdaptiveAvgPool2d
+.. autoclass:: ScaledAvgPool2d
+.. autoclass:: ScaledL2NormPool2d
+
+Non-linear Activations
+----------------------
+
+.. autoclass:: InvertibleDownSampling
+.. autoclass:: InvertibleUpSampling
+.. autoclass:: MaxMin
+.. autoclass:: GroupSort
+.. autoclass:: GroupSort2
+.. autoclass:: FullSort
+.. autoclass:: LipschitzPReLU
+
+Linear Layers
+-------------
+
+.. autoclass:: SpectralLinear
+.. autoclass:: FrobeniusLinear
+
+Loss Functions
+--------------
+
+.. autoclass:: KRLoss
+.. autoclass:: NegKRLoss
+.. autoclass:: HingeMarginLoss
+.. autoclass:: HKRLoss

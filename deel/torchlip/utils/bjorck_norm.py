@@ -59,12 +59,14 @@ def bjorck_norm(
     Returns:
         The original module with the Bjorck normalization hook.
 
-    Example::
+    Example:
 
         >>> m = bjorck_norm(nn.Linear(20, 40), name='weight')
         >>> m
         Linear(in_features=20, out_features=40, bias=True)
 
+    See Also:
+        :py:func:`deel.torchlip.normalizers.bjorck_normalization`
     """
     BjorckNorm.apply(module, name, n_iterations)
     return module
