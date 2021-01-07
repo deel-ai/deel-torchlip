@@ -27,6 +27,11 @@ Non-linear activation functions
 .. autofunction:: group_sort_2
 .. autofunction:: full_sort
 
+:hidden:`others`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: lipschitz_prelu
+
 Loss functions
 --------------
 

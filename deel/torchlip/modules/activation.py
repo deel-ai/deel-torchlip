@@ -18,56 +18,86 @@ from .. import functional as F
 
 
 class MaxMin(nn.Module, LipschitzModule):
-    def __init__(self, k_coef_lip: float = 1.0):
-        """
-        MaxMin activation [ReLU(x),ReLU(-x)]
+    r"""
+    Applies max-min activation.
 
+    If ``input`` is a tensor of shape :math:`(N, C)` and ``dim`` is
+    ``None``, the output can be described as:
+
+    .. math::
+        \text{out}(N_i, C_{2j}) = \max(\text{input}(N_i, C_j), 0)\\
+        \text{out}(N_i, C_{2j + 1}) = \max(-\text{input}(N_i, C_j), 0)
+
+    where :math:`N` is the batch size and :math:`C` is the size of the
+    tensor.
+
+    See also :func:`.functional.max_min`.
+    """
+
+    def __init__(self, dim: Optional[int] = None, k_coef_lip: float = 1.0):
+        r"""
         Args:
+            dim: The dimension to apply max-min. If None, will apply to the
+                0th dimension if the shape of input is :math:`(C)` or to the
+                first if its :math:`(N, C, *)`.
             k_coef_lip: The lipschitz coefficient to enforce.
 
-        Input shape:
-            Arbitrary.
+        Shape:
+            - Input: :math:`(C)` or :math:`(N, C, *)` where :math:`*` means
+              any number of additional dimensions.
+            - Output: :math:`(2C)` is the input shape was :math:`(C)`, or
+              :math:`(N, 2C, *)` if ``dim`` is ``None``, otherwise
+              :math:`(N, *, 2C_{dim}, *)` where :math:`C_{dim}` is the
+              dimension corresponding to the ``dim`` parameter.
 
-        Output shape:
-            Double channel size as input.
-
-        References:
-            ([M. Blot, M. Cord, et N. Thome, « Max-min convolutional neural networks
+        Note:
+            M. Blot, M. Cord, et N. Thome, « Max-min convolutional neural networks
             for image classification », in 2016 IEEE International Conference on Image
-            Processing (ICIP), Phoenix, AZ, USA, 2016, p. 3678‑3682.)
+            Processing (ICIP), Phoenix, AZ, USA, 2016, p. 3678‑3682.
 
         """
         nn.Module.__init__(self)
         LipschitzModule.__init__(self, k_coef_lip)
+        self._dim = dim
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.max_min(input) * self._coefficient_lip
+        return F.max_min(input, self._dim) * self._coefficient_lip
 
     def vanilla_export(self):
         return self
 
 
 class GroupSort(nn.Module, LipschitzModule):
+    r"""
+    Applies group-sort activation.
+
+    The activation works by first reshaping the input to a tensor
+    of shape :math:`(N', G)` where :math:`G` is the group size and
+    :math:`N'` the number of groups, then sorting each group of
+    size :math:`G` and then reshaping to the original input shape.
+
+    See also :func:`.functional.group_sort`.
+    """
+
     def __init__(self, group_size: Optional[int] = None, k_coef_lip: float = 1.0):
         """
-        GroupSort activation
-
         Args:
-            n: group size used when sorting. When None group size is set to input
+            group_size: group size used when sorting. When None group size is set to input
                 size (fullSort behavior)
             data_format: either channels_first or channels_last
-            k_coef_lip: the lipschitz coefficient to be enforced
-            *args: params passed to Layers
-            **kwargs: params passed to layers (named fashion)
+            k_coef_lip: The lipschitz coefficient to enforce.
 
-        Input shape:
-            Arbitrary. Use the keyword argument `input_shape` (tuple of integers, does
-            not include the samples axis) when using this layer as the first layer in a
-            model.
+        Shape:
+            - Input: :math:`(N,∗)` where :math:`*` means, any number of additional dimensions
+            - Output: :math:`(N,*)`, same shape as the input.
 
-        Output shape:
-            Same size as input.
-
+        Example:
+            >>> m = torch.randn(2, 4)
+            tensor([[ 0.2805, -2.0528,  0.6478,  0.5745],
+                    [-1.4075,  0.0435, -1.2408,  0.2945]])
+            >>> torchlip.GroupSort(4)(m)
+            tensor([[-2.0528,  0.2805,  0.5745,  0.6478],
+                    [-1.4075, -1.2408,  0.0435,  0.2945]])
         """
         nn.Module.__init__(self)
         LipschitzModule.__init__(self, k_coef_lip)
@@ -81,50 +111,73 @@ class GroupSort(nn.Module, LipschitzModule):
 
 
 class GroupSort2(GroupSort):
+    r"""
+    Applies group-sort activation with a group size of 2.
+
+    See :class:`GroupSort` for details.
+
+    See also :func:`.functional.group_sort_2`.
+    """
+
     def __init__(self, k_coef_lip: float = 1.0):
         """
-        GroupSort2 activation. Special case of GroupSort with group of size 2.
-
-        Input shape:
-            Arbitrary. Use the keyword argument `input_shape` (tuple of integers, does
-            not include the samples axis) when using this layer as the first layer in a
-            model.
-
-        Output shape:
-            Same size as input.
-
+        Args:
+            k_coef_lip: The lipschitz coefficient to enforce.
         """
         super().__init__(group_size=2, k_coef_lip=k_coef_lip)
 
 
 class FullSort(GroupSort):
+    r"""
+    Applies full-sort activation. This is equivalent to group-sort with
+    a group-size equals to the size of the input.
+
+    See :class:`GroupSort` for details.
+
+    See also :func:`.functional.full_sort`.
+    """
+
     def __init__(self, k_coef_lip: float = 1.0):
         """
-        FullSort activation. Special case of GroupSort where the entire input is sorted.
-
-        Input shape:
-            Arbitrary. Use the keyword argument `input_shape` (tuple of integers, does
-            not include the samples axis) when using this layer as the first layer in a
-            model.
-
-        Output shape:
-            Same size as input.
-
+        Args:
+            k_coef_lip: The lipschitz coefficient to enforce.
         """
         super().__init__(group_size=None, k_coef_lip=k_coef_lip)
 
 
-class LipschitzPReLU(nn.PReLU, LipschitzModule):
-    """
-    PreLu activation, with Lipschitz constraint.
+class LPReLU(nn.PReLU, LipschitzModule):
+    r"""
+    Applies element-wise PReLU activation with Lipschitz constraint:
 
-    Args:
-        k_coef_lip: lipschitz coefficient to be enforced
+    .. math::
+        LPReLU(x) = \max(0, x) + a' * \min(0, x)
+
+    or
+
+    .. math::
+        LPReLU(x) =
+        \text{LipschitzPReLU}(x) =
+        \begin{cases}
+        x, & \text{ if } x \geq 0 \\
+        a' * x, & \text{ otherwise }
+        \end{cases}
+
+    where :math:`a' = \max(\min(a, k), -k)`, and :math:`a` is a learnable
+    parameter.
+
+    See also :class:`torch.nn.PReLU` and :func:`.functional.lipschitz_prelu`.
     """
 
     def __init__(
         self, num_parameters: int = 1, init: float = 0.25, k_coef_lip: float = 1.0
     ):
+        """
+        Args:
+            num_parameters: Number of :math:`a` to learn. Although it takes an ``int`` as input, `
+                there are only two legitimate values: 1, or the number of channels at input.
+            init: The initial value of :math:`a`.
+            k_coef_lip: The lipschitz coefficient to enforce.
+        """
         nn.PReLU.__init__(self, num_parameters=num_parameters, init=init)
         LipschitzModule.__init__(self, k_coef_lip)
 
@@ -132,6 +185,6 @@ class LipschitzPReLU(nn.PReLU, LipschitzModule):
         return F.lipschitz_prelu(input, self.weight, self._coefficient_lip)
 
     def vanilla_export(self):
-        layer = LipschitzPReLU(num_parameters=self.num_parameters)
+        layer = LPReLU(num_parameters=self.num_parameters)
         layer.weight.data = self.weight.data
         return layer

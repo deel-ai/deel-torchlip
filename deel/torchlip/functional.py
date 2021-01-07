@@ -245,7 +245,7 @@ def lipschitz_prelu(
     Applies k-Lipschitz version of PReLU by clamping the weights
 
     .. math::
-        \text{LipschitzPReLU}(x) =
+        \text{LPReLU}(x) =
         \begin{cases}
         x, & \text{ if } x \geq 0 \\
         \min(\max(a, -k), k) * x, & \text{ otherwise }

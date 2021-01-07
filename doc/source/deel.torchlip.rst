@@ -48,7 +48,7 @@ Non-linear Activations
 .. autoclass:: GroupSort
 .. autoclass:: GroupSort2
 .. autoclass:: FullSort
-.. autoclass:: LipschitzPReLU
+.. autoclass:: LPReLU
 
 Linear Layers
 -------------
