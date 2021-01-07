@@ -145,7 +145,7 @@ def train(train_dl, model, loss_fn, optimizer, epoch, batch_size):
             optimizer.step()
 
 
-def test(model, train_dl, loss_fn):
+def _test(model, train_dl, loss_fn):
     model.eval()
     test_loss = 0
     runnning_mae = 0
@@ -255,7 +255,7 @@ def train_k_lip_model(
         (batch_x, batch_y) = linear_generator(batch_size, (in_features,), kernel)
     train_ds = TensorDataset(batch_x, batch_y)
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
-    loss, mse = test(model, train_dl, loss_fn)
+    loss, mse = _test(model, train_dl, loss_fn)
     empirical_lip_const = evaluate_lip_const(model=model, x=x, seed=42)
     # save the model
     model_checkpoint_path = os.path.join(logdir, "model.h5")
@@ -275,7 +275,7 @@ def train_k_lip_model(
 
     train_ds = TensorDataset(batch_x, batch_y)
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
-    from_disk_loss, from_disk_mse = test(model, train_dl, loss_fn)
+    from_disk_loss, from_disk_mse = _test(model, train_dl, loss_fn)
 
     from_empirical_lip_const = evaluate_lip_const(model=model, x=x, seed=42)
     return (
