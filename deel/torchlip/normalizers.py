@@ -63,11 +63,11 @@ def _power_iteration(
 
     Args:
         w: Weights matrix that we want to find eigen vector.
-        u: Initialization of the eigen vector.
+        u: Initial singular vector.
         niter: Number of iteration, must be greater than 0.
 
     Returns:
-         A tuple (u, v) containing the largest eigenvalues.
+         A tuple (u, v) containing the last singular vectors.
 
     """
     for i in range(niter):
@@ -86,20 +86,21 @@ def spectral_normalization(
     eigen value to approximately 1.
 
     .. note::
-        This function is provided for completeness ``torchlip`` layers use
+        This function is provided for completeness since ``torchlip`` layers use
         the :py:func:`torch.nn.utils.spectral_norm` hook instead.
 
     Args:
         kernel: The kernel to normalize.
-        u: Initialization for the maximum eigen vector. If ``None``, it will
+        u: Initialization for the initial singular vector. If ``None``, it will
             be randomly initialized from a normal distribution and twice
             as much iterations will be performed.
         niter: Number of iteration. If u is not specified, we perform
             twice as much iterations.
 
     Returns:
-        The normalized kernel :math:`\overline{W}`, the greatest eigen vector, and the
-        largest eigen value.
+        The normalized kernel :math:`\overline{W}`, the right singular vector
+        corresponding to the largest singular value, and the largest singular value
+        before normalization.
     """
 
     # Flatten the Tensor
@@ -113,7 +114,7 @@ def spectral_normalization(
     # do power iteration
     u, v = _power_iteration(W_flat, u, niter)
 
-    # Calculate Sigma
+    # Calculate sigma (largest singular value).
     sigma = v.mm(W_flat).mm(u.t())
 
     # Normalize W_bar
