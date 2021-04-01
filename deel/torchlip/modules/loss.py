@@ -84,3 +84,61 @@ class HKRLoss(torch.nn.Module):
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         return F.hkr_loss(input, target, self.alpha, self.min_margin, self.true_values)
+
+
+class KRMulticlassLoss(torch.nn.Module):
+    """
+    The Wasserstein multiclass loss between ``input`` and ``target``.
+    """
+
+    def __init__(self, true_values: Tuple[int, int] = (0, 1)):
+        """
+        Args:
+            true_values: tuple containing the two label for each predicted class.
+        """
+        self.true_values = true_values
+
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        return F.kr_multiclass_loss(input, target)
+
+
+class HingeMulticlassLoss(torch.nn.Module):
+    """
+    Loss to estimate the Hinge loss in a multiclass setup. It compute the
+    elementwise hinge term. This class use pytorch implementation:
+    torch.nn.functional.hinge_embedding_loss
+    """
+
+    def __init__(self, min_margin: float = 1.0):
+        """
+        Args:
+            min_margin: The minimal margin to enforce.
+        """
+        self.min_margin = min_margin
+
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        return F.hinge_multiclass_loss(input, target, self.min_margin)
+
+
+class HKRMulticlassLoss(torch.nn.Module):
+    """
+    Loss that estimate the Wasserstein-1 distance using the Kantorovich-Rubinstein
+    duality with a hinge regularization.
+    """
+
+    def __init__(
+        self,
+        alpha: float,
+        min_margin: float = 1.0,
+    ):
+        """
+        Args:
+            alpha: Regularization factor between the hinge and the KR loss.
+            min_margin: Minimal margin for the hinge loss.
+            true_values: tuple containing the two label for each predicted class.
+        """
+        self.alpha = alpha
+        self.min_margin = min_margin
+
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        return F.hkr_multiclass_loss(input, target, self.alpha, self.min_margin)

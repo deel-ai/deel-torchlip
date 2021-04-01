@@ -19,3 +19,6 @@ class InvertibleDownSampling(torch.nn.Module, LipschitzModule):
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         return F.invertible_downsample(input, self.kernel_size) * self._coefficient_lip
+
+    def vanilla_export(self):
+        return self

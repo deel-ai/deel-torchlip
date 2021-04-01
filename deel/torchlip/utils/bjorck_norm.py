@@ -49,7 +49,8 @@ def bjorck_norm(
         It is recommended to use :py:func:`torch.nn.utils.spectral_norm` before
         this hook to greatly reduce the number of iterations required.
 
-    See `Sorting out Lipschitz function approximation <https://arxiv.org/abs/1811.05381>`_.
+    See `Sorting out Lipschitz function approximation
+     <https://arxiv.org/abs/1811.05381>`_.
 
     Args:
         module: Containing module.
