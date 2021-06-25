@@ -101,6 +101,9 @@ class ScaledAdaptiveAvgPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
         coeff = math.sqrt(input.shape[-2] * input.shape[-1]) * self._coefficient_lip
         return torch.nn.AdaptiveAvgPool2d.forward(self, input) * coeff
 
+    def vanilla_export(self):
+        return self
+
 
 class ScaledL2NormPool2d(torch.nn.AvgPool2d, LipschitzModule):
     def __init__(

@@ -82,13 +82,14 @@ class GroupSort(nn.Module, LipschitzModule):
     def __init__(self, group_size: Optional[int] = None, k_coef_lip: float = 1.0):
         """
         Args:
-            group_size: group size used when sorting. When None group size is set to input
-                size (fullSort behavior)
+            group_size: group size used when sorting. When None group size
+            is set to input size (fullSort behavior)
             data_format: either channels_first or channels_last
             k_coef_lip: The lipschitz coefficient to enforce.
 
         Shape:
-            - Input: :math:`(N,∗)` where :math:`*` means, any number of additional dimensions
+            - Input: :math:`(N,∗)` where :math:`*` means, any number
+               of additional dimensions
             - Output: :math:`(N,*)`, same shape as the input.
 
         Example:
@@ -173,8 +174,9 @@ class LPReLU(nn.PReLU, LipschitzModule):
     ):
         """
         Args:
-            num_parameters: Number of :math:`a` to learn. Although it takes an ``int`` as input, `
-                there are only two legitimate values: 1, or the number of channels at input.
+            num_parameters: Number of :math:`a` to learn. Although it
+            takes an ``int`` as input, ` there are only two legitimate
+            values: 1, or the number of channels at input.
             init: The initial value of :math:`a`.
             k_coef_lip: The lipschitz coefficient to enforce.
         """

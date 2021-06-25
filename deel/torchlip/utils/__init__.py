@@ -63,7 +63,7 @@ def evaluate_lip_const(
     ndfx = torch.sum(torch.square(dfx.data), dim=tuple(range(1, len(y_pred.shape))))
     lip_cst = torch.sqrt(torch.max(ndfx / ndx))
 
-    return lip_cst.item()
+    return float(lip_cst.item())
 
 
 __all__ = [
