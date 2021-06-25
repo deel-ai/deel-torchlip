@@ -166,3 +166,6 @@ class ScaledL2NormPool2d(torch.nn.AvgPool2d, LipschitzModule):
             )
             * coeff
         )
+
+    def vanilla_export(self):
+        return self
