@@ -11,7 +11,7 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
-dev_requires = ["tox", "black", "flake8", "flake8-black", "numpy==1.19.3", "torch_testing"]
+dev_requires = ["tox", "black", "flake8", "flake8-black", "numpy", "torch_testing"]
 
 docs_requires = [
     "sphinx",
