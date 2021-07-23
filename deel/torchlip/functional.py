@@ -415,7 +415,7 @@ def hinge_multiclass_loss(
     Args:
         input: Tensor of arbitrary shape.
         target: Tensor of the same shape as input containing
-            target labels (-1 and +1).
+            one hot encoding target labels (0 and +1).
         min_margin: The minimal margin to enforce.
     Note:
         target should be one hot encoded. labels in (1,0)
@@ -423,7 +423,7 @@ def hinge_multiclass_loss(
     Returns:
         The hinge margin multiclass loss.
     """
-    return torch.mean(F.relu(min_margin - (2 * target - 1) * input))
+    return torch.mean(((target.shape[-1]-2)*target+1)*F.relu(min_margin - (2 * target - 1) * input))
 
 
 def hkr_multiclass_loss(
@@ -456,6 +456,6 @@ def hkr_multiclass_loss(
     elif alpha == 0.0:  # alpha = 0 => KR only
         return -kr_multiclass_loss(input, target)
     else:
-        return -kr_multiclass_loss(input, target) / alpha + hinge_multiclass_loss(
+        return -kr_multiclass_loss(input, target)  + alpha*hinge_multiclass_loss(
             input, target, min_margin
         )
