@@ -13,6 +13,12 @@ from torch.nn.common_types import _size_2_t
 from ..utils import sqrt_with_gradeps
 from .module import LipschitzModule
 
+def computePoolScalingFactor(kernel_size):
+    if isinstance(kernel_size,tuple):
+        scalingFactor = math.sqrt(np.prod(np.asarray(kernel_size)))
+    else:
+        scalingFactor = kernel_size
+    return scalingFactor
 
 class ScaledAvgPool2d(torch.nn.AvgPool2d, LipschitzModule):
     def __init__(
@@ -57,13 +63,15 @@ class ScaledAvgPool2d(torch.nn.AvgPool2d, LipschitzModule):
         )
         LipschitzModule.__init__(self, k_coef_lip)
 
+        self.scalingFactor = computePoolScalingFactor(self.kernel_size)
+        
         if self.stride != self.kernel_size:
             raise RuntimeError("stride must be equal to kernel_size.")
         if np.sum(self.padding) != 0:
             raise RuntimeError(f"{type(self)} does not support padding.")
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        coeff = self._coefficient_lip * math.sqrt(np.prod(np.asarray(self.kernel_size)))
+        coeff = self._coefficient_lip * self.scalingFactor
         return torch.nn.AvgPool2d.forward(self, input) * coeff
 
     def vanilla_export(self):
@@ -152,6 +160,7 @@ class ScaledL2NormPool2d(torch.nn.AvgPool2d, LipschitzModule):
         )
         LipschitzModule.__init__(self, k_coef_lip)
         self.eps_grad_sqrt = eps_grad_sqrt
+        self.scalingFactor = computePoolScalingFactor(self.kernel_size)
 
         if self.stride != self.kernel_size:
             raise RuntimeError("stride must be equal to kernel_size.")
@@ -161,7 +170,7 @@ class ScaledL2NormPool2d(torch.nn.AvgPool2d, LipschitzModule):
             raise RuntimeError("eps_grad_sqrt must be positive")
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
-        coeff = self._coefficient_lip * math.sqrt(np.prod(np.asarray(self.kernel_size)))
+        coeff = self._coefficient_lip * self.scalingFactor
         return (  # type: ignore
             sqrt_with_gradeps(
                 torch.nn.AvgPool2d.forward(self, torch.square(input)),
