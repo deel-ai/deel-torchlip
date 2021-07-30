@@ -423,7 +423,10 @@ def hinge_multiclass_loss(
     Returns:
         The hinge margin multiclass loss.
     """
-    return torch.mean(((target.shape[-1]-2)*target+1)*F.relu(min_margin - (2 * target - 1) * input))
+    return torch.mean(
+        ((target.shape[-1] - 2) * target + 1)
+        * F.relu(min_margin - (2 * target - 1) * input)
+    )
 
 
 def hkr_multiclass_loss(
@@ -456,6 +459,6 @@ def hkr_multiclass_loss(
     elif alpha == 0.0:  # alpha = 0 => KR only
         return -kr_multiclass_loss(input, target)
     else:
-        return -kr_multiclass_loss(input, target)  + alpha*hinge_multiclass_loss(
+        return -kr_multiclass_loss(input, target) + alpha * hinge_multiclass_loss(
             input, target, min_margin
         )

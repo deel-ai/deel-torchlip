@@ -13,12 +13,14 @@ from torch.nn.common_types import _size_2_t
 from ..utils import sqrt_with_gradeps
 from .module import LipschitzModule
 
+
 def computePoolScalingFactor(kernel_size):
-    if isinstance(kernel_size,tuple):
+    if isinstance(kernel_size, tuple):
         scalingFactor = math.sqrt(np.prod(np.asarray(kernel_size)))
     else:
         scalingFactor = kernel_size
     return scalingFactor
+
 
 class ScaledAvgPool2d(torch.nn.AvgPool2d, LipschitzModule):
     def __init__(
@@ -64,7 +66,7 @@ class ScaledAvgPool2d(torch.nn.AvgPool2d, LipschitzModule):
         LipschitzModule.__init__(self, k_coef_lip)
 
         self.scalingFactor = computePoolScalingFactor(self.kernel_size)
-        
+
         if self.stride != self.kernel_size:
             raise RuntimeError("stride must be equal to kernel_size.")
         if np.sum(self.padding) != 0:
