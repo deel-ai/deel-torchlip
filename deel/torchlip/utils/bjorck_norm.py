@@ -50,7 +50,7 @@ def bjorck_norm(
         this hook to greatly reduce the number of iterations required.
 
     See `Sorting out Lipschitz function approximation
-     <https://arxiv.org/abs/1811.05381>`_.
+    <https://arxiv.org/abs/1811.05381>`_.
 
     Args:
         module: Containing module.
