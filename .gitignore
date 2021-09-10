@@ -22,4 +22,4 @@ ray_bootstrap_config.yaml
 
 
 # Sphinx documentation
-doc/build/
+docs/build/
