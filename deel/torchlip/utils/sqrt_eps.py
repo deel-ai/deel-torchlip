@@ -20,9 +20,10 @@ class SqrtEpsGrad(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx: Any, input: Any, eps: float) -> torch.Tensor:  # type: ignore
-        ctx.save_for_backward(input)
+        sqrt_input = torch.sqrt(input)
+        ctx.save_for_backward(sqrt_input)
         ctx.eps = eps
-        return torch.sqrt(input)
+        return sqrt_input
 
     @staticmethod
     def backward(ctx: Any, grad_output):  # type: ignore

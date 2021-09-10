@@ -7,6 +7,9 @@ __pycache__
 # IDE
 .vscode/settings.json
 
+build/
+dist/
+
 # Test files
 logs/*
 tests/.config/*
@@ -19,4 +22,4 @@ ray_bootstrap_config.yaml
 
 
 # Sphinx documentation
-doc/build/
+docs/build/

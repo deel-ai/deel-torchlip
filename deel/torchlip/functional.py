@@ -375,3 +375,90 @@ def hkr_loss(
     return alpha * hinge_margin_loss(input, target, min_margin) - kr_loss(
         input, target, (true_values[1], true_values[0])
     )
+
+
+def kr_multiclass_loss(
+    input: torch.Tensor,
+    target: torch.Tensor,
+) -> torch.Tensor:
+    r"""
+    Loss to estimate average of W1 distance using Kantorovich-Rubinstein
+    duality over outputs. In this multiclass setup thr KR term is computed
+    for each class and then averaged.
+
+    Args:
+        input: Tensor of arbitrary shape.
+        target: Tensor of the same shape as input.
+                target has to be one hot encoded (labels being 1s and 0s ).
+
+    Returns:
+        The Wasserstein multiclass loss between ``input`` and ``target``.
+    """
+    esp_true_true = torch.sum(input * target, 0) / torch.sum(target, 0)
+    esp_false_true = torch.sum(input * (1 - target), 0) / torch.sum((1 - target), 0)
+
+    return torch.mean(esp_true_true - esp_false_true)
+
+
+def hinge_multiclass_loss(
+    input: torch.Tensor,
+    target: torch.Tensor,
+    min_margin: float = 1,
+) -> torch.Tensor:
+    """
+    Loss to estimate the Hinge loss in a multiclass setup. It compute the
+    elementwise hinge term. Note that this formulation differs from the
+    one commonly found in tensorflow/pytorch (with marximise the difference
+    between the two largest logits). This formulation is consistent with the
+    binary classification loss used in a multiclass fashion.
+
+    Args:
+        input: Tensor of arbitrary shape.
+        target: Tensor of the same shape as input containing
+            one hot encoding target labels (0 and +1).
+        min_margin: The minimal margin to enforce.
+    Note:
+        target should be one hot encoded. labels in (1,0)
+
+    Returns:
+        The hinge margin multiclass loss.
+    """
+    return torch.mean(
+        ((target.shape[-1] - 2) * target + 1)
+        * F.relu(min_margin - (2 * target - 1) * input)
+    )
+
+
+def hkr_multiclass_loss(
+    input: torch.Tensor,
+    target: torch.Tensor,
+    alpha: float = 0.0,
+    min_margin: float = 1.0,
+) -> torch.Tensor:
+    """
+    Loss to estimate the wasserstein-1 distance with a hinge regularization using
+    Kantorovich-Rubinstein duality.
+
+    Args:
+        input: Tensor of arbitrary shape.
+        target: Tensor of the same shape as input.
+        alpha: Regularization factor between the hinge and the KR loss.
+        min_margin: Minimal margin for the hinge loss.
+        true_values: tuple containing the two label for each predicted class.
+
+    Returns:
+        The regularized Wasserstein-1 loss.
+
+    See Also:
+        :py:func:`hinge_margin_loss`
+        :py:func:`kr_loss`
+    """
+
+    if alpha == np.inf:  # alpha negative hinge only
+        return hinge_multiclass_loss(input, target, min_margin)
+    elif alpha == 0.0:  # alpha = 0 => KR only
+        return -kr_multiclass_loss(input, target)
+    else:
+        return -kr_multiclass_loss(input, target) + alpha * hinge_multiclass_loss(
+            input, target, min_margin
+        )

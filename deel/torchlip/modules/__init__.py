@@ -29,7 +29,15 @@ from .module import LipschitzModule, Sequential
 from .linear import SpectralLinear, FrobeniusLinear
 from .conv import SpectralConv2d, FrobeniusConv2d
 from .activation import MaxMin, GroupSort, GroupSort2, FullSort, LPReLU
-from .loss import KRLoss, NegKRLoss, HingeMarginLoss, HKRLoss
+from .loss import (
+    KRLoss,
+    NegKRLoss,
+    HingeMarginLoss,
+    HKRLoss,
+    KRMulticlassLoss,
+    HingeMulticlassLoss,
+    HKRMulticlassLoss,
+)
 from .pooling import ScaledAvgPool2d, ScaledAdaptiveAvgPool2d, ScaledL2NormPool2d
 from .downsampling import InvertibleDownSampling
 from .upsampling import InvertibleUpSampling
