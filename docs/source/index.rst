@@ -70,6 +70,6 @@ Cite this work
 
    self
    basic_example.rst
-   notebooks/wasserstein_toy.ipynb
-   notebooks/wasserstein_toy_classification.ipynb
-   notebooks/wasserstein_classification_MNIST08.ipynb
+   wasserstein_toy.rst
+   wasserstein_toy_classification.rst
+   wasserstein_classification_MNIST08.rst
