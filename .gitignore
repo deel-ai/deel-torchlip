@@ -25,3 +25,4 @@ ray_bootstrap_config.yaml
 
 # Sphinx documentation
 docs/build/
+docs/notebooks/data/
