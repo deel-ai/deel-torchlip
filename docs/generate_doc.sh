@@ -1,4 +1,3 @@
-source /home/justin.plakoo/envs/env3/bin/activate
 cd notebooks
 bash ./check_notebooks.sh wasserstein_classification_MNIST08
 bash ./check_notebooks.sh wasserstein_toy_classification
