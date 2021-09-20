@@ -39,3 +39,6 @@ Loss functions
 .. autofunction:: neg_kr_loss
 .. autofunction:: hinge_margin_loss
 .. autofunction:: hkr_loss
+.. autofunction:: kr_multiclass_loss
+.. autofunction:: hinge_multiclass_loss
+.. autofunction:: hkr_multiclass_loss
