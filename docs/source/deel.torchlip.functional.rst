@@ -35,10 +35,17 @@ Non-linear activation functions
 Loss functions
 --------------
 
+:hidden:`Wasserstein/hinge losses`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: kr_loss
 .. autofunction:: neg_kr_loss
 .. autofunction:: hinge_margin_loss
 .. autofunction:: hkr_loss
+
+:hidden:`multiclass losses`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. autofunction:: kr_multiclass_loss
 .. autofunction:: hinge_multiclass_loss
 .. autofunction:: hkr_multiclass_loss

@@ -1,0 +1,20 @@
+tox
+black
+flake8
+flake8-black
+numpy
+torch_testing
+sphinx
+recommonmark
+sphinx_rtd_theme
+sphinx_markdown_builder
+ipython
+nbsphinx
+sphinxcontrib_katex
+pytorch_sphinx_theme @git+https://github.com/pytorch/pytorch_sphinx_theme.git
+jupyter
+matplotlib
+tqdm
+sklearn
+torchvision
+seaborn
