@@ -14,5 +14,3 @@ mv $1.rst ../source/
 if [ -d $1_files ]; then
     mv $1_files ../source/
 fi
-# pastille colab:
-# [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/deel-ai/deel-lip/blob/master/chemin_vers_le_notebook.ipynb]

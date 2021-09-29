@@ -17,10 +17,12 @@ tests/.config/*
 .bash_logout
 .bashrc
 .profile
-ray_bootstrap_key.pem
-ray_bootstrap_config.yaml
+.tox
 
 
 # Sphinx documentation
 docs/build/
 docs/notebooks/data/
+torchlip_dev_env/
+torchlip_dev_env2/
+.gitignore

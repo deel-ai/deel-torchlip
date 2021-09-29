@@ -14,7 +14,7 @@ with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
 dev_requires = ["tox", "black", "flake8", "flake8-black", "numpy", "torch_testing"]
 
 docs_requires = [
-    "sphinx",
+    "sphinx==3.3.1",
     "recommonmark",
     "sphinx_rtd_theme",
     "sphinx_markdown_builder",
