@@ -24,7 +24,7 @@ jobs:
       - name: "Install Python dependencies"
         run: |
           pip3 install setuptools
-          pip3 install sphinx==3.3.1 sphinx-rtd-theme sphinx_autodoc_typehints sphinx_markdown_builder pytorch_sphinx_theme @git+https://github.com/pytorch/pytorch_sphinx_theme.git
+          pip3 install sphinx==3.3.1 recommonmark sphinx-rtd-theme sphinx_markdown_builder ipython nbsphinx sphinxcontrib_katex pytorch_sphinx_theme  
 
       - name: "Build Sphinx Doc"
         run: |
