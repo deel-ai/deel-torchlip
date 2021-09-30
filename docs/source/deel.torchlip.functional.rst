@@ -35,8 +35,8 @@ Non-linear activation functions
 Loss functions
 --------------
 
-:hidden:`Wasserstein/hinge losses`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:hidden:`Binary losses`
+~~~~~~~~~~~~~~~~~~~~~~~
 
 .. autofunction:: kr_loss
 .. autofunction:: neg_kr_loss
