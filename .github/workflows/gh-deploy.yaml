@@ -28,7 +28,7 @@ jobs:
 
       - name: "Build Sphinx Doc"
         run: |
-          make doc
+          cd docs && make clean html 
 
       - name: "Deploy Github Pages"
         uses: JamesIves/github-pages-deploy-action@3.7.1
