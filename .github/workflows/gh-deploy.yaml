@@ -17,16 +17,16 @@ jobs:
           persist-credentials: false
 
       - name: "Set up Python"
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: '3.x'
 
       - name: "Install Python dependencies"
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine
           pip install sphinx==3.3.1 recommonmark sphinx-rtd-theme sphinx_markdown_builder ipython nbsphinx sphinxcontrib_katex pytorch_sphinx_theme  
-
+          pip install .
+          
       - name: "Build Sphinx Doc"
         run: |
           cd docs && make clean html 

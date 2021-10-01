@@ -7,11 +7,8 @@
 
 __version__ = "0.0.1"
 
+from . import functional, init, normalizers, utils
 from .modules import *
-from . import functional
-from . import init
-from . import normalizers
-from . import utils
 
 __all__ = [
     "FrobeniusConv2d",
