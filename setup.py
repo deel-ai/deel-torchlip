@@ -53,10 +53,8 @@ setuptools.setup(
     install_requires=[
         "numpy",
         "inflection",
-        "torch_testing",
         "numpy",
         "torch",
-        "sphinxcontrib_katex",
     ],
     license="MIT",
     extras_require={"dev": dev_requires, "doc": docs_requires},
@@ -68,6 +66,5 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-
     python_requires=">=3.6",
 )
