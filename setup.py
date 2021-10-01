@@ -61,5 +61,13 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+
+    # Requirements:
+    install_requires=[
+        "torch_testing",
+        "inflection",
+        "numpy",
+        "torch",
+    ],
     python_requires=">=3.6",
 )
