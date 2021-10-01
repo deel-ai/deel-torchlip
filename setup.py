@@ -50,7 +50,13 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/deel-ai/torchlip",
     packages=setuptools.find_namespace_packages(include=["deel.*"]),
-    install_requires=["numpy", "inflection"],
+    install_requires=[
+        "numpy",
+        "inflection",
+        "torch_testing",
+        "numpy",
+        "torch",
+    ],
     license="MIT",
     extras_require={"dev": dev_requires, "doc": docs_requires},
     classifiers=[
@@ -62,12 +68,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
 
-    # Requirements:
-    install_requires=[
-        "torch_testing",
-        "inflection",
-        "numpy",
-        "torch",
-    ],
     python_requires=">=3.6",
 )
