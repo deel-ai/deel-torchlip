@@ -1,0 +1,684 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Example 3: HKR classifier on MNIST dataset &mdash; torchlip 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+  <link rel="canonical" href="https://torchlip.readthedocs.io/en/latest/wasserstein_classification_MNIST08.html" />
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" />
+  <link rel="prev" title="Example 2: HKR classifier on toy dataset" href="wasserstein_toy_classification.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+
+      <a class="header-logo" href="index.html" aria-label="TorchLip"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="index.html">Get Started</a>
+          </li>
+
+          <li>
+            <a href="deel.torchlip.html">API</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/deel-ai/torchlip">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p><span class="caption-text">Shortcuts</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example 3: HKR classifier on MNIST dataset</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Example 3: HKR classifier on MNIST dataset</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="_sources/wasserstein_classification_MNIST08.rst.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="example-3-hkr-classifier-on-mnist-dataset">
+<h1>Example 3: HKR classifier on MNIST dataset<a class="headerlink" href="#example-3-hkr-classifier-on-mnist-dataset" title="Permalink to this headline">¶</a></h1>
+<p>This notebook demonstrates how to learn a binary classifier on the
+MNIST0-8 dataset (MNIST with only 0 and 8).</p>
+<section id="data-preparation">
+<h2>1. Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h2>
+<p>For this task we will select two classes: 0 and 8. Labels are changed to
+{-1,1}, wich is compatible with the Hinge term used in the loss.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span>
+
+<span class="c1"># first we select the two classes</span>
+<span class="n">selected_classes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>  <span class="c1"># must be two classes as we perform binary classification</span>
+
+
+<span class="k">def</span> <span class="nf">prepare_data</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">class_a</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">class_b</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function convert the MNIST data to make it suitable for our binary classification</span>
+<span class="sd">    setup.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">targets</span>
+    <span class="c1"># select items from the two selected classes</span>
+    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">==</span> <span class="n">class_a</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="n">y</span> <span class="o">==</span> <span class="n">class_b</span>
+    <span class="p">)</span>  <span class="c1"># mask to select only items from class_a or class_b</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">mask</span><span class="p">]</span>
+
+    <span class="c1"># convert from range int[0,255] to float32[-1,1]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">/</span> <span class="mi">255</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="c1"># change label to binary classification {-1,1}</span>
+
+    <span class="n">y_</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+    <span class="n">y_</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">class_a</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">y_</span><span class="p">[</span><span class="n">y</span> <span class="o">==</span> <span class="n">class_b</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y_</span><span class="p">)</span>
+
+
+<span class="n">train</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;./data&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;./data&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># prepare the data</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">prepare_data</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">selected_classes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">selected_classes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">prepare_data</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">selected_classes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">selected_classes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="c1"># display infos about dataset</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;train set size: </span><span class="si">%i</span><span class="s2"> samples, classes proportions: </span><span class="si">%.3f</span><span class="s2"> percent&quot;</span>
+    <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">),</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">))</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;test set size: </span><span class="si">%i</span><span class="s2"> samples, classes proportions: </span><span class="si">%.3f</span><span class="s2"> percent&quot;</span>
+    <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">),</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">))</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">train</span> <span class="nb">set</span> <span class="n">size</span><span class="p">:</span> <span class="mi">11774</span> <span class="n">samples</span><span class="p">,</span> <span class="n">classes</span> <span class="n">proportions</span><span class="p">:</span> <span class="mf">50.306</span> <span class="n">percent</span>
+<span class="n">test</span> <span class="nb">set</span> <span class="n">size</span><span class="p">:</span> <span class="mi">1954</span> <span class="n">samples</span><span class="p">,</span> <span class="n">classes</span> <span class="n">proportions</span><span class="p">:</span> <span class="mf">50.154</span> <span class="n">percent</span>
+</pre></div>
+</div>
+</section>
+<section id="build-lipschitz-model">
+<h2>2. Build lipschitz Model<a class="headerlink" href="#build-lipschitz-model" title="Permalink to this headline">¶</a></h2>
+<p>Here the experiments are done with a only fully-connected layers but
+<code class="docutils literal notranslate"><span class="pre">torchlip</span></code> also provides state-of-the-art 1-Lipschitz convolutional
+layers.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">deel</span> <span class="kn">import</span> <span class="n">torchlip</span>
+
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+
+<span class="n">ninputs</span> <span class="o">=</span> <span class="mi">28</span> <span class="o">*</span> <span class="mi">28</span>
+<span class="n">wass</span> <span class="o">=</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">SpectralLinear</span><span class="p">(</span><span class="n">ninputs</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">FullSort</span><span class="p">(),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">SpectralLinear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">FullSort</span><span class="p">(),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">SpectralLinear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">FullSort</span><span class="p">(),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">FrobeniusLinear</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">wass</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span> <span class="n">model</span> <span class="n">contains</span> <span class="n">a</span> <span class="n">layer</span> <span class="n">which</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">a</span> <span class="n">Lipschitz</span> <span class="n">layer</span><span class="p">:</span> <span class="n">Flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end_dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span><span class="p">(</span>
+  <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">Flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end_dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">2</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
+  <span class="p">(</span><span class="mi">3</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">4</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
+  <span class="p">(</span><span class="mi">5</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">6</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
+  <span class="p">(</span><span class="mi">7</span><span class="p">):</span> <span class="n">FrobeniusLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="learn-classification-on-mnist">
+<h2>3. Learn classification on MNIST<a class="headerlink" href="#learn-classification-on-mnist" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deel.torchlip.functional</span> <span class="kn">import</span> <span class="n">kr_loss</span><span class="p">,</span> <span class="n">hkr_loss</span><span class="p">,</span> <span class="n">hinge_margin_loss</span>
+<span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">trange</span><span class="p">,</span> <span class="n">tqdm</span>
+
+<span class="c1"># training parameters</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">128</span>
+
+<span class="c1"># loss parameters</span>
+<span class="n">min_margin</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">wass</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+
+<span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">tepochs</span> <span class="o">=</span> <span class="n">trange</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tepochs</span><span class="p">:</span>
+    <span class="n">m_nc</span><span class="p">,</span> <span class="n">m_kr</span><span class="p">,</span> <span class="n">m_hm</span><span class="p">,</span> <span class="n">m_acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+
+    <span class="n">tdata</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
+    <span class="n">wass</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">tdata</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="n">m_nc</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">m_hm</span> <span class="o">+=</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span>
+        <span class="n">m_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">target</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">target</span>
+        <span class="p">)</span>
+        <span class="n">tdata</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="n">k</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
+                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
+                    <span class="s2">&quot;hm&quot;</span><span class="p">:</span> <span class="n">m_hm</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
+                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
+                <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">testo</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">testo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+    <span class="n">testo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="n">postfix</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="sa">f</span><span class="s2">&quot;train_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+            <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
+            <span class="s2">&quot;hm&quot;</span><span class="p">:</span> <span class="n">m_hm</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
+            <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">}</span>
+    <span class="n">postfix</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+        <span class="p">{</span>
+            <span class="sa">f</span><span class="s2">&quot;val_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
+                <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">hkr_loss</span><span class="p">(</span>
+                    <span class="n">testo</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span>
+                <span class="p">),</span>
+                <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
+                <span class="s2">&quot;hm&quot;</span><span class="p">:</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">min_margin</span><span class="p">),</span>
+                <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                <span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+            <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="n">tepochs</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">postfix</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/5 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+</section>
+<section id="evaluate-the-lipschitz-constant-of-our-networks">
+<h2>4. Evaluate the Lipschitz constant of our networks<a class="headerlink" href="#evaluate-the-lipschitz-constant-of-our-networks" title="Permalink to this headline">¶</a></h2>
+<section id="empirical-evaluation">
+<h3>4.1. Empirical evaluation<a class="headerlink" href="#empirical-evaluation" title="Permalink to this headline">¶</a></h3>
+<p>We can estimate the Lipschitz constant by evaluating</p>
+<div class="math">
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><mi>F</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy="false">)</mo><mo>−</mo><mi>F</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy="false">)</mo><mi mathvariant="normal">∥</mi><mrow></mrow></mrow><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><msub><mi>x</mi><mn>2</mn></msub><mo>−</mo><msub><mi>x</mi><mn>1</mn></msub><mi mathvariant="normal">∥</mi><mrow></mrow></mrow></mfrac><mspace width="1em"/><mtext>or</mtext><mspace width="1em"/><mfrac><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><mi>F</mi><mo stretchy="false">(</mo><mi>x</mi><mo>+</mo><mi>ϵ</mi><mo stretchy="false">)</mo><mo>−</mo><mi>F</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mi mathvariant="normal">∥</mi><mrow></mrow></mrow><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><mi>ϵ</mi><mi mathvariant="normal">∥</mi><mrow></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">\frac{\Vert{}F(x_2) - F(x_1)\Vert{}}{\Vert{}x_2 - x_1\Vert{}} \quad\text{or}\quad
+\frac{\Vert{}F(x + \epsilon) - F(x)\Vert{}}{\Vert{}\epsilon\Vert{}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.363em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∥</span><span class="mord"></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">∥</span><span class="mord"></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:1em;"></span><span class="mord text"><span class="mord">or</span></span><span class="mspace" style="margin-right:1em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal">ϵ</span><span class="mord">∥</span><span class="mord"></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathnormal">ϵ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mord">∥</span><span class="mord"></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div><p>for various inputs.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
+
+<span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">64</span><span class="p">):</span>
+    <span class="n">eps</span> <span class="o">=</span> <span class="mf">1e-3</span>
+    <span class="n">batch</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">train_loader</span><span class="p">))</span>
+    <span class="n">dist</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">distributions</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="o">-</span><span class="n">eps</span><span class="p">,</span> <span class="o">+</span><span class="n">eps</span><span class="p">)</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">y1</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="n">y2</span> <span class="o">=</span> <span class="n">wass</span><span class="p">((</span><span class="n">batch</span> <span class="o">+</span> <span class="n">dist</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y2</span> <span class="o">-</span> <span class="n">y1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dist</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.3460</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
+
+<span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">batch</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="n">xd</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">yd</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">yd</span> <span class="o">/</span> <span class="n">xd</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.9074</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As we can see, using the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϵ</mi></mrow><annotation encoding="application/x-tex">\epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">ϵ</span></span></span></span></span>-version, we greatly
+under-estimate the Lipschitz constant. Using the train dataset, we find
+a Lipschitz constant close to 0.9, which is better, but our network
+should be 1-Lipschitz.</p>
+</section>
+<section id="singular-value-decomposition">
+<h3>4.1. Singular-Value Decomposition<a class="headerlink" href="#singular-value-decomposition" title="Permalink to this headline">¶</a></h3>
+<p>Since our network is only made of linear layers and <code class="docutils literal notranslate"><span class="pre">FullSort</span></code>
+activation, we can compute <em>Singular-Value Decomposition</em> (SVD) of our
+weight matrix and check that, for each linear layer, all singular values
+are 1.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== Before export ===&quot;</span><span class="p">)</span>
+<span class="n">layers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wass</span><span class="o">.</span><span class="n">children</span><span class="p">())</span>
+<span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">weight</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">, min=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2">, max=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">===</span> <span class="n">Before</span> <span class="n">export</span> <span class="o">===</span>
+<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9997813701629639</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0002498626708984</span>
+<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9998164176940918</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0001946687698364</span>
+<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.99966961145401</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0003477334976196</span>
+<span class="n">FrobeniusLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+</pre></div>
+</div>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">wexport</span> <span class="o">=</span> <span class="n">wass</span><span class="o">.</span><span class="n">vanilla_export</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=== After export ===&quot;</span><span class="p">)</span>
+<span class="n">layers</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">wexport</span><span class="o">.</span><span class="n">children</span><span class="p">())</span>
+<span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">layer</span><span class="o">.</span><span class="n">weight</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">svd</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">layer</span><span class="si">}</span><span class="s2">, min=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">}</span><span class="s2">, max=</span><span class="si">{</span><span class="n">s</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">===</span> <span class="n">After</span> <span class="n">export</span> <span class="o">===</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9997813701629639</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0002498626708984</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9998164176940918</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0001946687698364</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.99966961145401</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0003477334976196</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+</pre></div>
+</div>
+<p>As we can see, all our singular values are very close to one.</p>
+</section>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="wasserstein_toy_classification.html" class="btn btn-neutral" title="Example 2: HKR classifier on toy dataset" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  <hr>
+
+  <!-- Spacing. -->
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, IRT Antoine de Saint Exupéry - All rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry, CRIAQ and ANITI..
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using <a href="https://github.com/pytorch/pytorch_sphinx_theme">PyTorch's theme</a>
+        provided originally by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+      <div>
+      </div>
+    
+
+  <div role="contentinfo">
+  </div> 
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Example 3: HKR classifier on MNIST dataset</a><ul>
+<li><a class="reference internal" href="#data-preparation">1. Data preparation</a></li>
+<li><a class="reference internal" href="#build-lipschitz-model">2. Build lipschitz Model</a></li>
+<li><a class="reference internal" href="#learn-classification-on-mnist">3. Learn classification on MNIST</a></li>
+<li><a class="reference internal" href="#evaluate-the-lipschitz-constant-of-our-networks">4. Evaluate the Lipschitz constant of our networks</a><ul>
+<li><a class="reference internal" href="#empirical-evaluation">4.1. Empirical evaluation</a></li>
+<li><a class="reference internal" href="#singular-value-decomposition">4.1. Singular-Value Decomposition</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="./"
+    src="_static/documentation_options.js"></script>
+  <script src="_static/jquery.js"></script>
+  <script src="_static/underscore.js"></script>
+  <script src="_static/doctools.js"></script>
+  <script src="_static/language_data.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <!-- Keep this empty div for the theme -->
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://shiftlab.github.io/pytorch/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Home</a></li>
+            <li><a href="https://pytorch.org">PyTorch</a></li>
+            <li><a href="/">Get Started</a></li>
+            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    </div>
+  </footer>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://shiftlab.github.io/pytorch/" aria-label="torchutils"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="/">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/deel-ai/torchlip">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script src="https://cdn.jsdelivr.net/npm/anchor-js/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

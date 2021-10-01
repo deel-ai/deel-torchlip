@@ -1,0 +1,837 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>deel.torchlip &mdash; torchlip 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+  <link rel="canonical" href="https://torchlip.readthedocs.io/en/latest/deel.torchlip.html" />
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+
+      <a class="header-logo" href="index.html" aria-label="TorchLip"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="index.html">Get Started</a>
+          </li>
+
+          <li>
+            <a href="#">API</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/deel-ai/torchlip">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p><span class="caption-text">Shortcuts</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_classification_MNIST08.html">Example 3: HKR classifier on MNIST dataset</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>deel.torchlip</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="_sources/deel.torchlip.rst.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="deel-torchlip">
+<span id="torchlip-api"></span><h1>deel.torchlip<a class="headerlink" href="#deel-torchlip" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deel.torchlip.utils.html">deel.torchlip.utils</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deel.torchlip.utils.html#normalization-hooks">Normalization hooks</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.utils.html#bjorck-normalization"><span class="hidden-section">Bjorck normalization</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.utils.html#frobenius-normalization"><span class="hidden-section">Frobenius normalization</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.utils.html#l-conv-normalization"><span class="hidden-section">L-Conv normalization</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="deel.torchlip.utils.html#utilities">Utilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deel.torchlip.functional.html">deel.torchlip.functional</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deel.torchlip.functional.html#non-linear-activation-functions">Non-linear activation functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.functional.html#invertible-down-up-sample"><span class="hidden-section">invertible down/up sample</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.functional.html#max-min"><span class="hidden-section">max_min</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.functional.html#group-sort"><span class="hidden-section">group_sort</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.functional.html#others"><span class="hidden-section">others</span></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="deel.torchlip.functional.html#loss-functions">Loss functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.functional.html#binary-losses"><span class="hidden-section">Binary losses</span></a></li>
+<li class="toctree-l3"><a class="reference internal" href="deel.torchlip.functional.html#multiclass-losses"><span class="hidden-section">multiclass losses</span></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deel.torchlip.init.html">deel.torchlip.init</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deel.torchlip.init.html#module-deel.torchlip.init">Initializers</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="deel.torchlip.normalizers.html">deel.torchlip.normalizers module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="deel.torchlip.normalizers.html#module-deel.torchlip.normalizers">Normalizers</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<section id="containers">
+<h2>Containers<a class="headerlink" href="#containers" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="deel.torchlip.LipschitzModule">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">LipschitzModule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">coefficient_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/module.html#LipschitzModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.LipschitzModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class allow to set lipschitz factor of a layer. Lipschitz layer must inherit
+this class to allow user to set the lipschitz factor.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This class only regroup useful functions when developing new Lipschitz layers.
+But it does not ensure any property about the layer. This means that
+inheriting from this class won’t ensure anything about the lipschitz constant.</p>
+</div>
+<dl class="py method">
+<dt id="deel.torchlip.LipschitzModule.vanilla_export">
+<em class="property">abstract </em><code class="sig-name descname">vanilla_export</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/module.html#LipschitzModule.vanilla_export"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.LipschitzModule.vanilla_export" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert this layer to a corresponding vanilla torch layer (when possible).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A vanilla torch version of this layer.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.Sequential">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">Sequential</code><span class="sig-paren">(</span><em class="sig-param"><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/module.html#Sequential"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.Sequential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equivalent of torch.Sequential but allow to set k-lip factor globally. Also
+support condensation and vanilla exportation.
+For now constant repartition is implemented (each layer
+get n_sqrt(k_lip_factor), where n is the number of layers)
+But in the future other repartition function may be implemented.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>layers</strong> – list of layers to add to the model.</p></li>
+<li><p><strong>name</strong> – name of the model, can be None</p></li>
+<li><p><strong>k_coef_lip</strong> – the Lipschitz coefficient to ensure globally on the model.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="convolution-layers">
+<h2>Convolution Layers<a class="headerlink" href="#convolution-layers" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="deel.torchlip.SpectralConv2d">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">SpectralConv2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">out_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">stride</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'zeros'</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">niter_spectral</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="n">niter_bjorck</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">15</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/conv.html#SpectralConv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.SpectralConv2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is a Conv2d Layer constrained such that all singular of it’s kernel
+are 1. The computation based on BjorckNormalizer algorithm. As this is not
+enough to ensure 1-Lipschitz a coercive coefficient is applied on the
+output.
+The computation is done in three steps:</p>
+<ol class="arabic simple">
+<li><p>reduce the largest singular value to 1, using iterated power method.</p></li>
+<li><p>increase other singular values to 1, using BjorckNormalizer algorithm.</p></li>
+<li><p>divide the output by the Lipschitz bound to ensure k-Lipschitz.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_channels</strong> (<em>int</em>) – Number of channels in the input image</p></li>
+<li><p><strong>out_channels</strong> (<em>int</em>) – Number of channels produced by the convolution</p></li>
+<li><p><strong>kernel_size</strong> (<em>int</em><em> or </em><em>tuple</em>) – Size of the convolving kernel</p></li>
+<li><p><strong>stride</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Stride of the convolution.</p></li>
+<li><p><strong>padding</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Zero-padding added to both sides of
+the input.</p></li>
+<li><p><strong>padding_mode</strong> (<em>string</em><em>, </em><em>optional</em>) – <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code>, <code class="docutils literal notranslate"><span class="pre">'reflect'</span></code>,
+<code class="docutils literal notranslate"><span class="pre">'replicate'</span></code> or <code class="docutils literal notranslate"><span class="pre">'circular'</span></code>. Default: <code class="docutils literal notranslate"><span class="pre">'zeros'</span></code></p></li>
+<li><p><strong>dilation</strong> (<em>int</em><em> or </em><em>tuple</em><em>, </em><em>optional</em>) – Spacing between kernel elements.</p></li>
+<li><p><strong>groups</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of blocked connections from input
+channels to output channels.</p></li>
+<li><p><strong>bias</strong> (<em>bool</em><em>, </em><em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, adds a learnable bias to the
+output.</p></li>
+<li><p><strong>k_coef_lip</strong> – Lipschitz constant to ensure.</p></li>
+<li><p><strong>niter_spectral</strong> – Number of iteration to find the maximum singular value.</p></li>
+<li><p><strong>niter_bjorck</strong> – Number of iteration with BjorckNormalizer algorithm.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This documentation reuse the body of the original torch.nn.Conv2D doc.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.FrobeniusConv2d">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">FrobeniusConv2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">out_channels</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">stride</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">bias</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">padding_mode</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'zeros'</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/conv.html#FrobeniusConv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.FrobeniusConv2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as SpectralConv2d but in the case of a single output.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</section>
+<section id="pooling-layers">
+<h2>Pooling Layers<a class="headerlink" href="#pooling-layers" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="deel.torchlip.ScaledAdaptiveAvgPool2d">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">ScaledAdaptiveAvgPool2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/pooling.html#ScaledAdaptiveAvgPool2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.ScaledAdaptiveAvgPool2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a 2D adaptive max pooling over an input signal composed of several
+input planes.</p>
+<p>The output is of size H x W, for any input size.
+The number of output features is equal to the number of input planes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_size</strong> – The target output size of the image of the form H x W.
+Can be a tuple (H, W) or a single H for a square image H x H.
+H and W can be either a <code class="docutils literal notranslate"><span class="pre">int</span></code>, or <code class="docutils literal notranslate"><span class="pre">None</span></code> which means the
+size will be the same as that of the input.</p></li>
+<li><p><strong>k_coef_lip</strong> – The Lipschitz factor to ensure. The output will be scaled
+by this factor.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This documentation reuse the body of the original
+nn.AdaptiveAvgPool2d doc.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.ScaledAvgPool2d">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">ScaledAvgPool2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">stride</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">ceil_mode</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">count_include_pad</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">divisor_override</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/pooling.html#ScaledAvgPool2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.ScaledAvgPool2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average pooling operation for spatial data, but with a lipschitz bound.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kernel_size</strong> – The size of the window.</p></li>
+<li><p><strong>stride</strong> – The stride of the window. Must be None or equal to
+<code class="docutils literal notranslate"><span class="pre">kernel_size</span></code>. Default value is <code class="docutils literal notranslate"><span class="pre">kernel_size</span></code>.</p></li>
+<li><p><strong>padding</strong> – Implicit zero-padding to be added on both sides. Must
+be zero.</p></li>
+<li><p><strong>ceil_mode</strong> – When True, will use ceil instead of floor to compute the output
+shape.</p></li>
+<li><p><strong>count_include_pad</strong> – When True, will include the zero-padding in the averaging
+calculation.</p></li>
+<li><p><strong>divisor_override</strong> – If specified, it will be used as divisor, otherwise
+<code class="docutils literal notranslate"><span class="pre">kernel_size</span></code> will be used.</p></li>
+<li><p><strong>k_coef_lip</strong> – The Lipschitz factor to ensure. The output will be scaled
+by this factor.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This documentation reuse the body of the original torch.nn.AveragePooling2D
+doc.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.ScaledL2NormPool2d">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">ScaledL2NormPool2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">stride</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">ceil_mode</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">False</span></em>, <em class="sig-param"><span class="n">count_include_pad</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">divisor_override</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">eps_grad_sqrt</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1e-06</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/pooling.html#ScaledL2NormPool2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.ScaledL2NormPool2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Average pooling operation for spatial data, with a lipschitz bound. This
+pooling operation is norm preserving (gradient=1 almost everywhere).</p>
+<p>[1] Y.-L.Boureau, J.Ponce, et Y.LeCun, « A Theoretical Analysis of Feature
+Pooling in Visual Recognition »,p.8.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>kernel_size</strong> – The size of the window.</p></li>
+<li><p><strong>stride</strong> – The stride of the window. Must be None or equal to
+<code class="docutils literal notranslate"><span class="pre">kernel_size</span></code>. Default value is <code class="docutils literal notranslate"><span class="pre">kernel_size</span></code>.</p></li>
+<li><p><strong>padding</strong> – Implicit zero-padding to be added on both sides. Must
+be zero.</p></li>
+<li><p><strong>ceil_mode</strong> – When True, will use ceil instead of floor to compute the output
+shape.</p></li>
+<li><p><strong>count_include_pad</strong> – When True, will include the zero-padding in the averaging
+calculation.</p></li>
+<li><p><strong>divisor_override</strong> – If specified, it will be used as divisor, otherwise
+<code class="docutils literal notranslate"><span class="pre">kernel_size</span></code> will be used.</p></li>
+<li><p><strong>k_coef_lip</strong> – The lipschitz factor to ensure. The output will be
+scaled by this factor.</p></li>
+<li><p><strong>eps_grad_sqrt</strong> – Epsilon value to avoid numerical instability
+due to non-defined gradient at 0 in the sqrt function</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="non-linear-activations">
+<h2>Non-linear Activations<a class="headerlink" href="#non-linear-activations" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="deel.torchlip.InvertibleDownSampling">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">InvertibleDownSampling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span></span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/downsampling.html#InvertibleDownSampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.InvertibleDownSampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.InvertibleUpSampling">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">InvertibleUpSampling</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union<span class="p">[</span>int<span class="p">, </span>Tuple<span class="p">[</span>int<span class="p">, </span><span class="p">…</span><span class="p">]</span><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/upsampling.html#InvertibleUpSampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.InvertibleUpSampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.MaxMin">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">MaxMin</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dim</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/activation.html#MaxMin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.MaxMin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies max-min activation.</p>
+<p>If <code class="docutils literal notranslate"><span class="pre">input</span></code> is a tensor of shape <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mi>C</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N, C)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span></span> and <code class="docutils literal notranslate"><span class="pre">dim</span></code> is
+<code class="docutils literal notranslate"><span class="pre">None</span></code>, the output can be described as:</p>
+<div class="math">
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>out</mtext><mo stretchy="false">(</mo><msub><mi>N</mi><mi>i</mi></msub><mo separator="true">,</mo><msub><mi>C</mi><mrow><mn>2</mn><mi>j</mi></mrow></msub><mo stretchy="false">)</mo><mo>=</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">(</mo><mtext>input</mtext><mo stretchy="false">(</mo><msub><mi>N</mi><mi>i</mi></msub><mo separator="true">,</mo><msub><mi>C</mi><mi>j</mi></msub><mo stretchy="false">)</mo><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo><mspace linebreak="newline"></mspace><mtext>out</mtext><mo stretchy="false">(</mo><msub><mi>N</mi><mi>i</mi></msub><mo separator="true">,</mo><msub><mi>C</mi><mrow><mn>2</mn><mi>j</mi><mo>+</mo><mn>1</mn></mrow></msub><mo stretchy="false">)</mo><mo>=</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">(</mo><mo>−</mo><mtext>input</mtext><mo stretchy="false">(</mo><msub><mi>N</mi><mi>i</mi></msub><mo separator="true">,</mo><msub><mi>C</mi><mi>j</mi></msub><mo stretchy="false">)</mo><mo separator="true">,</mo><mn>0</mn><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\text{out}(N_i, C_{2j}) = \max(\text{input}(N_i, C_j), 0)\\
+\text{out}(N_i, C_{2j + 1}) = \max(-\text{input}(N_i, C_j), 0)
+
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="mord text"><span class="mord">out</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="mop">max</span><span class="mopen">(</span><span class="mord text"><span class="mord">input</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">0</span><span class="mclose">)</span></span><span class="mspace newline"></span><span class="base"><span class="strut" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="mord text"><span class="mord">out</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">2</span><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span><span class="mbin mtight">+</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.036108em;vertical-align:-0.286108em;"></span><span class="mop">max</span><span class="mopen">(</span><span class="mord">−</span><span class="mord text"><span class="mord">input</span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.10903em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">0</span><span class="mclose">)</span></span></span></span></span></div><p>where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span></span></span></span></span> is the batch size and <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>C</mi></mrow><annotation encoding="application/x-tex">C</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span></span></span></span></span> is the size of the
+tensor.</p>
+<p>See also <a class="reference internal" href="deel.torchlip.functional.html#deel.torchlip.functional.max_min" title="deel.torchlip.functional.max_min"><code class="xref py py-func docutils literal notranslate"><span class="pre">functional.max_min()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim</strong> – The dimension to apply max-min. If None, will apply to the
+0th dimension if the shape of input is <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>C</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(C)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span></span> or to the
+first if its <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mi>C</mi><mo separator="true">,</mo><mo>∗</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N, C, *)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mclose">)</span></span></span></span></span>.</p></li>
+<li><p><strong>k_coef_lip</strong> – The lipschitz coefficient to enforce.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>Input: <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>C</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(C)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span></span> or <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mi>C</mi><mo separator="true">,</mo><mo>∗</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N, C, *)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mclose">)</span></span></span></span></span> where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∗</mo></mrow><annotation encoding="application/x-tex">*</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span></span></span></span></span> means
+any number of additional dimensions.</p></li>
+<li><p>Output: <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mn>2</mn><mi>C</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(2C)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span></span> is the input shape was <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>C</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(C)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mclose">)</span></span></span></span></span>, or
+<span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mn>2</mn><mi>C</mi><mo separator="true">,</mo><mo>∗</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N, 2C, *)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">2</span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mclose">)</span></span></span></span></span> if <code class="docutils literal notranslate"><span class="pre">dim</span></code> is <code class="docutils literal notranslate"><span class="pre">None</span></code>, otherwise
+<span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mo>∗</mo><mo separator="true">,</mo><mn>2</mn><msub><mi>C</mi><mrow><mi>d</mi><mi>i</mi><mi>m</mi></mrow></msub><mo separator="true">,</mo><mo>∗</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N, *, 2C_{dim}, *)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">2</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">im</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mclose">)</span></span></span></span></span> where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>C</mi><mrow><mi>d</mi><mi>i</mi><mi>m</mi></mrow></msub></mrow><annotation encoding="application/x-tex">C_{dim}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.33610799999999996em;"><span style="top:-2.5500000000000003em;margin-left:-0.07153em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">d</span><span class="mord mathnormal mtight">im</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span> is the
+dimension corresponding to the <code class="docutils literal notranslate"><span class="pre">dim</span></code> parameter.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>M. Blot, M. Cord, et N. Thome, « Max-min convolutional neural networks
+for image classification », in 2016 IEEE International Conference on Image
+Processing (ICIP), Phoenix, AZ, USA, 2016, p. 3678‑3682.</p>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.GroupSort">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">GroupSort</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group_size</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/activation.html#GroupSort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.GroupSort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies group-sort activation.</p>
+<p>The activation works by first reshaping the input to a tensor
+of shape <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><msup><mi>N</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo separator="true">,</mo><mi>G</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N&#x27;, G)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.001892em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">G</span><span class="mclose">)</span></span></span></span></span> where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi></mrow><annotation encoding="application/x-tex">G</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">G</span></span></span></span></span> is the group size and
+<span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>N</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup></mrow><annotation encoding="application/x-tex">N&#x27;</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.751892em;vertical-align:0em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span></span></span></span></span> the number of groups, then sorting each group of
+size <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>G</mi></mrow><annotation encoding="application/x-tex">G</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal">G</span></span></span></span></span> and then reshaping to the original input shape.</p>
+<p>See also <a class="reference internal" href="deel.torchlip.functional.html#deel.torchlip.functional.group_sort" title="deel.torchlip.functional.group_sort"><code class="xref py py-func docutils literal notranslate"><span class="pre">functional.group_sort()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>group_size</strong> – group size used when sorting. When None group size</p></li>
+<li><p><strong>set to input size</strong> (<em>is</em>) – </p></li>
+<li><p><strong>data_format</strong> – either channels_first or channels_last</p></li>
+<li><p><strong>k_coef_lip</strong> – The lipschitz coefficient to enforce.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt>Input: <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mo>∗</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N,∗)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mclose">)</span></span></span></span></span> where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∗</mo></mrow><annotation encoding="application/x-tex">*</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span></span></span></span></span> means, any number</dt><dd><p>of additional dimensions</p>
+</dd>
+</dl>
+</li>
+<li><p>Output: <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mo>∗</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N,*)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mclose">)</span></span></span></span></span>, same shape as the input.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="go">tensor([[ 0.2805, -2.0528,  0.6478,  0.5745],</span>
+<span class="go">        [-1.4075,  0.0435, -1.2408,  0.2945]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">torchlip</span><span class="o">.</span><span class="n">GroupSort</span><span class="p">(</span><span class="mi">4</span><span class="p">)(</span><span class="n">m</span><span class="p">)</span>
+<span class="go">tensor([[-2.0528,  0.2805,  0.5745,  0.6478],</span>
+<span class="go">        [-1.4075, -1.2408,  0.0435,  0.2945]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.GroupSort2">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">GroupSort2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/activation.html#GroupSort2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.GroupSort2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies group-sort activation with a group size of 2.</p>
+<p>See <a class="reference internal" href="#deel.torchlip.GroupSort" title="deel.torchlip.GroupSort"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupSort</span></code></a> for details.</p>
+<p>See also <a class="reference internal" href="deel.torchlip.functional.html#deel.torchlip.functional.group_sort_2" title="deel.torchlip.functional.group_sort_2"><code class="xref py py-func docutils literal notranslate"><span class="pre">functional.group_sort_2()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>k_coef_lip</strong> – The lipschitz coefficient to enforce.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.FullSort">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">FullSort</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/activation.html#FullSort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.FullSort" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies full-sort activation. This is equivalent to group-sort with
+a group-size equals to the size of the input.</p>
+<p>See <a class="reference internal" href="#deel.torchlip.GroupSort" title="deel.torchlip.GroupSort"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupSort</span></code></a> for details.</p>
+<p>See also <a class="reference internal" href="deel.torchlip.functional.html#deel.torchlip.functional.full_sort" title="deel.torchlip.functional.full_sort"><code class="xref py py-func docutils literal notranslate"><span class="pre">functional.full_sort()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>k_coef_lip</strong> – The lipschitz coefficient to enforce.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.LPReLU">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">LPReLU</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">num_parameters</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">1</span></em>, <em class="sig-param"><span class="n">init</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.25</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/activation.html#LPReLU"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.LPReLU" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies element-wise PReLU activation with Lipschitz constraint:</p>
+<div class="math">
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>L</mi><mi>P</mi><mi>R</mi><mi>e</mi><mi>L</mi><mi>U</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">(</mo><mn>0</mn><mo separator="true">,</mo><mi>x</mi><mo stretchy="false">)</mo><mo>+</mo><msup><mi>a</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo>∗</mo><mi>min</mi><mo>⁡</mo><mo stretchy="false">(</mo><mn>0</mn><mo separator="true">,</mo><mi>x</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">LPReLU(x) = \max(0, x) + a&#x27; * \min(0, x)
+
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mord mathnormal" style="margin-right:0.00773em;">PR</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.10903em;">LU</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">max</span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.801892em;vertical-align:0em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.801892em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">min</span><span class="mopen">(</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal">x</span><span class="mclose">)</span></span></span></span></span></div><p>or</p>
+<div class="math">
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>L</mi><mi>P</mi><mi>R</mi><mi>e</mi><mi>L</mi><mi>U</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><mtext>LipschitzPReLU</mtext><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><mrow><mo fence="true">{</mo><mtable rowspacing="0.3600em" columnalign="left left" columnspacing="1em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><mi>x</mi><mo separator="true">,</mo></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><mtext> if </mtext><mi>x</mi><mo>≥</mo><mn>0</mn></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><msup><mi>a</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo>∗</mo><mi>x</mi><mo separator="true">,</mo></mrow></mstyle></mtd><mtd><mstyle scriptlevel="0" displaystyle="false"><mtext> otherwise </mtext></mstyle></mtd></mtr></mtable></mrow></mrow><annotation encoding="application/x-tex">LPReLU(x) =
+\text{LipschitzPReLU}(x) =
+\begin{cases}
+x, &amp; \text{ if } x \geq 0 \\
+a&#x27; * x, &amp; \text{ otherwise }
+\end{cases}
+
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mord mathnormal" style="margin-right:0.00773em;">PR</span><span class="mord mathnormal">e</span><span class="mord mathnormal" style="margin-right:0.10903em;">LU</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">LipschitzPReLU</span></span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:3.0000299999999998em;vertical-align:-1.25003em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;"><span class="delimsizing size4">{</span></span><span class="mord"><span class="mtable"><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.69em;"><span style="top:-3.69em;"><span class="pstrut" style="height:3.008em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="mpunct">,</span></span></span><span style="top:-2.25em;"><span class="pstrut" style="height:3.008em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathnormal">x</span><span class="mpunct">,</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.19em;"><span></span></span></span></span></span><span class="arraycolsep" style="width:1em;"></span><span class="col-align-l"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.69em;"><span style="top:-3.69em;"><span class="pstrut" style="height:3.008em;"></span><span class="mord"><span class="mord text"><span class="mord"> if </span></span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">≥</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mord">0</span></span></span><span style="top:-2.25em;"><span class="pstrut" style="height:3.008em;"></span><span class="mord"><span class="mord text"><span class="mord"> otherwise </span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.19em;"><span></span></span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div><p>where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>a</mi><mo mathvariant="normal" lspace="0em" rspace="0em">′</mo></msup><mo>=</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>min</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>a</mi><mo separator="true">,</mo><mi>k</mi><mo stretchy="false">)</mo><mo separator="true">,</mo><mo>−</mo><mi>k</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">a&#x27; = \max(\min(a, k), -k)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.751892em;vertical-align:0em;"></span><span class="mord"><span class="mord mathnormal">a</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">max</span><span class="mopen">(</span><span class="mop">min</span><span class="mopen">(</span><span class="mord mathnormal">a</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">−</span><span class="mord mathnormal" style="margin-right:0.03148em;">k</span><span class="mclose">)</span></span></span></span></span>, and <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">a</span></span></span></span></span> is a learnable
+parameter.</p>
+<p>See also <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.PReLU.html#torch.nn.PReLU" title="(in PyTorch v1.9.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.PReLU</span></code></a> and <a class="reference internal" href="deel.torchlip.functional.html#deel.torchlip.functional.lipschitz_prelu" title="deel.torchlip.functional.lipschitz_prelu"><code class="xref py py-func docutils literal notranslate"><span class="pre">functional.lipschitz_prelu()</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_parameters</strong> – Number of <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">a</span></span></span></span></span> to learn. Although it</p></li>
+<li><p><strong>an int as input</strong> (<em>takes</em>) – </p></li>
+<li><p><strong>there are only two legitimate</strong> (<em>`</em>) – </p></li>
+<li><p><strong>values</strong> – 1, or the number of channels at input.</p></li>
+<li><p><strong>init</strong> – The initial value of <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">a</span></span></span></span></span>.</p></li>
+<li><p><strong>k_coef_lip</strong> – The lipschitz coefficient to enforce.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="linear-layers">
+<h2>Linear Layers<a class="headerlink" href="#linear-layers" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="deel.torchlip.SpectralLinear">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">SpectralLinear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_features</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">out_features</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">bias</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">niter_spectral</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="n">niter_bjorck</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">15</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/linear.html#SpectralLinear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.SpectralLinear" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class is a Linear Layer constrained such that all singular of it’s kernel
+are 1. The computation based on BjorckNormalizer algorithm.
+The computation is done in two steps:</p>
+<ol class="arabic simple">
+<li><p>reduce the larget singular value to 1, using iterated power method.</p></li>
+<li><p>increase other singular values to 1, using BjorckNormalizer algorithm.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>in_features</strong> – Size of each input sample.</p></li>
+<li><p><strong>out_features</strong> – Size of each output sample.</p></li>
+<li><p><strong>bias</strong> – If <code class="docutils literal notranslate"><span class="pre">False</span></code>, the layer will not learn an additive bias.</p></li>
+<li><p><strong>k_coef_lip</strong> – Lipschitz constant to ensure.</p></li>
+<li><p><strong>niter_spectral</strong> – Number of iteration to find the maximum singular value.</p></li>
+<li><p><strong>niter_bjorck</strong> – Number of iteration with BjorckNormalizer algorithm.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Shape:</dt><dd><ul class="simple">
+<li><p>Input: <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mo>∗</mo><mo separator="true">,</mo><msub><mi>H</mi><mrow><mi>i</mi><mi>n</mi></mrow></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N, *, H_{in})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.08125em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">in</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span> where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>∗</mo></mrow><annotation encoding="application/x-tex">*</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span></span></span></span></span> means any number of
+additional dimensions and <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>H</mi><mrow><mi>i</mi><mi>n</mi></mrow></msub><mo>=</mo><mtext>in_features</mtext></mrow><annotation encoding="application/x-tex">H_{in} = \text{in\_features}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.08125em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">in</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">in_features</span></span></span></span></span></span></p></li>
+<li><p>Output: <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false">(</mo><mi>N</mi><mo separator="true">,</mo><mo>∗</mo><mo separator="true">,</mo><msub><mi>H</mi><mrow><mi>o</mi><mi>u</mi><mi>t</mi></mrow></msub><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">(N, *, H_{out})</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">(</span><span class="mord mathnormal" style="margin-right:0.10903em;">N</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∗</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.08125em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span></span></span></span></span> where all but the last dimension
+are the same shape as the input and
+<span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>H</mi><mrow><mi>o</mi><mi>u</mi><mi>t</mi></mrow></msub><mo>=</mo><mtext>out_features</mtext></mrow><annotation encoding="application/x-tex">H_{out} = \text{out\_features}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.08125em;">H</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2805559999999999em;"><span style="top:-2.5500000000000003em;margin-left:-0.08125em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">o</span><span class="mord mathnormal mtight">u</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.00444em;vertical-align:-0.31em;"></span><span class="mord text"><span class="mord">out_features</span></span></span></span></span></span>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>This documentation reuse the body of the original torch.nn.Linear doc.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.FrobeniusLinear">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">FrobeniusLinear</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">in_features</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">out_features</span><span class="p">:</span> <span class="n">int</span></em>, <em class="sig-param"><span class="n">bias</span><span class="p">:</span> <span class="n">bool</span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">k_coef_lip</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/linear.html#FrobeniusLinear"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.FrobeniusLinear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same a SpectralLinear, but in the case of a single output.</p>
+<p>Initializes internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</section>
+<section id="loss-functions">
+<h2>Loss Functions<a class="headerlink" href="#loss-functions" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="deel.torchlip.KRLoss">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">KRLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">(0, 1)</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/loss.html#KRLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.KRLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loss that estimate the Wasserstein-1 distance using the Kantorovich-Rubinstein
+duality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>true_values</strong> – tuple containing the two label for each predicted class.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.NegKRLoss">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">NegKRLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">(0, 1)</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/loss.html#NegKRLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.NegKRLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loss that estimate the negative of the Wasserstein-1 distance using
+the Kantorovich-Rubinstein duality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>true_values</strong> – tuple containing the two label for each predicted class.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.HingeMarginLoss">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">HingeMarginLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_margin</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/loss.html#HingeMarginLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.HingeMarginLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hinge margin loss.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>min_margin</strong> – The minimal margin to enforce.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="deel.torchlip.HKRLoss">
+<em class="property">class </em><code class="sig-prename descclassname">deel.torchlip.</code><code class="sig-name descname">HKRLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">alpha</span><span class="p">:</span> <span class="n">float</span></em>, <em class="sig-param"><span class="n">min_margin</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple<span class="p">[</span>int<span class="p">, </span>int<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">(- 1, 1)</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/loss.html#HKRLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.HKRLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loss that estimate the Wasserstein-1 distance using the Kantorovich-Rubinstein
+duality with a hinge regularization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> – Regularization factor between the hinge and the KR loss.</p></li>
+<li><p><strong>min_margin</strong> – Minimal margin for the hinge loss.</p></li>
+<li><p><strong>true_values</strong> – tuple containing the two label for each predicted class.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+
+  <hr>
+
+  <!-- Spacing. -->
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, IRT Antoine de Saint Exupéry - All rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry, CRIAQ and ANITI..
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using <a href="https://github.com/pytorch/pytorch_sphinx_theme">PyTorch's theme</a>
+        provided originally by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+      <div>
+      </div>
+    
+
+  <div role="contentinfo">
+  </div> 
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">deel.torchlip</a><ul>
+<li><a class="reference internal" href="#containers">Containers</a></li>
+<li><a class="reference internal" href="#convolution-layers">Convolution Layers</a></li>
+<li><a class="reference internal" href="#pooling-layers">Pooling Layers</a></li>
+<li><a class="reference internal" href="#non-linear-activations">Non-linear Activations</a></li>
+<li><a class="reference internal" href="#linear-layers">Linear Layers</a></li>
+<li><a class="reference internal" href="#loss-functions">Loss Functions</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="./"
+    src="_static/documentation_options.js"></script>
+  <script src="_static/jquery.js"></script>
+  <script src="_static/underscore.js"></script>
+  <script src="_static/doctools.js"></script>
+  <script src="_static/language_data.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <!-- Keep this empty div for the theme -->
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://shiftlab.github.io/pytorch/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Home</a></li>
+            <li><a href="https://pytorch.org">PyTorch</a></li>
+            <li><a href="/">Get Started</a></li>
+            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    </div>
+  </footer>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://shiftlab.github.io/pytorch/" aria-label="torchutils"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="/">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/deel-ai/torchlip">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script src="https://cdn.jsdelivr.net/npm/anchor-js/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

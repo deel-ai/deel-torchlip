@@ -1,0 +1,422 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Welcome to torchlip documentation! &mdash; torchlip 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+  <link rel="canonical" href="https://torchlip.readthedocs.io/en/latest/index.html" />
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" />
+  <link rel="next" title="Example and usage" href="basic_example.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+
+      <a class="header-logo" href="#" aria-label="TorchLip"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="#">Get Started</a>
+          </li>
+
+          <li>
+            <a href="deel.torchlip.html">API</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/deel-ai/torchlip">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p><span class="caption-text">Shortcuts</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_classification_MNIST08.html">Example 3: HKR classifier on MNIST dataset</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="#">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Welcome to <code class="docutils literal notranslate"><span class="pre">torchlip</span></code> documentation!</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            
+              <!-- User defined GitHub URL -->
+              <a href="https://github.com/deel-ai/torchlip" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="welcome-to-torchlip-documentation">
+<h1>Welcome to <code class="docutils literal notranslate"><span class="pre">torchlip</span></code> documentation!<a class="headerlink" href="#welcome-to-torchlip-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Controlling the Lipschitz constant of a layer or a whole neural network has many applications ranging
+from adversarial robustness to Wasserstein distance estimation.</p>
+<p>This library provides implementation of <strong>k-Lispchitz layers for</strong> PyTorch.</p>
+<section id="content-of-the-library">
+<h2>Content of the library<a class="headerlink" href="#content-of-the-library" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>k-Lipschitz variant of PyTorch layers such as <code class="docutils literal notranslate"><span class="pre">Linear</span></code>, <code class="docutils literal notranslate"><span class="pre">Conv2d</span></code> and <code class="docutils literal notranslate"><span class="pre">AvgPool2d</span></code>,</p></li>
+<li><p>activation functions compatible with <code class="docutils literal notranslate"><span class="pre">pytorch</span></code>,</p></li>
+<li><p>initializers for <code class="docutils literal notranslate"><span class="pre">pytorch</span></code>,</p></li>
+<li><p>loss functions to work with Wasserstein distance estimations.</p></li>
+</ul>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>You can install <code class="docutils literal notranslate"><span class="pre">deel-torchlip</span></code> directly from pypi:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install deel-torchlip
+</pre></div>
+</div>
+<p>In order to use <code class="docutils literal notranslate"><span class="pre">torchlip</span></code>, you also need a <a class="reference external" href="https://pytorch.org/get-started/locally/#installing-on-linux">valid pytorch installation</a>.
+<code class="docutils literal notranslate"><span class="pre">torchlip</span></code> supports torch 1.7.0+.</p>
+</section>
+<section id="cite-this-work">
+<h2>Cite this work<a class="headerlink" href="#cite-this-work" title="Permalink to this headline">¶</a></h2>
+This library is the PyTorch equivalent of <a href="https://github.com/deel-ai/deel-lip"><code>deel-lip</code></a>,
+a Tensorflow library built to support the work presented in
+<a href="https://arxiv.org/abs/2006.06520"><i>Achieving robustness in classification using optimal transport with Hinge regularization</i></a>.
+This work can be cited as:<div class="highlight-latex notranslate"><div class="highlight"><pre><span></span>@misc<span class="nb">{</span>2006.06520,
+   Author = <span class="nb">{</span>
+      Mathieu Serrurier
+      and Franck Mamalet
+      and Alberto González-Sanz
+      and Thibaut Boissin
+      and Jean-Michel Loubes
+      and Eustasio del Barrio
+   <span class="nb">}</span>,
+   Title = <span class="nb">{</span>
+      Achieving robustness in classification using optimal transport with hinge regularization
+   <span class="nb">}</span>,
+   Year = <span class="nb">{</span>2020<span class="nb">}</span>,
+   Eprint = <span class="nb">{</span>arXiv:2006.06520<span class="nb">}</span>,
+<span class="nb">}</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="basic_example.html" class="btn btn-neutral float-right" title="Example and usage" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+    </div>
+  
+
+  <hr>
+
+  <!-- Spacing. -->
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, IRT Antoine de Saint Exupéry - All rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry, CRIAQ and ANITI..
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using <a href="https://github.com/pytorch/pytorch_sphinx_theme">PyTorch's theme</a>
+        provided originally by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+      <div>
+      </div>
+    
+
+  <div role="contentinfo">
+  </div> 
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Welcome to <code class="docutils literal notranslate"><span class="pre">torchlip</span></code> documentation!</a><ul>
+<li><a class="reference internal" href="#content-of-the-library">Content of the library</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#cite-this-work">Cite this work</a></li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="./"
+    src="_static/documentation_options.js"></script>
+  <script src="_static/jquery.js"></script>
+  <script src="_static/underscore.js"></script>
+  <script src="_static/doctools.js"></script>
+  <script src="_static/language_data.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <!-- Keep this empty div for the theme -->
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://shiftlab.github.io/pytorch/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Home</a></li>
+            <li><a href="https://pytorch.org">PyTorch</a></li>
+            <li><a href="/">Get Started</a></li>
+            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    </div>
+  </footer>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://shiftlab.github.io/pytorch/" aria-label="torchutils"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="/">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/deel-ai/torchlip">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script src="https://cdn.jsdelivr.net/npm/anchor-js/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>

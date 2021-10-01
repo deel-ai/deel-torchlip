@@ -1,0 +1,643 @@
+
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+  <meta charset="utf-8">
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Example 1: Wasserstein distance estimation &mdash; torchlip 1.0.0 documentation</title>
+  
+
+  
+  
+  
+  
+  <link rel="canonical" href="https://torchlip.readthedocs.io/en/latest/wasserstein_toy.html" />
+  
+
+  
+
+  
+  
+  
+
+  
+
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="index" title="Index" href="genindex.html" />
+  <link rel="search" title="Search" href="search.html" />
+  <link rel="next" title="Example 2: HKR classifier on toy dataset" href="wasserstein_toy_classification.html" />
+  <link rel="prev" title="Example and usage" href="basic_example.html" /> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<div class="container-fluid header-holder tutorials-header" id="header-holder">
+  <div class="container">
+    <div class="header-container">
+
+      <a class="header-logo" href="index.html" aria-label="TorchLip"></a>
+
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="index.html">Get Started</a>
+          </li>
+
+          <li>
+            <a href="deel.torchlip.html">API</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/deel-ai/torchlip">Github</a>
+          </li>
+        </ul>
+      </div>
+
+      <a class="main-menu-open-button" href="#" data-behavior="open-mobile-menu"></a>
+    </div>
+
+  </div>
+</div>
+
+
+<body class="pytorch-body">
+
+   
+
+  
+
+  <div class="table-of-contents-link-wrapper">
+    <span>Table of Contents</span>
+    <a href="#" class="toggle-table-of-contents" data-behavior="toggle-table-of-contents"></a>
+  </div>
+
+  <nav data-toggle="wy-nav-shift" class="pytorch-left-menu" id="pytorch-left-menu">
+    <div class="pytorch-side-scroll">
+      <div class="pytorch-menu pytorch-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        <div class="pytorch-left-menu-search">
+          
+
+          
+          
+          
+          
+
+          
+
+
+  
+
+
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search Docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        
+        
+        
+        
+        
+        <p><span class="caption-text">Shortcuts</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Example 1: Wasserstein distance estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_classification_MNIST08.html">Example 3: HKR classifier on MNIST dataset</a></li>
+</ul>
+
+        
+        
+      </div>
+    </div>
+  </nav>
+
+  <div class="pytorch-container">
+    <div class="pytorch-page-level-bar" id="pytorch-page-level-bar">
+      <div class="pytorch-breadcrumbs-wrapper">
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="pytorch-breadcrumbs">
+    
+      <li>
+        <a href="index.html">
+          
+            Docs
+          
+        </a> &gt;
+      </li>
+
+        
+      <li>Example 1: Wasserstein distance estimation</li>
+    
+    
+      <li class="pytorch-breadcrumbs-aside">
+        
+            
+            <a href="_sources/wasserstein_toy.rst.txt" rel="nofollow"><img src="_static/images/view-page-source-icon.svg"></a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+</div>
+      </div>
+
+      <div class="pytorch-shortcuts-wrapper" id="pytorch-shortcuts-wrapper">
+        Shortcuts
+      </div>
+    </div>
+
+    <section data-toggle="wy-nav-shift" id="pytorch-content-wrap" class="pytorch-content-wrap">
+      <div class="pytorch-content-left">
+        
+          <div class="rst-content">
+            
+            <div role="main" class="main-content" itemscope="itemscope" itemtype="http://schema.org/Article">
+              <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
+                
+  <section id="example-1-wasserstein-distance-estimation">
+<h1>Example 1: Wasserstein distance estimation<a class="headerlink" href="#example-1-wasserstein-distance-estimation" title="Permalink to this headline">¶</a></h1>
+<p>In this notebook we estimate the wasserstein distance through its
+Kantorovich-Rubinestein dual representation by using a 1-Lipschitz
+neural network by using.</p>
+<section id="wasserstein-distance">
+<h2>1. Wasserstein distance<a class="headerlink" href="#wasserstein-distance" title="Permalink to this headline">¶</a></h2>
+<p>The wasserstein distance measure the distance between two probability
+distributions. The Wikipedia article gives a more intuitive definition
+of it:</p>
+<blockquote>
+<div><p>Intuitively, if each distribution is viewed as a unit amount of
+“dirt” piled on <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>M</mi></mrow><annotation encoding="application/x-tex">M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.10903em;">M</span></span></span></span></span>, the metric is the minimum “cost” of
+turning one pile into the other, which is assumed to be the amount of
+dirt that needs to be moved times the mean distance it has to be
+moved. Because of this analogy, the metric is known in computer
+science as the earth mover’s distance.</p>
+</div></blockquote>
+<p>Mathematically it is defined as</p>
+<div class="math">
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mi>μ</mi><mo separator="true">,</mo><mi>ν</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mrow><mi>inf</mi><mo>⁡</mo></mrow><mrow><mi>π</mi><mo>∈</mo><mi mathvariant="normal">Π</mi><mo stretchy="false">(</mo><mi>μ</mi><mo separator="true">,</mo><mi>ν</mi><mo stretchy="false">)</mo></mrow></munder><mi><munder><mo><mi mathvariant="double-struck">E</mi></mo><mrow><mi>x</mi><mo separator="true">,</mo><mi>z</mi><mo>∼</mo><mi>π</mi></mrow></munder></mi><mi mathvariant="normal">∥</mi><mrow></mrow><mtext mathvariant="bold">x</mtext><mo>−</mo><mtext mathvariant="bold">z</mtext><mi mathvariant="normal">∥</mi><mrow></mrow></mrow><annotation encoding="application/x-tex">W_1(\mu,\nu) = \inf_{\pi \in \Pi(\mu,\nu)}\underset{x,z \sim \pi}{\mathbb{E}}\Vert{} \textbf{x}-\textbf{z} \Vert{}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">μ</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.06366em;">ν</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.716em;vertical-align:-0.966em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-2.3089999999999997em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">π</span><span class="mrel mtight">∈</span><span class="mord mtight">Π</span><span class="mopen mtight">(</span><span class="mord mathnormal mtight">μ</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.06366em;">ν</span><span class="mclose mtight">)</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop">in<span style="margin-right:0.07778em;">f</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.966em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.68889em;"><span style="top:-2.4000000000000004em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.04398em;">z</span><span class="mrel mtight">∼</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">π</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop mathbb">E</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.836108em;"><span></span></span></span></span></span></span><span class="mord">∥</span><span class="mord"></span><span class="mord text"><span class="mord textbf">x</span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord textbf">z</span></span><span class="mord">∥</span><span class="mord"></span></span></span></span></span></div><p>where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Π</mi><mo stretchy="false">(</mo><mi>μ</mi><mo separator="true">,</mo><mi>ν</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\Pi(\mu,\nu)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">Π</span><span class="mopen">(</span><span class="mord mathnormal">μ</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.06366em;">ν</span><span class="mclose">)</span></span></span></span></span> is the set of all probability measures on
+<span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Ω</mi><mo>×</mo><mi mathvariant="normal">Ω</mi></mrow><annotation encoding="application/x-tex">\Omega\times \Omega</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.76666em;vertical-align:-0.08333em;"></span><span class="mord">Ω</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord">Ω</span></span></span></span></span> with marginals <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi></mrow><annotation encoding="application/x-tex">\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.19444em;"></span><span class="mord mathnormal">μ</span></span></span></span></span> and <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ν</mi></mrow><annotation encoding="application/x-tex">\nu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal" style="margin-right:0.06366em;">ν</span></span></span></span></span>.
+In most case this equation is not tractable.</p>
+</section>
+<section id="parameters-input-images">
+<h2>2. Parameters input images<a class="headerlink" href="#parameters-input-images" title="Permalink to this headline">¶</a></h2>
+<p>We illustrate this on a synthetic image dataset where the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">W_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span>
+distance is known.</p>
+<p>Our synthetic dataset contains images with black or white squares,
+allowing us to check if the computed wasserstein distance is correct.
+The two distributions are</p>
+<ul class="simple">
+<li><p>the set of black images (all 0),</p></li>
+<li><p>the set of images with a square on it (all 0, with a square of -1 or
++1 in the middle).</p></li>
+</ul>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+<span class="n">frac</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># proportion of the center square</span>
+
+
+<span class="k">def</span> <span class="nf">generate_toy_images</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">frac</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function that generate a single image.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        shape: Shape of the output image.</span>
+<span class="sd">        frac: Proportion of the center rectangle.</span>
+<span class="sd">        value: Value assigned to the center rectangle.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">frac</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">img</span>
+
+    <span class="n">frac</span> <span class="o">=</span> <span class="n">frac</span> <span class="o">**</span> <span class="mf">0.5</span>
+
+    <span class="n">l</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">frac</span><span class="p">)</span>
+    <span class="n">ldec</span> <span class="o">=</span> <span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">l</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">frac</span><span class="p">)</span>
+    <span class="n">wdec</span> <span class="o">=</span> <span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">w</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+
+    <span class="n">img</span><span class="p">[</span><span class="n">ldec</span> <span class="p">:</span> <span class="n">ldec</span> <span class="o">+</span> <span class="n">l</span><span class="p">,</span> <span class="n">wdec</span> <span class="p">:</span> <span class="n">wdec</span> <span class="o">+</span> <span class="n">w</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">return</span> <span class="n">img</span>
+
+
+<span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">frac</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates an infinite generator that generates batch of images. Half of the batch</span>
+<span class="sd">    comes from the first distribution (only black images), while the remaining half</span>
+<span class="sd">    comes from the second distribution.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        batch_size: Number of images in each batch.</span>
+<span class="sd">        shape: Shape of the image.</span>
+<span class="sd">        frac: Fraction of the square to set &quot;white&quot;.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An infinite generator that yield batch of the given size.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">pwhite</span> <span class="o">=</span> <span class="n">generate_toy_images</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">frac</span><span class="o">=</span><span class="n">frac</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">nwhite</span> <span class="o">=</span> <span class="n">generate_toy_images</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">frac</span><span class="o">=</span><span class="n">frac</span><span class="p">,</span> <span class="n">value</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">nblack</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">nsquares</span> <span class="o">=</span> <span class="n">batch_size</span> <span class="o">-</span> <span class="n">nblack</span>
+    <span class="n">npwhite</span> <span class="o">=</span> <span class="n">nsquares</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="n">nnwhite</span> <span class="o">=</span> <span class="n">nsquares</span> <span class="o">-</span> <span class="n">npwhite</span>
+
+    <span class="n">batch_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span>
+        <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nblack</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">pwhite</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">npwhite</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">nwhite</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="n">nnwhite</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+        <span class="p">),</span>
+        <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">batch_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">nblack</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">nsquares</span><span class="p">,</span> <span class="mi">1</span><span class="p">))),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">batch_x</span><span class="p">,</span> <span class="n">batch_y</span>
+
+
+<span class="k">def</span> <span class="nf">display_image</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Small function to display images.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Matplotlib</span> <span class="n">created</span> <span class="n">a</span> <span class="n">temporary</span> <span class="n">config</span><span class="o">/</span><span class="n">cache</span> <span class="n">directory</span> <span class="n">at</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">matplotlib</span><span class="o">-</span><span class="n">rxejzzl3</span> <span class="n">because</span> <span class="n">the</span> <span class="n">default</span> <span class="n">path</span> <span class="p">(</span><span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">justin</span><span class="o">.</span><span class="n">plakoo</span><span class="o">/.</span><span class="n">config</span><span class="o">/</span><span class="n">matplotlib</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">a</span> <span class="n">writable</span> <span class="n">directory</span><span class="p">;</span> <span class="n">it</span> <span class="ow">is</span> <span class="n">highly</span> <span class="n">recommended</span> <span class="n">to</span> <span class="nb">set</span> <span class="n">the</span> <span class="n">MPLCONFIGDIR</span> <span class="n">environment</span> <span class="n">variable</span> <span class="n">to</span> <span class="n">a</span> <span class="n">writable</span> <span class="n">directory</span><span class="p">,</span> <span class="ow">in</span> <span class="n">particular</span> <span class="n">to</span> <span class="n">speed</span> <span class="n">up</span> <span class="n">the</span> <span class="kn">import</span> <span class="nn">of</span> <span class="n">Matplotlib</span> <span class="ow">and</span> <span class="n">to</span> <span class="n">better</span> <span class="n">support</span> <span class="n">multiprocessing</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>We consider images of size 64x64, and an inner square that covers about
+30% of the image. We can manually compute the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">W_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span> distance
+between the two sets.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">img1</span> <span class="o">=</span> <span class="n">generate_toy_images</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">img2</span> <span class="o">=</span> <span class="n">generate_toy_images</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">value</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">img3</span> <span class="o">=</span> <span class="n">generate_toy_images</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">frac</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axs</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">21</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+
+<span class="n">display_image</span><span class="p">(</span><span class="n">axs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">img1</span><span class="p">,</span> <span class="s2">&quot;black (label = -1)&quot;</span><span class="p">)</span>
+<span class="n">display_image</span><span class="p">(</span><span class="n">axs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">img2</span><span class="p">,</span> <span class="s2">&quot;&#39;negative&#39; white (label = 1)&quot;</span><span class="p">)</span>
+<span class="n">display_image</span><span class="p">(</span><span class="n">axs</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">img3</span><span class="p">,</span> <span class="s2">&quot;&#39;positive&#39; white (label = 1)&quot;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;L2-Norm, black vs. &#39;negative&#39; white -&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">img2</span> <span class="o">-</span> <span class="n">img1</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;L2-Norm, black vs. &#39;positive&#39; white -&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">img3</span> <span class="o">-</span> <span class="n">img1</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">L2</span><span class="o">-</span><span class="n">Norm</span><span class="p">,</span> <span class="n">black</span> <span class="n">vs</span><span class="o">.</span> <span class="s1">&#39;negative&#39;</span> <span class="n">white</span> <span class="o">-&gt;</span> <span class="mf">35.0</span>
+<span class="n">L2</span><span class="o">-</span><span class="n">Norm</span><span class="p">,</span> <span class="n">black</span> <span class="n">vs</span><span class="o">.</span> <span class="s1">&#39;positive&#39;</span> <span class="n">white</span> <span class="o">-&gt;</span> <span class="mf">35.0</span>
+</pre></div>
+</div>
+<img alt="_images/wasserstein_toy_4_1.png" src="_images/wasserstein_toy_4_1.png" />
+<p>As we can see, the distance between the fully black image and any of the
+two images with an inner square is <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>35</mn></mrow><annotation encoding="application/x-tex">35</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">35</span></span></span></span></span>, and see these are the
+only images in our distributions, the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">W_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span> distance between the
+two distances is also <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>35</mn></mrow><annotation encoding="application/x-tex">35</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">35</span></span></span></span></span>.</p>
+</section>
+<section id="kantorovich-rubinestein-dual-formulation">
+<h2>3. Kantorovich-Rubinestein dual formulation<a class="headerlink" href="#kantorovich-rubinestein-dual-formulation" title="Permalink to this headline">¶</a></h2>
+<p>The Kantorovich-Rubinestein (KR) dual formulation of the Wasserstein
+distance is</p>
+<div class="math">
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mi>μ</mi><mo separator="true">,</mo><mi>ν</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mrow><mi>sup</mi><mo>⁡</mo></mrow><mrow><mi>f</mi><mo>∈</mo><mi>L</mi><mi>i</mi><msub><mi>p</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mi mathvariant="normal">Ω</mi><mo stretchy="false">)</mo></mrow></munder><mi><munder><mo><mi mathvariant="double-struck">E</mi></mo><mrow><mtext mathvariant="bold">x</mtext><mo>∼</mo><mi>μ</mi></mrow></munder></mi><mrow><mo fence="true">[</mo><mi>f</mi><mo stretchy="false">(</mo><mtext mathvariant="bold">x</mtext><mo stretchy="false">)</mo><mo fence="true">]</mo></mrow><mo>−</mo><mi><munder><mo><mi mathvariant="double-struck">E</mi></mo><mrow><mtext mathvariant="bold">x</mtext><mo>∼</mo><mi>ν</mi></mrow></munder></mi><mrow><mo fence="true">[</mo><mi>f</mi><mo stretchy="false">(</mo><mtext mathvariant="bold">x</mtext><mo stretchy="false">)</mo><mo fence="true">]</mo></mrow><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">W_1(\mu, \nu) = \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}} \left[f(\textbf{x} )\right] -\underset{\textbf{x}  \sim \nu}{\mathbb{E}} \left[f(\textbf{x} )\right].
+
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">μ</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord mathnormal" style="margin-right:0.06366em;">ν</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.91044em;vertical-align:-1.16044em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.43056000000000016em;"><span style="top:-2.11456em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.10764em;">f</span><span class="mrel mtight">∈</span><span class="mord mathnormal mtight">L</span><span class="mord mathnormal mtight">i</span><span class="mord mtight"><span class="mord mathnormal mtight">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31731428571428577em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mopen mtight">(</span><span class="mord mtight">Ω</span><span class="mclose mtight">)</span></span></span></span><span style="top:-3.0000000000000004em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop">sup</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.16044em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.68889em;"><span style="top:-2.4000000000000004em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord textbf mtight">x</span></span><span class="mrel mtight">∼</span><span class="mord mathnormal mtight">μ</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop mathbb">E</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8361079999999999em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">[</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord text"><span class="mord textbf">x</span></span><span class="mclose">)</span><span class="mclose delimcenter" style="top:0em;">]</span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.45em;vertical-align:-0.7em;"></span><span class="mord"><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.68889em;"><span style="top:-2.4em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord textbf mtight">x</span></span><span class="mrel mtight">∼</span><span class="mord mathnormal mtight" style="margin-right:0.06366em;">ν</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop mathbb">E</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.7em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="minner"><span class="mopen delimcenter" style="top:0em;">[</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord text"><span class="mord textbf">x</span></span><span class="mclose">)</span><span class="mclose delimcenter" style="top:0em;">]</span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">.</span></span></span></span></span></div><p>This state the problem as an optimization problem over the space of
+1-Lipschitz functions. We can estimate this by optimizing over the space
+of 1-Lipschitz neural networks.</p>
+<ul class="simple">
+<li><p>[1] C. Anil, J. Lucas, et R. Grosse, “Sorting out Lipschitz function
+approximation”, arXiv:1811.05381, nov. 2018.</p></li>
+</ul>
+<section id="building-lipschitz-model">
+<h3>3.1. Building lipschitz Model<a class="headerlink" href="#building-lipschitz-model" title="Permalink to this headline">¶</a></h3>
+<p>In this section, we use the <code class="docutils literal notranslate"><span class="pre">deel.torchlip</span></code> (short <code class="docutils literal notranslate"><span class="pre">torchlip</span></code>) to
+build a 1-Lipschitz network. The <code class="docutils literal notranslate"><span class="pre">torchlip</span></code> library is the PyTorch
+equivalent of <code class="docutils literal notranslate"><span class="pre">`deel-lip</span></code> &lt;<a class="reference external" href="https://github.com/deel-ai/deel-lip">https://github.com/deel-ai/deel-lip</a>&gt;`__. In
+this example, we use two 1-Lipschitz layers and a special activation
+function:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">SpectralLinear</span></code> uses spectral normalization to force the maximum
+singular value of the weight matrix to be one, followed by Bjorck
+normalization to force all singular values to be 1. After
+convergence, all singular values are equal to 1 and the linear
+operation is 1-Lipschitz. The <code class="docutils literal notranslate"><span class="pre">SpectralLinear</span></code> class also uses
+orthogonal initialization for the weight (see
+<code class="docutils literal notranslate"><span class="pre">torch.init.orthogonal_</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">FrobeniusLinear</span></code> simply divide the weight matrix by its Frobenius
+norm. We only use it for the last layer because this layer has a
+single output. Similar to <code class="docutils literal notranslate"><span class="pre">SpectralLinear</span></code>, the weights are
+initialized using orthogonal initialization.</p></li>
+<li><p>We use <code class="docutils literal notranslate"><span class="pre">FullSort</span></code> activation, which is a 1-Lipschitz activation.</p></li>
+</ul>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">deel</span> <span class="kn">import</span> <span class="n">torchlip</span>
+
+<span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
+
+<span class="n">wass</span> <span class="o">=</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">SpectralLinear</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">size</span><span class="p">),</span> <span class="mi">128</span><span class="p">),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">FullSort</span><span class="p">(),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">SpectralLinear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">FullSort</span><span class="p">(),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">SpectralLinear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">FullSort</span><span class="p">(),</span>
+    <span class="n">torchlip</span><span class="o">.</span><span class="n">FrobeniusLinear</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+<span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+<span class="n">wass</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span> <span class="n">model</span> <span class="n">contains</span> <span class="n">a</span> <span class="n">layer</span> <span class="n">which</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">a</span> <span class="n">Lipschitz</span> <span class="n">layer</span><span class="p">:</span> <span class="n">Flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end_dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span><span class="p">(</span>
+  <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">Flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end_dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">2</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
+  <span class="p">(</span><span class="mi">3</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">4</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
+  <span class="p">(</span><span class="mi">5</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">6</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
+  <span class="p">(</span><span class="mi">7</span><span class="p">):</span> <span class="n">FrobeniusLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="training-a-1-lipschitz-network-with-kr-loss">
+<h3>3.2. Training a 1-Lipschitz network with KR loss<a class="headerlink" href="#training-a-1-lipschitz-network-with-kr-loss" title="Permalink to this headline">¶</a></h3>
+<p>We now train this neural network using the Kantorovich-Rubinestein
+formulation for the Wasserstein distance.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deel.torchlip.functional</span> <span class="kn">import</span> <span class="n">kr_loss</span>
+<span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">trange</span><span class="p">,</span> <span class="n">tqdm</span>
+
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">steps_per_epoch</span> <span class="o">=</span> <span class="mi">256</span>
+
+<span class="c1"># Create the image generator:</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span>
+
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">wass</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+
+<span class="n">n_steps</span> <span class="o">=</span> <span class="n">steps_per_epoch</span> <span class="o">//</span> <span class="n">batch_size</span>
+<span class="n">tepochs</span> <span class="o">=</span> <span class="n">trange</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">)</span>
+<span class="n">tsteps</span> <span class="o">=</span> <span class="n">trange</span><span class="p">(</span><span class="n">n_steps</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="n">tepochs</span><span class="p">:</span>
+    <span class="n">tsteps</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">target</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">({</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.6f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">)})</span>
+        <span class="n">tsteps</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="n">tsteps</span><span class="o">.</span><span class="n">refresh</span><span class="p">()</span>
+    <span class="n">tepochs</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">({</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.6f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">)})</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/10 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/16 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<p>As we can see the loss converge to the value <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>35</mn></mrow><annotation encoding="application/x-tex">35</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">35</span></span></span></span></span> which is the
+<span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">W_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.83333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:-0.13889em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span> distance between the two distributions (with and without
+squares).</p>
+</section>
+</section>
+</section>
+
+
+              </article>
+              
+            </div>
+            <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wasserstein_toy_classification.html" class="btn btn-neutral float-right" title="Example 2: HKR classifier on toy dataset" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
+      
+      
+        <a href="basic_example.html" class="btn btn-neutral" title="Example and usage" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
+      
+    </div>
+  
+
+  <hr>
+
+  <!-- Spacing. -->
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, IRT Antoine de Saint Exupéry - All rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry, CRIAQ and ANITI..
+
+    </p>
+  </div>
+    
+      <div>
+        Built with <a href="http://sphinx-doc.org/">Sphinx</a> using <a href="https://github.com/pytorch/pytorch_sphinx_theme">PyTorch's theme</a>
+        provided originally by <a href="https://readthedocs.org">Read the Docs</a>.
+      </div>
+      <div>
+      </div>
+    
+
+  <div role="contentinfo">
+  </div> 
+
+</footer>
+          </div>
+        </div>
+
+        <div class="pytorch-content-right" id="pytorch-content-right">
+          <div class="pytorch-right-menu" id="pytorch-right-menu">
+            <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
+              <ul>
+<li><a class="reference internal" href="#">Example 1: Wasserstein distance estimation</a><ul>
+<li><a class="reference internal" href="#wasserstein-distance">1. Wasserstein distance</a></li>
+<li><a class="reference internal" href="#parameters-input-images">2. Parameters input images</a></li>
+<li><a class="reference internal" href="#kantorovich-rubinestein-dual-formulation">3. Kantorovich-Rubinestein dual formulation</a><ul>
+<li><a class="reference internal" href="#building-lipschitz-model">3.1. Building lipschitz Model</a></li>
+<li><a class="reference internal" href="#training-a-1-lipschitz-network-with-kr-loss">3.2. Training a 1-Lipschitz network with KR loss</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+            </div>
+          </div>
+        </div>
+    </section>
+  </div>
+
+  
+
+
+  
+
+  
+  <script type="text/javascript" id="documentation_options" data-url_root="./"
+    src="_static/documentation_options.js"></script>
+  <script src="_static/jquery.js"></script>
+  <script src="_static/underscore.js"></script>
+  <script src="_static/doctools.js"></script>
+  <script src="_static/language_data.js"></script>
+  
+
+  
+
+  <script type="text/javascript" src="_static/js/vendor/popper.min.js"></script>
+  <script type="text/javascript" src="_static/js/vendor/bootstrap.min.js"></script>
+  <script type="text/javascript" src="_static/js/theme.js"></script>
+
+  <script type="text/javascript">
+    jQuery(function () {
+      SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+  <!-- Begin Footer -->
+
+  <!-- Keep this empty div for the theme -->
+  <div class="container-fluid docs-tutorials-resources" id="docs-tutorials-resources">
+    <div class="container">
+      <div class="row">
+      </div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-logo-wrapper">
+        <a href="https://shiftlab.github.io/pytorch/" class="footer-logo"></a>
+      </div>
+
+      <div class="footer-links-wrapper">
+        <div class="footer-links-col">
+          <ul>
+            <li class="list-title"><a href="">Home</a></li>
+            <li><a href="https://pytorch.org">PyTorch</a></li>
+            <li><a href="/">Get Started</a></li>
+            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    </div>
+  </footer>
+
+  <!-- End Footer -->
+
+  <!-- Begin Mobile Menu -->
+
+  <div class="mobile-main-menu">
+    <div class="container-fluid">
+      <div class="container">
+        <div class="mobile-main-menu-header-container">
+          <a class="header-logo" href="https://shiftlab.github.io/pytorch/" aria-label="torchutils"></a>
+          <a class="main-menu-close-button" href="#" data-behavior="close-mobile-menu"></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="mobile-main-menu-links-container">
+      <div class="main-menu">
+        <ul>
+          <li>
+            <a href="/">Get Started</a>
+          </li>
+
+          <li>
+            <a href="https://pytorch.org/docs/stable/index.html">Docs</a>
+          </li>
+
+          <li>
+            <a href="https://github.com/deel-ai/torchlip">Github</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Mobile Menu -->
+
+  <script src="https://cdn.jsdelivr.net/npm/anchor-js/anchor.min.js"></script>
+
+  <script type="text/javascript">
+    $(document).ready(function () {
+      mobileMenu.bind();
+      mobileTOC.bind();
+      pytorchAnchors.bind();
+      sideMenus.bind();
+      scrollToAnchor.bind();
+      highlightNavigation.bind();
+
+      // Add class to links that have code blocks, since we cannot create links in code blocks
+      $("article.pytorch-article a span.pre").each(function (e) {
+        $(this).closest("a").addClass("has-code");
+      });
+    })
+  </script>
+</body>
+
+</html>
