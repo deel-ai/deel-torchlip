@@ -56,6 +56,7 @@ setuptools.setup(
         "torch_testing",
         "numpy",
         "torch",
+        "sphinxcontrib_katex",
     ],
     license="MIT",
     extras_require={"dev": dev_requires, "doc": docs_requires},
