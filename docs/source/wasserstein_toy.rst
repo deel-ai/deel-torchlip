@@ -47,18 +47,18 @@ The two distributions are
 .. code:: ipython3
 
     from typing import Tuple
-    
+
     import matplotlib.pyplot as plt
     import numpy as np
-    
+
     size = (64, 64)
     frac = 0.3  # proportion of the center square
-    
-    
+
+
     def generate_toy_images(shape: Tuple[int, int], frac: float = 0, value: float = 1):
         """
         Function that generate a single image.
-    
+
         Args:
             shape: Shape of the output image.
             frac: Proportion of the center rectangle.
@@ -67,42 +67,42 @@ The two distributions are
         img = np.zeros(shape)
         if frac == 0:
             return img
-    
+
         frac = frac ** 0.5
-    
+
         l = int(shape[0] * frac)
         ldec = (shape[0] - l) // 2
         w = int(shape[1] * frac)
         wdec = (shape[1] - w) // 2
-    
+
         img[ldec : ldec + l, wdec : wdec + w] = value
-    
+
         return img
-    
-    
+
+
     def generator(batch_size: int, shape: Tuple[int, int], frac: float):
         """
         Creates an infinite generator that generates batch of images. Half of the batch
         comes from the first distribution (only black images), while the remaining half
         comes from the second distribution.
-    
+
         Args:
             batch_size: Number of images in each batch.
             shape: Shape of the image.
             frac: Fraction of the square to set "white".
-    
+
         Returns:
             An infinite generator that yield batch of the given size.
         """
-    
+
         pwhite = generate_toy_images(shape, frac=frac, value=1)
         nwhite = generate_toy_images(shape, frac=frac, value=-1)
-    
+
         nblack = batch_size // 2
         nsquares = batch_size - nblack
         npwhite = nsquares // 2
         nnwhite = nsquares - npwhite
-    
+
         batch_x = np.concatenate(
             (
                 np.zeros((nblack,) + shape),
@@ -112,11 +112,11 @@ The two distributions are
             axis=0,
         )
         batch_y = np.concatenate((np.zeros((nblack, 1)), np.ones((nsquares, 1))), axis=0)
-    
+
         while True:
             yield batch_x, batch_y
-    
-    
+
+
     def display_image(ax, image, title: str = ""):
         """
         Small function to display images.
@@ -141,13 +141,13 @@ between the two sets.
     img1 = generate_toy_images(size, 0)
     img2 = generate_toy_images(size, frac, value=-1)
     img3 = generate_toy_images(size, frac, value=1)
-    
+
     fig, axs = plt.subplots(1, 3, figsize=(21, 7))
-    
+
     display_image(axs[0], img1, "black (label = -1)")
     display_image(axs[1], img2, "'negative' white (label = 1)")
     display_image(axs[2], img3, "'positive' white (label = 1)")
-    
+
     print("L2-Norm, black vs. 'negative' white -> {}".format(np.linalg.norm(img2 - img1)))
     print("L2-Norm, black vs. 'positive' white -> {}".format(np.linalg.norm(img3 - img1)))
 
@@ -173,7 +173,7 @@ two distances is also :math:`35`.
 The Kantorovich-Rubinestein (KR) dual formulation of the Wasserstein
 distance is
 
-.. math::  W_1(\mu, \nu) = \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}} \left[f(\textbf{x} )\right] -\underset{\textbf{x}  \sim \nu}{\mathbb{E}} \left[f(\textbf{x} )\right]. 
+.. math::  W_1(\mu, \nu) = \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}} \left[f(\textbf{x} )\right] -\underset{\textbf{x}  \sim \nu}{\mathbb{E}} \left[f(\textbf{x} )\right].
 
 This state the problem as an optimization problem over the space of
 1-Lipschitz functions. We can estimate this by optimizing over the space
@@ -208,9 +208,9 @@ function:
 
     import torch
     from deel import torchlip
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     wass = torchlip.Sequential(
         torch.nn.Flatten(),
         torchlip.SpectralLinear(np.prod(size), 128),
@@ -221,7 +221,7 @@ function:
         torchlip.FullSort(),
         torchlip.FrobeniusLinear(32, 1),
     ).to(device)
-    
+
     wass
 
 
@@ -257,20 +257,20 @@ formulation for the Wasserstein distance.
 
     from deel.torchlip.functional import kr_loss
     from tqdm.notebook import trange, tqdm
-    
+
     batch_size = 16
     n_epochs = 10
     steps_per_epoch = 256
-    
+
     # Create the image generator:
     g = generator(batch_size, size, frac)
-    
+
     optimizer = torch.optim.Adam(lr=0.01, params=wass.parameters())
-    
+
     n_steps = steps_per_epoch // batch_size
     tepochs = trange(n_epochs)
     tsteps = trange(n_steps)
-    
+
     for epoch in tepochs:
         tsteps.reset()
         for _ in range(n_steps):

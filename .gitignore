@@ -25,6 +25,5 @@ tests/.config/*
 # Sphinx documentation
 docs/build/
 docs/notebooks/data/
-torchlip_dev_env/
-torchlip_dev_env2/
+torchlip_dev_env*/
 .gitignore

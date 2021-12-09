@@ -13,13 +13,13 @@ For this task we will select two classes: 0 and 8. Labels are changed to
 .. code:: ipython3
 
     import torch
-    
+
     from torchvision import datasets
-    
+
     # first we select the two classes
     selected_classes = [0, 8]  # must be two classes as we perform binary classification
-    
-    
+
+
     def prepare_data(dataset, class_a=0, class_b=8):
         """
         This function convert the MNIST data to make it suitable for our binary classification
@@ -33,25 +33,25 @@ For this task we will select two classes: 0 and 8. Labels are changed to
         )  # mask to select only items from class_a or class_b
         x = x[mask]
         y = y[mask]
-    
+
         # convert from range int[0,255] to float32[-1,1]
         x = x.float() / 255
         x = x.reshape((-1, 28, 28, 1))
         # change label to binary classification {-1,1}
-    
+
         y_ = torch.zeros_like(y).float()
         y_[y == class_a] = 1.0
         y_[y == class_b] = -1.0
         return torch.utils.data.TensorDataset(x, y_)
-    
-    
+
+
     train = datasets.MNIST("./data", train=True, download=True)
     test = datasets.MNIST("./data", train=False, download=True)
-    
+
     # prepare the data
     train = prepare_data(train, selected_classes[0], selected_classes[1])
     test = prepare_data(test, selected_classes[0], selected_classes[1])
-    
+
     # display infos about dataset
     print(
         "train set size: %i samples, classes proportions: %.3f percent"
@@ -80,9 +80,9 @@ layers.
 
     import torch
     from deel import torchlip
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     ninputs = 28 * 28
     wass = torchlip.Sequential(
         torch.nn.Flatten(),
@@ -94,7 +94,7 @@ layers.
         torchlip.FullSort(),
         torchlip.FrobeniusLinear(32, 1),
     ).to(device)
-    
+
     wass
 
 
@@ -127,24 +127,24 @@ layers.
 
     from deel.torchlip.functional import kr_loss, hkr_loss, hinge_margin_loss
     from tqdm.notebook import trange, tqdm
-    
+
     # training parameters
     epochs = 5
     batch_size = 128
-    
+
     # loss parameters
     min_margin = 1
     alpha = 10
-    
+
     optimizer = torch.optim.Adam(lr=0.01, params=wass.parameters())
-    
+
     train_loader = torch.utils.data.DataLoader(train, batch_size=batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test, batch_size=32, shuffle=False)
-    
+
     tepochs = trange(epochs)
     for _ in tepochs:
         m_nc, m_kr, m_hm, m_acc = 0, 0, 0, 0
-    
+
         tdata = tqdm(train_loader)
         wass.train()
         for data, target in tdata:
@@ -154,7 +154,7 @@ layers.
             loss = hkr_loss(output, target, alpha=alpha, min_margin=min_margin)
             loss.backward()
             optimizer.step()
-    
+
             m_nc += 1
             m_kr += kr_loss(output, target, (-1, 1))
             m_hm += hinge_margin_loss(output, target, min_margin)
@@ -172,14 +172,14 @@ layers.
                     }.items()
                 }
             )
-    
+
         wass.eval()
         testo = []
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             testo.append(wass(data).detach().cpu())
         testo = torch.cat(testo).flatten()
-    
+
         postfix = {
             f"train_{k}": "{:.04f}".format(v)
             for k, v in {
@@ -204,7 +204,7 @@ layers.
                 }.items()
             }
         )
-    
+
         tepochs.set_postfix(postfix)
 
 
@@ -255,7 +255,7 @@ We can estimate the Lipschitz constant by evaluating
 .. math::
 
 
-       \frac{\Vert{}F(x_2) - F(x_1)\Vert{}}{\Vert{}x_2 - x_1\Vert{}} \quad\text{or}\quad 
+       \frac{\Vert{}F(x_2) - F(x_1)\Vert{}}{\Vert{}x_2 - x_1\Vert{}} \quad\text{or}\quad
        \frac{\Vert{}F(x + \epsilon) - F(x)\Vert{}}{\Vert{}\epsilon\Vert{}}
 
 for various inputs.
@@ -263,9 +263,9 @@ for various inputs.
 .. code:: ipython3
 
     from scipy.spatial.distance import pdist
-    
+
     wass.eval()
-    
+
     p = []
     for _ in range(64):
         eps = 1e-3
@@ -273,7 +273,7 @@ for various inputs.
         dist = torch.distributions.Uniform(-eps, +eps).sample(batch.shape)
         y1 = wass(batch.to(device)).detach().cpu()
         y2 = wass((batch + dist).to(device)).detach().cpu()
-    
+
         p.append(
             torch.max(
                 torch.norm(y2 - y1, dim=1)
@@ -291,16 +291,16 @@ for various inputs.
 .. code:: ipython3
 
     from scipy.spatial.distance import pdist
-    
+
     wass.eval()
-    
+
     p = []
     for batch, _ in tqdm(train_loader):
         x = batch.numpy()
         y = wass(batch.to(device)).detach().cpu().numpy()
         xd = pdist(x.reshape(batch.shape[0], -1))
         yd = pdist(y.reshape(batch.shape[0], -1))
-    
+
         p.append((yd / xd).max())
     print(torch.tensor(p).max())
 
@@ -352,7 +352,7 @@ are 1.
 .. code:: ipython3
 
     wexport = wass.vanilla_export()
-    
+
     print("=== After export ===")
     layers = list(wexport.children())
     for layer in layers:

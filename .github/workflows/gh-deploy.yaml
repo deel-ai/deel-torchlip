@@ -25,12 +25,12 @@ jobs:
         run: |
           npm install -g katex
           python -m pip install --upgrade pip
-          pip install sphinx==3.3.1 recommonmark sphinx-rtd-theme sphinx_markdown_builder ipython nbsphinx sphinxcontrib_katex pytorch_sphinx_theme  
+          pip install sphinx==3.3.1 recommonmark sphinx-rtd-theme sphinx_markdown_builder ipython nbsphinx sphinxcontrib_katex pytorch_sphinx_theme
           pip install .
 
       - name: "Build Sphinx Doc"
         run: |
-          cd docs && make clean html 
+          cd docs && make clean html
 
       - name: "Deploy Github Pages"
         uses: JamesIves/github-pages-deploy-action@3.7.1

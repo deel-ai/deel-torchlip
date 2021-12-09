@@ -14,7 +14,7 @@ Nothing for the moment
 
 ## Cite this work
 
-This library has been built to support the work presented in the paper 
+This library has been built to support the work presented in the paper
 *Achieving robustness in classification using optimaltransport with Hinge regularization*.
 
 This work can be cited as:
@@ -39,6 +39,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## Acknowledgments
 
-This project received funding from the French ”Investing for the Future – PIA3” program within the Artiﬁcial and 
-Natural Intelligence Toulouse Institute (ANITI). The authors gratefully acknowledge the support of the [DEEL 
+This project received funding from the French ”Investing for the Future – PIA3” program within the Artiﬁcial and
+Natural Intelligence Toulouse Institute (ANITI). The authors gratefully acknowledge the support of the [DEEL
 project](https://www.deel.ai/).

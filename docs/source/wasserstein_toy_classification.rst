@@ -13,7 +13,7 @@ We first build our two moons dataset.
 .. code:: ipython3
 
     from sklearn.datasets import make_moons, make_circles  # the synthetic dataset
-    
+
     circle_or_moons = 1  # 0 for circle, 1 for moons
     n_samples = 5000  # number of sample in the dataset
     noise = 0.05  # amount of noise to add in the data. Tested with 0.14 for circles 0.05 for two moons
@@ -25,7 +25,7 @@ We first build our two moons dataset.
         X, Y = make_circles(n_samples=n_samples, noise=noise, factor=factor)
     else:
         X, Y = make_moons(n_samples=n_samples, noise=noise)
-    
+
     # When working with the HKR-classifier, using labels {-1, 1} instead of {0, 1} is advised.
     # This will be explained later on.
     Y[Y == 1] = -1
@@ -34,7 +34,7 @@ We first build our two moons dataset.
 .. code:: ipython3
 
     import seaborn as sns
-    
+
     X1 = X[Y == 1]
     X2 = X[Y == -1]
     sns.scatterplot(x=X1[:1000, 0], y=X1[:1000, 1])
@@ -102,7 +102,7 @@ However the :math:`W_1` distance is known to be untractable in general.
 The Kantorovich-Rubinestein (KR) dual formulation of the Wasserstein
 distance is
 
-.. math::  W_1(\mu, \nu) = \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}} \left[f(\textbf{x} )\right] -\underset{\textbf{x}  \sim \nu}{\mathbb{E}} \left[f(\textbf{x} )\right]. 
+.. math::  W_1(\mu, \nu) = \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}} \left[f(\textbf{x} )\right] -\underset{\textbf{x}  \sim \nu}{\mathbb{E}} \left[f(\textbf{x} )\right].
 
 This state the problem as an optimization problem over the space of
 1-Lipschitz functions. We can estimate this by optimizing over the space
@@ -139,9 +139,9 @@ sub-class of functions.
 
     import torch
     from deel import torchlip
-    
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
+
     # Other lipschitz activations are ReLU, MaxMin, GroupSort2, GroupSort.
     wass = torchlip.Sequential(
         torchlip.SpectralLinear(2, 256),
@@ -152,7 +152,7 @@ sub-class of functions.
         torchlip.FullSort(),
         torchlip.FrobeniusLinear(64, 1),
     ).to(device)
-    
+
     wass
 
 
@@ -190,27 +190,27 @@ dataset.
 
     from deel.torchlip.functional import kr_loss, hkr_loss, hinge_margin_loss
     from tqdm.notebook import trange, tqdm
-    
+
     batch_size = 256
     n_epochs = 10
-    
+
     alpha = 10
     min_margin = 0.29  # minimum margin to enforce between the values of F for each class
-    
+
     optimizer = torch.optim.Adam(lr=0.01, params=wass.parameters())
-    
+
     loader = torch.utils.data.DataLoader(
         torch.utils.data.TensorDataset(torch.tensor(X).float(), torch.tensor(Y).float()),
         batch_size=batch_size,
         shuffle=True,
     )
-    
+
     tepochs = trange(n_epochs)
     for _ in tepochs:
         m_kr, m_hm, m_acc = 0, 0, 0
-    
+
         tsteps = tqdm(loader)
-    
+
         for step, (data, target) in enumerate(tsteps):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
@@ -218,7 +218,7 @@ dataset.
             loss = hkr_loss(output, target, alpha=alpha, min_margin=min_margin)
             loss.backward()
             optimizer.step()
-    
+
             m_kr += kr_loss(output, target, (-1, 1))
             m_hm += hinge_margin_loss(output, target, min_margin)
             m_acc += (
@@ -235,7 +235,7 @@ dataset.
                     }.items()
                 }
             )
-    
+
         tepochs.set_postfix(
             {
                 k: "{:.04f}".format(v)
@@ -326,29 +326,29 @@ draw a countour plot to visualize :math:`F`.
 
     import matplotlib.pyplot as plt
     import numpy as np
-    
+
     x = np.linspace(X[:, 0].min() - 0.2, X[:, 0].max() + 0.2, 120)
     y = np.linspace(X[:, 1].min() - 0.2, X[:, 1].max() + 0.2, 120)
     xx, yy = np.meshgrid(x, y, sparse=False)
     X_pred = np.stack((xx.ravel(), yy.ravel()), axis=1)
-    
+
     # Make predictions from F:
     Y_pred = wass(torch.tensor(X_pred).float().to(device))
     Y_pred = Y_pred.reshape(x.shape[0], y.shape[0]).detach().cpu().numpy()
-    
+
     # We are also going to check the exported version:
     vwass = wass.vanilla_export()
     Y_predv = vwass(torch.tensor(X_pred).float().to(device))
     Y_predv = Y_predv.reshape(x.shape[0], y.shape[0]).detach().cpu().numpy()
-    
+
     # Plot the results:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 6))
-    
+
     sns.scatterplot(x=X[Y == 1, 0], y=X[Y == 1, 1], alpha=0.1, ax=ax1)
     sns.scatterplot(x=X[Y == -1, 0], y=X[Y == -1, 1], alpha=0.1, ax=ax1)
     cset = ax1.contour(xx, yy, Y_pred, cmap="twilight", levels=np.arange(-1.2, 1.2, 0.4))
     ax1.clabel(cset, inline=1, fontsize=10)
-    
+
     sns.scatterplot(x=X[Y == 1, 0], y=X[Y == 1, 1], alpha=0.1, ax=ax2)
     sns.scatterplot(x=X[Y == -1, 0], y=X[Y == -1, 1], alpha=0.1, ax=ax2)
     cset = ax2.contour(xx, yy, Y_predv, cmap="twilight", levels=np.arange(-1.2, 1.2, 0.4))
