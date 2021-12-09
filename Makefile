@@ -6,6 +6,10 @@ help:
 	@echo "       create and prepare development environment, use only once"
 	@echo "make test"
 	@echo "       run tests and linting on py36, py37, py38"
+	@echo "make check_all"
+	@echo "       check all files using pre-commit tool"
+	@echo "make updatetools"
+	@echo "       updatetools pre-commit tool"
 	@echo "make test-disable-gpu"
 	@echo "       run test with gpu disabled"
 	@echo "make doc"
@@ -17,10 +21,20 @@ prepare-dev:
 	python3 -m venv torchlip_dev_env
 	. torchlip_dev_env/bin/activate && pip install --upgrade pip
 	. torchlip_dev_env/bin/activate && pip install -r requirements.txt
-	. torchlip_dev_env/bin/activate && pip install -r requirements_dev.txt	
+	. torchlip_dev_env/bin/activate && pip install -r requirements_dev.txt
+	. torchlip_dev_env/bin/activate && pre-commit install
+	. torchlip_dev_env/bin/activate && pre-commit install-hooks
+	. torchlip_dev_env/bin/activate && pre-commit install --hook-type commit-msg
+
 
 test:
-	. torchlip_dev_env/bin/activate && tox 
+	. torchlip_dev_env/bin/activate && tox
+
+check_all:
+	. torchlip_dev_env/bin/activate && pre-commit run --all-files
+
+updatetools:
+	. torchlip_dev_env/bin/activate && pre-commit autoupdate
 
 test-disable-gpu:
 	. torchlip_dev_env/bin/activate && CUDA_VISIBLE_DEVICES=-1 tox
