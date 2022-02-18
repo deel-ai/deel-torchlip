@@ -94,7 +94,7 @@ implemented in ``torchlip``.
         torch.nn.Flatten(),
         torchlip.SpectralLinear(1568, 64),
         torchlip.GroupSort2(),
-        torchlip.FrobeniusLinear(64, 10, bias=False),
+        torchlip.SpectralLinear(64, 10, bias=False),
         # Similarly, model has a parameter to set the Lipschitz constant that automatically
         # sets the constant of each layer.
         k_coef_lip=1.0,
@@ -124,7 +124,7 @@ implemented in ``torchlip``.
       (6): Flatten(start_dim=1, end_dim=-1)
       (7): SpectralLinear(in_features=1568, out_features=64, bias=True)
       (8): GroupSort2()
-      (9): FrobeniusLinear(in_features=64, out_features=10, bias=False)
+      (9): SpectralLinear(in_features=64, out_features=10, bias=False)
     )
 
 
@@ -949,16 +949,16 @@ gradient norm preserving, other attacks gives very similar results.
 
     Image #     Certificate     Distance to adversarial
     ---------------------------------------------------
-    Image 0        0.300                2.05
-    Image 1        0.716                3.42
-    Image 2        0.262                2.49
-    Image 3        0.579                2.62
-    Image 4        0.039                0.27
-    Image 5        0.157                0.92
-    Image 6        0.106                0.89
-    Image 7        0.273                1.44
-    Image 8        0.412                1.72
-    Image 9        0.062                0.47
+    Image 0        0.484                1.54
+    Image 1        1.417                3.78
+    Image 2        0.544                1.66
+    Image 3        0.880                1.99
+    Image 4        0.083                0.26
+    Image 5        0.261                0.69
+    Image 6        0.151                0.52
+    Image 7        0.557                1.26
+    Image 8        0.866                2.56
+    Image 9        0.220                0.57
 
 
 Finally, we can take a visual look at the obtained images. When looking
