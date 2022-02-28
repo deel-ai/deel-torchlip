@@ -33,7 +33,7 @@ from .. import functional as F
 
 class KRLoss(torch.nn.Module):
     """
-    Loss that estimate the Wasserstein-1 distance using the Kantorovich-Rubinstein
+    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
     duality.
     """
 
@@ -42,6 +42,7 @@ class KRLoss(torch.nn.Module):
         Args:
             true_values: tuple containing the two label for each predicted class.
         """
+        super().__init__()
         self.true_values = true_values
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -50,7 +51,7 @@ class KRLoss(torch.nn.Module):
 
 class NegKRLoss(torch.nn.Module):
     """
-    Loss that estimate the negative of the Wasserstein-1 distance using
+    Loss that estimates the negative of the Wasserstein-1 distance using
     the Kantorovich-Rubinstein duality.
     """
 
@@ -59,6 +60,7 @@ class NegKRLoss(torch.nn.Module):
         Args:
             true_values: tuple containing the two label for each predicted class.
         """
+        super().__init__()
         self.true_values = true_values
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -75,6 +77,7 @@ class HingeMarginLoss(torch.nn.Module):
         Args:
             min_margin: The minimal margin to enforce.
         """
+        super().__init__()
         self.min_margin = min_margin
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -83,7 +86,7 @@ class HingeMarginLoss(torch.nn.Module):
 
 class HKRLoss(torch.nn.Module):
     """
-    Loss that estimate the Wasserstein-1 distance using the Kantorovich-Rubinstein
+    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
     duality with a hinge regularization.
     """
 
@@ -99,6 +102,7 @@ class HKRLoss(torch.nn.Module):
             min_margin: Minimal margin for the hinge loss.
             true_values: tuple containing the two label for each predicted class.
         """
+        super().__init__()
         self.alpha = alpha
         self.min_margin = min_margin
         self.true_values = true_values
@@ -112,21 +116,14 @@ class KRMulticlassLoss(torch.nn.Module):
     The Wasserstein multiclass loss between ``input`` and ``target``.
     """
 
-    def __init__(self, true_values: Tuple[int, int] = (0, 1)):
-        """
-        Args:
-            true_values: tuple containing the two label for each predicted class.
-        """
-        self.true_values = true_values
-
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         return F.kr_multiclass_loss(input, target)
 
 
 class HingeMulticlassLoss(torch.nn.Module):
     """
-    Loss to estimate the Hinge loss in a multiclass setup. It compute the
-    elementwise hinge term. This class use pytorch implementation:
+    Loss to estimate the Hinge loss in a multiclass setup. It computes the
+    element-wise hinge term. This class use pytorch implementation:
     torch.nn.functional.hinge_embedding_loss
     """
 
@@ -135,6 +132,7 @@ class HingeMulticlassLoss(torch.nn.Module):
         Args:
             min_margin: The minimal margin to enforce.
         """
+        super().__init__()
         self.min_margin = min_margin
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -143,7 +141,7 @@ class HingeMulticlassLoss(torch.nn.Module):
 
 class HKRMulticlassLoss(torch.nn.Module):
     """
-    Loss that estimate the Wasserstein-1 distance using the Kantorovich-Rubinstein
+    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
     duality with a hinge regularization.
     """
 
@@ -156,8 +154,8 @@ class HKRMulticlassLoss(torch.nn.Module):
         Args:
             alpha: Regularization factor between the hinge and the KR loss.
             min_margin: Minimal margin for the hinge loss.
-            true_values: tuple containing the two label for each predicted class.
         """
+        super().__init__()
         self.alpha = alpha
         self.min_margin = min_margin
 

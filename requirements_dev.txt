@@ -19,3 +19,4 @@ tqdm
 sklearn
 torchvision
 seaborn
+foolbox
