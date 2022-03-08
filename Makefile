@@ -20,8 +20,9 @@ prepare-dev:
 	python3 -m pip install virtualenv
 	python3 -m venv torchlip_dev_env
 	. torchlip_dev_env/bin/activate && pip install --upgrade pip
-	. torchlip_dev_env/bin/activate && pip install -r requirements.txt
+	. torchlip_dev_env/bin/activate && pip install -r requirements.txt -f  https://download.pytorch.org/whl/cu113/torch_stable.html
 	. torchlip_dev_env/bin/activate && pip install -r requirements_dev.txt
+	. torchlip_dev_env/bin/activate && pip install -e .
 	. torchlip_dev_env/bin/activate && pre-commit install
 	. torchlip_dev_env/bin/activate && pre-commit install-hooks
 	. torchlip_dev_env/bin/activate && pre-commit install --hook-type commit-msg
