@@ -49,7 +49,7 @@ docs_requires = [
 
 setuptools.setup(
     name="torchlip",
-    version="0.0.1",
+    version="0.1.0",
     author=", ".join(
         [
             "Mathieu SERRURIER",
