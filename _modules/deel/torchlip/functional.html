@@ -124,6 +124,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../wasserstein_classification_MNIST08.html">Example 3: HKR classifier on MNIST dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../wasserstein_classification_fashionMNIST.html">Example 4: HKR multiclass and fooling</a></li>
 </ul>
 
         
@@ -193,15 +194,37 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <h1>Source code for deel.torchlip.functional</h1><div class="highlight"><pre>
-<span></span><span class="c1"># Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All</span>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All</span>
+<span class="c1"># rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,</span>
+<span class="c1"># CRIAQ and ANITI - https://www.deel.ai/</span>
+<span class="c1">#</span>
+<span class="c1"># Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span class="c1"># of this software and associated documentation files (the &quot;Software&quot;), to deal</span>
+<span class="c1"># in the Software without restriction, including without limitation the rights</span>
+<span class="c1"># to use, copy, modify, merge, publish, distribute, sublicense, and/or sell</span>
+<span class="c1"># copies of the Software, and to permit persons to whom the Software is</span>
+<span class="c1"># furnished to do so, subject to the following conditions:</span>
+<span class="c1">#</span>
+<span class="c1"># The above copyright notice and this permission notice shall be included in all</span>
+<span class="c1"># copies or substantial portions of the Software.</span>
+<span class="c1">#</span>
+<span class="c1"># THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="c1"># IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span class="c1"># FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span class="c1"># AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span class="c1"># LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span class="c1"># OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span class="c1"># SOFTWARE.</span>
+<span class="c1"># Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All</span>
 <span class="c1"># rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,</span>
 <span class="c1"># CRIAQ and ANITI - https://www.deel.ai/</span>
 <span class="c1"># =====================================================================================</span>
-
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-
 <span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
 

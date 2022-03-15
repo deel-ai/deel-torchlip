@@ -125,6 +125,7 @@
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_classification_MNIST08.html">Example 3: HKR classifier on MNIST dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_classification_fashionMNIST.html">Example 4: HKR multiclass and fooling</a></li>
 </ul>
 
         
@@ -204,20 +205,20 @@ are in-place functions as indicated by their trailing <code class="docutils lite
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>These initializers are provided for completeness but we recommend
-using <a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.9.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> to initialize your weights
+using <a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.11.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> to initialize your weights
 when training Lipschitz neural networks.</p>
 </div>
 <section id="module-deel.torchlip.init">
 <span id="initializers"></span><h2>Initializers<a class="headerlink" href="#module-deel.torchlip.init" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt id="deel.torchlip.init.bjorck_">
-<code class="sig-prename descclassname">deel.torchlip.init.</code><code class="sig-name descname">bjorck_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tensor</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.9.1)">torch.Tensor</a></span></em>, <em class="sig-param"><span class="n">n_iterations</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">15</span></em>, <em class="sig-param"><span class="n">beta</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/init.html#bjorck_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.init.bjorck_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">deel.torchlip.init.</code><code class="sig-name descname">bjorck_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tensor</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a></span></em>, <em class="sig-param"><span class="n">n_iterations</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">15</span></em>, <em class="sig-param"><span class="n">beta</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.5</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/init.html#bjorck_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.init.bjorck_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply Bjorck normalization on the given tensor in-place.</p>
 <p>See also <code class="xref py py-func docutils literal notranslate"><span class="pre">bjorck_normalization()</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This function is provided for completeness but we recommend using
-<a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.9.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> instead to obtain a proper (semi)
+<a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.11.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> instead to obtain a proper (semi)
 orthogonal matrix.</p>
 </div>
 <dl class="field-list simple">
@@ -225,7 +226,7 @@ orthogonal matrix.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tensor</strong> – A 2-dimensional <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>.</p></li>
 <li><p><strong>n_iterations</strong> – Number of iterations to perform.</p></li>
-<li><p><strong>beta</strong> – Value to use for the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8888799999999999em;vertical-align:-0.19444em;"></span><span class="mord mathnormal" style="margin-right:0.05278em;">β</span></span></span></span></span> parameter.</p></li>
+<li><p><strong>beta</strong> – Value to use for the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.05278em;">β</span></span></span></span></span> parameter.</p></li>
 </ul>
 </dd>
 </dl>
@@ -233,13 +234,13 @@ orthogonal matrix.</p>
 
 <dl class="py function">
 <dt id="deel.torchlip.init.spectral_">
-<code class="sig-prename descclassname">deel.torchlip.init.</code><code class="sig-name descname">spectral_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tensor</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.9.1)">torch.Tensor</a></span></em>, <em class="sig-param"><span class="n">n_power_iterations</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/init.html#spectral_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.init.spectral_" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">deel.torchlip.init.</code><code class="sig-name descname">spectral_</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tensor</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a></span></em>, <em class="sig-param"><span class="n">n_power_iterations</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">10</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/init.html#spectral_"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.init.spectral_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply spectral normalization on the given tensor in-place.</p>
 <p>See also <code class="xref py py-func docutils literal notranslate"><span class="pre">spectral_normalization()</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This function is provided for completeness but we recommend using
-<a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.9.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> instead to obtain a proper (semi)
+<a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.11.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> instead to obtain a proper (semi)
 orthogonal matrix.</p>
 </div>
 <dl class="field-list simple">

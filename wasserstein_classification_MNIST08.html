@@ -38,6 +38,7 @@
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
   <link rel="search" title="Search" href="search.html" />
+  <link rel="next" title="Example 4: HKR multiclass and fooling" href="wasserstein_classification_fashionMNIST.html" />
   <link rel="prev" title="Example 2: HKR classifier on toy dataset" href="wasserstein_toy_classification.html" /> 
 
   
@@ -126,6 +127,7 @@
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Example 3: HKR classifier on MNIST dataset</a></li>
+<li class="toctree-l1"><a class="reference internal" href="wasserstein_classification_fashionMNIST.html">Example 4: HKR multiclass and fooling</a></li>
 </ul>
 
         
@@ -203,19 +205,18 @@ MNIST0-8 dataset (MNIST with only 0 and 8).</p>
 <section id="data-preparation">
 <h2>1. Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h2>
 <p>For this task we will select two classes: 0 and 8. Labels are changed to
-{-1,1}, wich is compatible with the Hinge term used in the loss.</p>
+{-1,1}, which is compatible with the hinge term used in the loss.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-
 <span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">datasets</span>
 
-<span class="c1"># first we select the two classes</span>
+<span class="c1"># First we select the two classes</span>
 <span class="n">selected_classes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">8</span><span class="p">]</span>  <span class="c1"># must be two classes as we perform binary classification</span>
 
 
 <span class="k">def</span> <span class="nf">prepare_data</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">class_a</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">class_b</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    This function convert the MNIST data to make it suitable for our binary classification</span>
-<span class="sd">    setup.</span>
+<span class="sd">    This function converts the MNIST data to make it suitable for our binary</span>
+<span class="sd">    classification setup.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">targets</span>
@@ -240,31 +241,31 @@ MNIST0-8 dataset (MNIST with only 0 and 8).</p>
 <span class="n">train</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;./data&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">test</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">MNIST</span><span class="p">(</span><span class="s2">&quot;./data&quot;</span><span class="p">,</span> <span class="n">train</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">download</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="c1"># prepare the data</span>
+<span class="c1"># Prepare the data</span>
 <span class="n">train</span> <span class="o">=</span> <span class="n">prepare_data</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">selected_classes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">selected_classes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 <span class="n">test</span> <span class="o">=</span> <span class="n">prepare_data</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">selected_classes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">selected_classes</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-<span class="c1"># display infos about dataset</span>
+<span class="c1"># Display infos about dataset</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="s2">&quot;train set size: </span><span class="si">%i</span><span class="s2"> samples, classes proportions: </span><span class="si">%.3f</span><span class="s2"> percent&quot;</span>
-    <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">),</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">))</span>
+    <span class="sa">f</span><span class="s2">&quot;Train set size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">train</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples, classes proportions: &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> %&quot;</span>
 <span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span>
-    <span class="s2">&quot;test set size: </span><span class="si">%i</span><span class="s2"> samples, classes proportions: </span><span class="si">%.3f</span><span class="s2"> percent&quot;</span>
-    <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">),</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">))</span>
+    <span class="sa">f</span><span class="s2">&quot;Test set size: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">test</span><span class="p">)</span><span class="si">}</span><span class="s2"> samples, classes proportions: &quot;</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="mi">100</span> <span class="o">*</span> <span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> %&quot;</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">train</span> <span class="nb">set</span> <span class="n">size</span><span class="p">:</span> <span class="mi">11774</span> <span class="n">samples</span><span class="p">,</span> <span class="n">classes</span> <span class="n">proportions</span><span class="p">:</span> <span class="mf">50.306</span> <span class="n">percent</span>
-<span class="n">test</span> <span class="nb">set</span> <span class="n">size</span><span class="p">:</span> <span class="mi">1954</span> <span class="n">samples</span><span class="p">,</span> <span class="n">classes</span> <span class="n">proportions</span><span class="p">:</span> <span class="mf">50.154</span> <span class="n">percent</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Train</span> <span class="nb">set</span> <span class="n">size</span><span class="p">:</span> <span class="mi">11774</span> <span class="n">samples</span><span class="p">,</span> <span class="n">classes</span> <span class="n">proportions</span><span class="p">:</span> <span class="mf">50.31</span> <span class="o">%</span>
+<span class="n">Test</span> <span class="nb">set</span> <span class="n">size</span><span class="p">:</span> <span class="mi">1954</span> <span class="n">samples</span><span class="p">,</span> <span class="n">classes</span> <span class="n">proportions</span><span class="p">:</span> <span class="mf">50.15</span> <span class="o">%</span>
 </pre></div>
 </div>
 </section>
 <section id="build-lipschitz-model">
-<h2>2. Build lipschitz Model<a class="headerlink" href="#build-lipschitz-model" title="Permalink to this headline">¶</a></h2>
-<p>Here the experiments are done with a only fully-connected layers but
-<code class="docutils literal notranslate"><span class="pre">torchlip</span></code> also provides state-of-the-art 1-Lipschitz convolutional
-layers.</p>
+<h2>2. Build Lipschitz model<a class="headerlink" href="#build-lipschitz-model" title="Permalink to this headline">¶</a></h2>
+<p>Here, the experiments are done with a model with only fully-connected
+layers. However, <code class="docutils literal notranslate"><span class="pre">torchlip</span></code> also provides state-of-the-art 1-Lipschitz
+convolutional layers.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
 <span class="kn">from</span> <span class="nn">deel</span> <span class="kn">import</span> <span class="n">torchlip</span>
 
@@ -304,104 +305,145 @@ layers.</p>
 <section id="learn-classification-on-mnist">
 <h2>3. Learn classification on MNIST<a class="headerlink" href="#learn-classification-on-mnist" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deel.torchlip.functional</span> <span class="kn">import</span> <span class="n">kr_loss</span><span class="p">,</span> <span class="n">hkr_loss</span><span class="p">,</span> <span class="n">hinge_margin_loss</span>
-<span class="kn">from</span> <span class="nn">tqdm.notebook</span> <span class="kn">import</span> <span class="n">trange</span><span class="p">,</span> <span class="n">tqdm</span>
+<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
 <span class="c1"># training parameters</span>
-<span class="n">epochs</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">128</span>
 
 <span class="c1"># loss parameters</span>
 <span class="n">min_margin</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">alpha</span> <span class="o">=</span> <span class="mi">10</span>
 
-<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">wass</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+<span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">wass</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
 
 <span class="n">train_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">test_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">test</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
-<span class="n">tepochs</span> <span class="o">=</span> <span class="n">trange</span><span class="p">(</span><span class="n">epochs</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tepochs</span><span class="p">:</span>
-    <span class="n">m_nc</span><span class="p">,</span> <span class="n">m_kr</span><span class="p">,</span> <span class="n">m_hm</span><span class="p">,</span> <span class="n">m_acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
 
-    <span class="n">tdata</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">train_loader</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">m_kr</span><span class="p">,</span> <span class="n">m_hm</span><span class="p">,</span> <span class="n">m_acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="n">wass</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">tdata</span><span class="p">:</span>
-        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span><span class="p">)</span>
-        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
-        <span class="n">m_nc</span> <span class="o">+=</span> <span class="mi">1</span>
-        <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
-        <span class="n">m_hm</span> <span class="o">+=</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span>
-        <span class="n">m_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">target</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span>
-            <span class="n">target</span>
-        <span class="p">)</span>
-        <span class="n">tdata</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
-            <span class="p">{</span>
+    <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">))</span> <span class="k">as</span> <span class="n">tsteps</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
+            <span class="n">tsteps</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+
+            <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span><span class="p">)</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+            <span class="c1"># Compute metrics on batch</span>
+            <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">m_hm</span> <span class="o">+=</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span>
+            <span class="n">m_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">target</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="n">target</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Print metrics of current batch</span>
+            <span class="n">postfix</span> <span class="o">=</span> <span class="p">{</span>
                 <span class="n">k</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
                     <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
-                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
-                    <span class="s2">&quot;hm&quot;</span><span class="p">:</span> <span class="n">m_hm</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
-                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
+                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                    <span class="s2">&quot;hinge&quot;</span><span class="p">:</span> <span class="n">m_hm</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+            <span class="p">}</span>
+            <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">postfix</span><span class="p">)</span>
+
+        <span class="c1"># Compute test loss for the current epoch</span>
+        <span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="n">testo</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">testo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+        <span class="n">testo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+        <span class="c1"># Print metrics for the current epoch (train and validation metrics)</span>
+        <span class="n">postfix</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="sa">f</span><span class="s2">&quot;val_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
+                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">hkr_loss</span><span class="p">(</span>
+                        <span class="n">testo</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+                    <span class="s2">&quot;hinge&quot;</span><span class="p">:</span> <span class="n">hinge_margin_loss</span><span class="p">(</span>
+                        <span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">min_margin</span>
+                    <span class="p">),</span>
+                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                    <span class="o">.</span><span class="n">float</span><span class="p">()</span>
+                    <span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
                 <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="p">}</span>
         <span class="p">)</span>
-
-    <span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-    <span class="n">testo</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
-        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-        <span class="n">testo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
-    <span class="n">testo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-
-    <span class="n">postfix</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="sa">f</span><span class="s2">&quot;train_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
-            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
-            <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
-            <span class="s2">&quot;hm&quot;</span><span class="p">:</span> <span class="n">m_hm</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
-            <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="n">m_nc</span><span class="p">,</span>
-        <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-    <span class="p">}</span>
-    <span class="n">postfix</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-        <span class="p">{</span>
-            <span class="sa">f</span><span class="s2">&quot;val_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
-                <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">hkr_loss</span><span class="p">(</span>
-                    <span class="n">testo</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span>
-                <span class="p">),</span>
-                <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span>
-                <span class="s2">&quot;hm&quot;</span><span class="p">:</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">min_margin</span><span class="p">),</span>
-                <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-                <span class="o">.</span><span class="n">float</span><span class="p">()</span>
-                <span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
-            <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-        <span class="p">}</span>
-    <span class="p">)</span>
-
-    <span class="n">tepochs</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">postfix</span><span class="p">)</span>
+        <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">postfix</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/5 [00:00&lt;?, ?it/s]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">1</span><span class="o">/</span><span class="mi">10</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 68.73it/s, loss=-1.9260, kr=1.8460, hinge=0.2779, acc=0.8957, val_loss=-2.7345, val_kr=3.0710, val_hinge=0.03
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">10</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 68.95it/s, loss=-4.1241, kr=3.5866, hinge=0.0348, acc=0.9896, val_loss=-3.8917, val_kr=4.1615, val_hinge=0.02
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">10</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.30it/s, loss=-4.8420, kr=4.5263, hinge=0.0304, acc=0.9903, val_loss=-4.6992, val_kr=5.0309, val_hinge=0.03
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">10</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.90it/s, loss=-5.6075, kr=5.3798, hinge=0.0261, acc=0.9909, val_loss=-5.5427, val_kr=5.7997, val_hinge=0.02
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">10</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.62it/s, loss=-6.4990, kr=6.0299, hinge=0.0225, acc=0.9922, val_loss=-5.9950, val_kr=6.3148, val_hinge=0.03
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">10</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.24it/s, loss=-6.5761, kr=6.4610, hinge=0.0207, acc=0.9932, val_loss=-6.4486, val_kr=6.6909, val_hinge=0.02
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">10</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.60it/s, loss=-6.3180, kr=6.7235, hinge=0.0203, acc=0.9935, val_loss=-6.6230, val_kr=6.8221, val_hinge=0.01
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">10</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.38it/s, loss=-6.3673, kr=6.8746, hinge=0.0192, acc=0.9935, val_loss=-6.6473, val_kr=6.9393, val_hinge=0.02
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">10</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.36it/s, loss=-6.5218, kr=6.9664, hinge=0.0190, acc=0.9934, val_loss=-6.8133, val_kr=6.9885, val_hinge=0.01
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">10</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.49it/s, loss=-6.7745, kr=7.0099, hinge=0.0191, acc=0.9940, val_loss=-6.8197, val_kr=7.0787, val_hinge=0.02
 </pre></div>
 </div>
 </section>
@@ -412,7 +454,7 @@ layers.</p>
 <p>We can estimate the Lipschitz constant by evaluating</p>
 <div class="math">
 <span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><mi>F</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mn>2</mn></msub><mo stretchy="false">)</mo><mo>−</mo><mi>F</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mn>1</mn></msub><mo stretchy="false">)</mo><mi mathvariant="normal">∥</mi><mrow></mrow></mrow><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><msub><mi>x</mi><mn>2</mn></msub><mo>−</mo><msub><mi>x</mi><mn>1</mn></msub><mi mathvariant="normal">∥</mi><mrow></mrow></mrow></mfrac><mspace width="1em"/><mtext>or</mtext><mspace width="1em"/><mfrac><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><mi>F</mi><mo stretchy="false">(</mo><mi>x</mi><mo>+</mo><mi>ϵ</mi><mo stretchy="false">)</mo><mo>−</mo><mi>F</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mi mathvariant="normal">∥</mi><mrow></mrow></mrow><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><mi>ϵ</mi><mi mathvariant="normal">∥</mi><mrow></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">\frac{\Vert{}F(x_2) - F(x_1)\Vert{}}{\Vert{}x_2 - x_1\Vert{}} \quad\text{or}\quad
-\frac{\Vert{}F(x + \epsilon) - F(x)\Vert{}}{\Vert{}\epsilon\Vert{}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.363em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∥</span><span class="mord"></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">∥</span><span class="mord"></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:1em;"></span><span class="mord text"><span class="mord">or</span></span><span class="mspace" style="margin-right:1em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal">ϵ</span><span class="mord">∥</span><span class="mord"></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathnormal">ϵ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mord">∥</span><span class="mord"></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div><p>for various inputs.</p>
+\frac{\Vert{}F(x + \epsilon) - F(x)\Vert{}}{\Vert{}\epsilon\Vert{}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.363em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">∥</span><span class="mord"></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">∥</span><span class="mord"></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:1em;"></span><span class="mord text"><span class="mord">or</span></span><span class="mspace" style="margin-right:1em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.427em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal">ϵ</span><span class="mord">∥</span><span class="mord"></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">ϵ</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mord">∥</span><span class="mord"></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div><p>for various inputs.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
 
 <span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
@@ -434,7 +476,7 @@ layers.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.3460</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.1362</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
@@ -452,13 +494,13 @@ layers.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>0%|          | 0/92 [00:00&lt;?, ?it/s]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 92/92 [00:00&lt;00:00, 180.51it/s]
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.9074</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.9050</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>As we can see, using the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϵ</mi></mrow><annotation encoding="application/x-tex">\epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.43056em;vertical-align:0em;"></span><span class="mord mathnormal">ϵ</span></span></span></span></span>-version, we greatly
+<p>As we can see, using the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϵ</mi></mrow><annotation encoding="application/x-tex">\epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">ϵ</span></span></span></span></span>-version, we greatly
 under-estimate the Lipschitz constant. Using the train dataset, we find
 a Lipschitz constant close to 0.9, which is better, but our network
 should be 1-Lipschitz.</p>
@@ -479,9 +521,9 @@ are 1.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">===</span> <span class="n">Before</span> <span class="n">export</span> <span class="o">===</span>
-<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9997813701629639</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0002498626708984</span>
-<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9998164176940918</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0001946687698364</span>
-<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.99966961145401</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0003477334976196</span>
+<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0000001192092896</span>
+<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.000000238418579</span>
 <span class="n">FrobeniusLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
 </pre></div>
 </div>
@@ -497,9 +539,9 @@ are 1.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">===</span> <span class="n">After</span> <span class="n">export</span> <span class="o">===</span>
-<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9997813701629639</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0002498626708984</span>
-<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9998164176940918</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0001946687698364</span>
-<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.99966961145401</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0003477334976196</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0000001192092896</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.000000238418579</span>
 <span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
 </pre></div>
 </div>
@@ -515,6 +557,8 @@ are 1.</p>
             <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="wasserstein_classification_fashionMNIST.html" class="btn btn-neutral float-right" title="Example 4: HKR multiclass and fooling" accesskey="n" rel="next">Next <img src="_static/images/chevron-right-orange.svg" class="next-page"></a>
       
       
         <a href="wasserstein_toy_classification.html" class="btn btn-neutral" title="Example 2: HKR classifier on toy dataset" accesskey="p" rel="prev"><img src="_static/images/chevron-right-orange.svg" class="previous-page"> Previous</a>
@@ -553,7 +597,7 @@ are 1.</p>
               <ul>
 <li><a class="reference internal" href="#">Example 3: HKR classifier on MNIST dataset</a><ul>
 <li><a class="reference internal" href="#data-preparation">1. Data preparation</a></li>
-<li><a class="reference internal" href="#build-lipschitz-model">2. Build lipschitz Model</a></li>
+<li><a class="reference internal" href="#build-lipschitz-model">2. Build Lipschitz model</a></li>
 <li><a class="reference internal" href="#learn-classification-on-mnist">3. Learn classification on MNIST</a></li>
 <li><a class="reference internal" href="#evaluate-the-lipschitz-constant-of-our-networks">4. Evaluate the Lipschitz constant of our networks</a><ul>
 <li><a class="reference internal" href="#empirical-evaluation">4.1. Empirical evaluation</a></li>

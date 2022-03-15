@@ -73,3 +73,4 @@ Cite this work
    wasserstein_toy.rst
    wasserstein_toy_classification.rst
    wasserstein_classification_MNIST08.rst
+   wasserstein_classification_fashionMNIST.rst
