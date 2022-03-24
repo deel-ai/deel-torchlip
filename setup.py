@@ -64,7 +64,6 @@ setuptools.setup(
             "mathieu.serrurier@irt-saintexupery.com",
             "franck.mamalet@irt-saintexupery.com",
             "thibaut.boissin@irt-saintexupery.com",
-            "mikael.capelle@irt-saintexupery.com",
             "justin.plakoo@irt-saintexupery.com",
         ]
     ),
