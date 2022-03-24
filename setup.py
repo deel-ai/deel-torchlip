@@ -49,7 +49,7 @@ docs_requires = [
 
 setuptools.setup(
     name="torchlip",
-    version="0.0.1",
+    version="0.1.0",
     author=", ".join(
         [
             "Mathieu SERRURIER",
@@ -64,7 +64,6 @@ setuptools.setup(
             "mathieu.serrurier@irt-saintexupery.com",
             "franck.mamalet@irt-saintexupery.com",
             "thibaut.boissin@irt-saintexupery.com",
-            "mikael.capelle@irt-saintexupery.com",
             "justin.plakoo@irt-saintexupery.com",
         ]
     ),

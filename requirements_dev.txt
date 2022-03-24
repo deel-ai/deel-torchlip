@@ -19,3 +19,5 @@ tqdm
 sklearn
 torchvision
 seaborn
+foolbox
+bump2version

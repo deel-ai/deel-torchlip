@@ -1,16 +1,15 @@
 Example 1: Wasserstein distance estimation
 ==========================================
 
-In this notebook we estimate the wasserstein distance through its
-Kantorovich-Rubinestein dual representation by using a 1-Lipschitz
-neural network by using.
+In this notebook we estimate the Wasserstein distance through its
+Kantorovich-Rubinstein dual representation by using a 1-Lipschitz neural
+network.
 
 1. Wasserstein distance
 -----------------------
 
-The wasserstein distance measure the distance between two probability
-distributions. The Wikipedia article gives a more intuitive definition
-of it:
+The Wasserstein distance measures the distance between two probability
+distributions. The Wikipedia article gives a more intuitive definition:
 
    Intuitively, if each distribution is viewed as a unit amount of
    “dirt” piled on :math:`M`, the metric is the minimum “cost” of
@@ -37,7 +36,7 @@ We illustrate this on a synthetic image dataset where the :math:`W_1`
 distance is known.
 
 Our synthetic dataset contains images with black or white squares,
-allowing us to check if the computed wasserstein distance is correct.
+allowing us to check if the computed Wasserstein distance is correct.
 The two distributions are
 
 -  the set of black images (all 0),
@@ -57,7 +56,7 @@ The two distributions are
 
     def generate_toy_images(shape: Tuple[int, int], frac: float = 0, value: float = 1):
         """
-        Function that generate a single image.
+        Generates a single image.
 
         Args:
             shape: Shape of the output image.
@@ -118,19 +117,10 @@ The two distributions are
 
 
     def display_image(ax, image, title: str = ""):
-        """
-        Small function to display images.
-        """
         ax.imshow(image, cmap="gray")
         ax.set_xticks([])
         ax.set_yticks([])
         ax.set_title(title)
-
-
-.. parsed-literal::
-
-    Matplotlib created a temporary config/cache directory at /tmp/matplotlib-rxejzzl3 because the default path (/home/justin.plakoo/.config/matplotlib) is not a writable directory; it is highly recommended to set the MPLCONFIGDIR environment variable to a writable directory, in particular to speed up the import of Matplotlib and to better support multiprocessing.
-
 
 We consider images of size 64x64, and an inner square that covers about
 30% of the image. We can manually compute the :math:`W_1` distance
@@ -163,27 +153,31 @@ between the two sets.
 
 
 As we can see, the distance between the fully black image and any of the
-two images with an inner square is :math:`35`, and see these are the
-only images in our distributions, the :math:`W_1` distance between the
-two distances is also :math:`35`.
+two images with an inner square is :math:`35`, and these are the only
+images in our distributions, the :math:`W_1` distance between the two
+distances is also :math:`35`.
 
-3. Kantorovich-Rubinestein dual formulation
--------------------------------------------
+3. Kantorovich-Rubinstein dual formulation
+------------------------------------------
 
-The Kantorovich-Rubinestein (KR) dual formulation of the Wasserstein
+The Kantorovich-Rubinstein (KR) dual formulation of the Wasserstein
 distance is
 
-.. math::  W_1(\mu, \nu) = \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}} \left[f(\textbf{x} )\right] -\underset{\textbf{x}  \sim \nu}{\mathbb{E}} \left[f(\textbf{x} )\right].
+.. math::
 
-This state the problem as an optimization problem over the space of
+    W_1(\mu, \nu) = \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}}
+   \left[f(\textbf{x} )\right] -\underset{\textbf{x} \sim \nu}{\mathbb{E}}
+   \left[f(\textbf{x} )\right].
+
+This states the problem as an optimization problem over the space of
 1-Lipschitz functions. We can estimate this by optimizing over the space
 of 1-Lipschitz neural networks.
 
 -  [1] C. Anil, J. Lucas, et R. Grosse, “Sorting out Lipschitz function
    approximation”, arXiv:1811.05381, nov. 2018.
 
-3.1. Building lipschitz Model
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+3.1. Building a 1-Lipschitz model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this section, we use the ``deel.torchlip`` (short ``torchlip``) to
 build a 1-Lipschitz network. The ``torchlip`` library is the PyTorch
@@ -198,7 +192,7 @@ function:
    operation is 1-Lipschitz. The ``SpectralLinear`` class also uses
    orthogonal initialization for the weight (see
    ``torch.init.orthogonal_``).
--  ``FrobeniusLinear`` simply divide the weight matrix by its Frobenius
+-  ``FrobeniusLinear`` simply divides the weight matrix by its Frobenius
    norm. We only use it for the last layer because this layer has a
    single output. Similar to ``SpectralLinear``, the weights are
    initialized using orthogonal initialization.
@@ -250,13 +244,13 @@ function:
 3.2. Training a 1-Lipschitz network with KR loss
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We now train this neural network using the Kantorovich-Rubinestein
+We now train this neural network using the Kantorovich-Rubinstein
 formulation for the Wasserstein distance.
 
 .. code:: ipython3
 
     from deel.torchlip.functional import kr_loss
-    from tqdm.notebook import trange, tqdm
+    from tqdm import trange
 
     batch_size = 16
     n_epochs = 10
@@ -268,12 +262,11 @@ formulation for the Wasserstein distance.
     optimizer = torch.optim.Adam(lr=0.01, params=wass.parameters())
 
     n_steps = steps_per_epoch // batch_size
-    tepochs = trange(n_epochs)
-    tsteps = trange(n_steps)
 
-    for epoch in tepochs:
-        tsteps.reset()
-        for _ in range(n_steps):
+    for epoch in range(n_epochs):
+
+        tsteps = trange(n_steps, desc=f"Epoch {epoch + 1}/{n_epochs}")
+        for _ in tsteps:
             data, target = next(g)
             data, target = (
                 torch.tensor(data).float().to(device),
@@ -285,24 +278,24 @@ formulation for the Wasserstein distance.
             loss.backward()
             optimizer.step()
             tsteps.set_postfix({"loss": "{:.6f}".format(loss)})
-            tsteps.update()
-        tsteps.refresh()
-        tepochs.set_postfix({"loss": "{:.6f}".format(loss)})
 
 
 
 .. parsed-literal::
 
-      0%|          | 0/10 [00:00<?, ?it/s]
+    Epoch 1/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:01<00:00, 15.57it/s, loss=-29.044495]
+    Epoch 2/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.33it/s, loss=-34.360405]
+    Epoch 3/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.57it/s, loss=-34.922119]
+    Epoch 4/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.61it/s, loss=-34.975761]
+    Epoch 5/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.52it/s, loss=-34.991302]
+    Epoch 6/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.33it/s, loss=-34.993919]
+    Epoch 7/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.52it/s, loss=-34.994595]
+    Epoch 8/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.44it/s, loss=-34.994503]
+    Epoch 9/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.30it/s, loss=-34.994770]
+    Epoch 10/10: 100%|██████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.62it/s, loss=-34.995167]
 
 
-
-.. parsed-literal::
-
-      0%|          | 0/16 [00:00<?, ?it/s]
-
-
-As we can see the loss converge to the value :math:`35` which is the
+As we can see the loss converges to the value :math:`35` which is the
 :math:`W_1` distance between the two distributions (with and without
 squares).
 
