@@ -186,7 +186,6 @@ dataset.
 .. code:: ipython3
 
     from deel.torchlip.functional import kr_loss, hkr_loss, hinge_margin_loss
-    from tqdm import tqdm
 
     batch_size = 256
     n_epochs = 10
@@ -204,13 +203,9 @@ dataset.
 
     for epoch in range(n_epochs):
 
-        # print(f"Epoch {epoch + 1}/{n_epochs}")
         m_kr, m_hm, m_acc = 0, 0, 0
 
-        print(f"Epoch {epoch + 1}/{n_epochs}")
-        tsteps = tqdm(loader)
-
-        for step, (data, target) in enumerate(tsteps):
+        for step, (data, target) in enumerate(loader):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = wass(data)
@@ -224,118 +219,38 @@ dataset.
                 torch.sign(output.view(target.shape)) == torch.sign(target)
             ).sum() / len(target)
 
-            tsteps.set_postfix(
-                {
-                    k: "{:.04f}".format(v)
-                    for k, v in {
-                        "loss": loss,
-                        "kr": m_kr / (step + 1),
-                        "hinge": m_hm / (step + 1),
-                        "acc": m_acc / (step + 1),
-                    }.items()
-                }
-            )
+        print(f"Epoch {epoch + 1}/{n_epochs}")
+        print(
+            f"loss: {loss:.04f} - "
+            f"KR: {m_kr / (step + 1):.04f} - "
+            f"hinge: {m_hm / (step + 1):.04f} - "
+            f"accuracy: {m_acc / (step + 1):.04f}"
+        )
 
 
 
 .. parsed-literal::
 
     Epoch 1/10
-
-
-.. parsed-literal::
-
-    100%|██████████████████████████████████████████████████| 20/20 [00:00<00:00, 83.42it/s, loss=1.7372, kr=0.0598, hinge=0.2621, acc=0.5310]
-
-
-.. parsed-literal::
-
+    loss: 1.1397 - KR: 0.0976 - hinge: 0.2439 - accuracy: 0.5804
     Epoch 2/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 83.71it/s, loss=-0.0933, kr=0.5170, hinge=0.1009, acc=0.8691]
-
-
-.. parsed-literal::
-
+    loss: -0.1377 - KR: 0.6821 - hinge: 0.0780 - accuracy: 0.8753
     Epoch 3/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 84.75it/s, loss=-0.5061, kr=0.9271, hinge=0.0541, acc=0.9102]
-
-
-.. parsed-literal::
-
+    loss: -0.7622 - KR: 0.9642 - hinge: 0.0533 - accuracy: 0.9169
     Epoch 4/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.15it/s, loss=-0.7395, kr=0.9545, hinge=0.0359, acc=0.9443]
-
-
-.. parsed-literal::
-
+    loss: -0.7531 - KR: 0.9555 - hinge: 0.0339 - accuracy: 0.9512
     Epoch 5/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.10it/s, loss=-0.6555, kr=0.9587, hinge=0.0264, acc=0.9703]
-
-
-.. parsed-literal::
-
+    loss: -0.6489 - KR: 0.9465 - hinge: 0.0248 - accuracy: 0.9723
     Epoch 6/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 84.98it/s, loss=-0.7719, kr=0.9417, hinge=0.0195, acc=0.9842]
-
-
-.. parsed-literal::
-
+    loss: -0.7663 - KR: 0.9393 - hinge: 0.0242 - accuracy: 0.9723
     Epoch 7/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.03it/s, loss=-0.8012, kr=0.9738, hinge=0.0203, acc=0.9840]
-
-
-.. parsed-literal::
-
+    loss: -0.6672 - KR: 0.9561 - hinge: 0.0215 - accuracy: 0.9808
     Epoch 8/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.06it/s, loss=-0.8991, kr=0.9728, hinge=0.0241, acc=0.9747]
-
-
-.. parsed-literal::
-
+    loss: -0.7048 - KR: 0.9506 - hinge: 0.0180 - accuracy: 0.9901
     Epoch 9/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 84.57it/s, loss=-0.5764, kr=1.0180, hinge=0.0367, acc=0.9475]
-
-
-.. parsed-literal::
-
+    loss: -0.7032 - KR: 0.9583 - hinge: 0.0168 - accuracy: 0.9916
     Epoch 10/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.29it/s, loss=-0.7552, kr=0.9870, hinge=0.0265, acc=0.9694]
+    loss: -0.8830 - KR: 0.9667 - hinge: 0.0171 - accuracy: 0.9873
 
 
 2.6. Plot output countour line
@@ -382,7 +297,7 @@ draw a countour plot to visualize :math:`F`.
 
 .. parsed-literal::
 
-    <a list of 6 text.Text objects>
+    <a list of 5 text.Text objects>
 
 
 
