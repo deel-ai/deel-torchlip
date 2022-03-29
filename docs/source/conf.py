@@ -95,7 +95,7 @@ html_theme_options = {
     "canonical_url": "https://torchlip.readthedocs.io/en/latest/",
 }
 
-html_logo = "_static/images/logo_white.svg"
+html_logo = "logo.svg"
 html_static_path = ["_static"]
 
 # html_theme = "sphinx_rtd_theme"

@@ -1,5 +1,8 @@
 .tutorials-header .header-logo {
-   background-image: url("../images/logo.png");
+   background-image: url("../images/logo.svg");
+   background-size: 270px 45px;
+   height: 45px;
+   width: 270px;
 }
 
 /* override table width restrictions */
