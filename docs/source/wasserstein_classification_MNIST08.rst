@@ -1,8 +1,18 @@
 Example 3: HKR classifier on MNIST dataset
 ==========================================
 
+|Open In Colab|
+
 This notebook demonstrates how to learn a binary classifier on the
 MNIST0-8 dataset (MNIST with only 0 and 8).
+
+.. |Open In Colab| image:: https://colab.research.google.com/assets/colab-badge.svg
+   :target: https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_classification_MNIST08.ipynb
+
+.. code:: ipython3
+
+    # Install the required library deel-torchlip (uncomment line below)
+    # %pip install -qqq deel-torchlip
 
 1. Data preparation
 -------------------
@@ -203,25 +213,25 @@ convolutional layers.
 .. parsed-literal::
 
     Epoch 1/10
-    loss: -2.6121 - KR: 1.6792 - acc: 0.8482 - val_loss: -2.8001 - val_KR: 3.1255 - val_acc: 0.9923
+    loss: -2.5269 - KR: 1.6177 - acc: 0.8516 - val_loss: -2.7241 - val_KR: 3.0157 - val_acc: 0.9939
     Epoch 2/10
-    loss: -4.4912 - KR: 3.8902 - acc: 0.9917 - val_loss: -4.5433 - val_KR: 4.7715 - val_acc: 0.9918
+    loss: -3.6040 - KR: 3.8627 - acc: 0.9918 - val_loss: -4.5285 - val_KR: 4.7897 - val_acc: 0.9918
     Epoch 3/10
-    loss: -5.6188 - KR: 5.3631 - acc: 0.9922 - val_loss: -5.6245 - val_KR: 5.9224 - val_acc: 0.9882
+    loss: -5.7646 - KR: 5.4015 - acc: 0.9922 - val_loss: -5.7246 - val_KR: 6.0067 - val_acc: 0.9898
     Epoch 4/10
-    loss: -6.2762 - KR: 6.1914 - acc: 0.9921 - val_loss: -6.2532 - val_KR: 6.4891 - val_acc: 0.9913
+    loss: -6.6268 - KR: 6.2105 - acc: 0.9921 - val_loss: -6.2183 - val_KR: 6.4874 - val_acc: 0.9893
     Epoch 5/10
-    loss: -6.4468 - KR: 6.5880 - acc: 0.9927 - val_loss: -6.4931 - val_KR: 6.7462 - val_acc: 0.9903
+    loss: -6.4072 - KR: 6.5715 - acc: 0.9931 - val_loss: -6.4530 - val_KR: 6.7446 - val_acc: 0.9887
     Epoch 6/10
-    loss: -6.6357 - KR: 6.7846 - acc: 0.9934 - val_loss: -6.6652 - val_KR: 6.8790 - val_acc: 0.9918
+    loss: -6.7689 - KR: 6.7803 - acc: 0.9926 - val_loss: -6.6342 - val_KR: 6.8849 - val_acc: 0.9898
     Epoch 7/10
-    loss: -6.8344 - KR: 6.8973 - acc: 0.9930 - val_loss: -6.7560 - val_KR: 6.9766 - val_acc: 0.9918
+    loss: -6.2389 - KR: 6.8948 - acc: 0.9932 - val_loss: -6.7603 - val_KR: 6.9643 - val_acc: 0.9933
     Epoch 8/10
-    loss: -6.5351 - KR: 6.9806 - acc: 0.9933 - val_loss: -6.7909 - val_KR: 7.0383 - val_acc: 0.9898
+    loss: -6.9207 - KR: 6.9642 - acc: 0.9933 - val_loss: -6.8199 - val_KR: 7.0147 - val_acc: 0.9918
     Epoch 9/10
-    loss: -6.8777 - KR: 7.0353 - acc: 0.9935 - val_loss: -6.8785 - val_KR: 7.0804 - val_acc: 0.9928
+    loss: -6.9446 - KR: 7.0211 - acc: 0.9936 - val_loss: -6.8038 - val_KR: 7.0666 - val_acc: 0.9887
     Epoch 10/10
-    loss: -7.0444 - KR: 7.0734 - acc: 0.9939 - val_loss: -6.9059 - val_KR: 7.1260 - val_acc: 0.9918
+    loss: -6.5403 - KR: 7.0694 - acc: 0.9942 - val_loss: -6.9136 - val_KR: 7.1086 - val_acc: 0.9933
 
 
 4. Evaluate the Lipschitz constant of our networks
@@ -265,14 +275,10 @@ for various inputs.
 
 .. parsed-literal::
 
-    tensor(0.1273)
+    tensor(0.1349)
 
 
 .. code:: ipython3
-
-    from scipy.spatial.distance import pdist
-
-    wass.eval()
 
     p = []
     for batch, _ in train_loader:
@@ -287,7 +293,7 @@ for various inputs.
 
 .. parsed-literal::
 
-    tensor(0.9123, dtype=torch.float64)
+    tensor(0.9038, dtype=torch.float64)
 
 
 As we can see, using the :math:`\epsilon`-version, we greatly
@@ -318,9 +324,9 @@ are 1.
 
     === Before export ===
     SpectralLinear(in_features=784, out_features=128, bias=True), min=0.9999998807907104, max=1.0
-    SpectralLinear(in_features=128, out_features=64, bias=True), min=0.9999998807907104, max=1.000000238418579
+    SpectralLinear(in_features=128, out_features=64, bias=True), min=0.9999998807907104, max=1.0000001192092896
     SpectralLinear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.0
-    FrobeniusLinear(in_features=32, out_features=1, bias=True), min=0.9999998807907104, max=0.9999998807907104
+    FrobeniusLinear(in_features=32, out_features=1, bias=True), min=0.9999999403953552, max=0.9999999403953552
 
 
 .. code:: ipython3
@@ -340,9 +346,9 @@ are 1.
 
     === After export ===
     Linear(in_features=784, out_features=128, bias=True), min=0.9999998807907104, max=1.0
-    Linear(in_features=128, out_features=64, bias=True), min=0.9999998807907104, max=1.000000238418579
+    Linear(in_features=128, out_features=64, bias=True), min=0.9999998807907104, max=1.0000001192092896
     Linear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.0
-    Linear(in_features=32, out_features=1, bias=True), min=0.9999998807907104, max=0.9999998807907104
+    Linear(in_features=32, out_features=1, bias=True), min=0.9999999403953552, max=0.9999999403953552
 
 
 As we can see, all our singular values are very close to one.

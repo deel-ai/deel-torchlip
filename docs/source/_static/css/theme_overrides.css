@@ -27,3 +27,8 @@
    right: auto;
    top: auto;
 }
+
+/* By default, images are 100% width. Overriding to get standard image size */
+article.pytorch-article img {
+	width: auto;
+}

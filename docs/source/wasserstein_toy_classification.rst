@@ -1,9 +1,19 @@
 Example 2: HKR classifier on toy dataset
 ========================================
 
+|Open in Colab|
+
 In this notebook, we show how to build a robust classifier based on the
 regularized version of the Kantorovitch-Rubinstein duality. We use the
 ``two moons`` synthetic dataset for our experiments.
+
+.. |Open in Colab| image:: https://colab.research.google.com/assets/colab-badge.svg
+   :target: https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_toy_classification.ipynb
+
+.. code:: ipython3
+
+    # Install the required library deel-torchlip (uncomment line below)
+    # %pip install -qqq deel-torchlip
 
 1. Two moons dataset
 --------------------
@@ -50,7 +60,7 @@ We first build our two moons dataset.
 
 
 
-.. image:: wasserstein_toy_classification_files/wasserstein_toy_classification_4_1.png
+.. image:: wasserstein_toy_classification_files/wasserstein_toy_classification_5_1.png
 
 
 2. Relation with optimal transport
@@ -232,25 +242,25 @@ dataset.
 .. parsed-literal::
 
     Epoch 1/10
-    loss: 1.1397 - KR: 0.0976 - hinge: 0.2439 - accuracy: 0.5804
+    loss: 1.7240 - KR: 0.0837 - hinge: 0.2519 - accuracy: 0.5387
     Epoch 2/10
-    loss: -0.1377 - KR: 0.6821 - hinge: 0.0780 - accuracy: 0.8753
+    loss: -0.3211 - KR: 0.5286 - hinge: 0.0969 - accuracy: 0.8665
     Epoch 3/10
-    loss: -0.7622 - KR: 0.9642 - hinge: 0.0533 - accuracy: 0.9169
+    loss: -0.7250 - KR: 0.8928 - hinge: 0.0484 - accuracy: 0.9253
     Epoch 4/10
-    loss: -0.7531 - KR: 0.9555 - hinge: 0.0339 - accuracy: 0.9512
+    loss: -0.6545 - KR: 0.9257 - hinge: 0.0328 - accuracy: 0.9552
     Epoch 5/10
-    loss: -0.6489 - KR: 0.9465 - hinge: 0.0248 - accuracy: 0.9723
+    loss: -0.5023 - KR: 0.9287 - hinge: 0.0262 - accuracy: 0.9696
     Epoch 6/10
-    loss: -0.7663 - KR: 0.9393 - hinge: 0.0242 - accuracy: 0.9723
+    loss: -0.5727 - KR: 0.9217 - hinge: 0.0223 - accuracy: 0.9785
     Epoch 7/10
-    loss: -0.6672 - KR: 0.9561 - hinge: 0.0215 - accuracy: 0.9808
+    loss: -0.6651 - KR: 0.9306 - hinge: 0.0202 - accuracy: 0.9862
     Epoch 8/10
-    loss: -0.7048 - KR: 0.9506 - hinge: 0.0180 - accuracy: 0.9901
+    loss: -0.5247 - KR: 0.9454 - hinge: 0.0208 - accuracy: 0.9810
     Epoch 9/10
-    loss: -0.7032 - KR: 0.9583 - hinge: 0.0168 - accuracy: 0.9916
+    loss: -0.6442 - KR: 0.9496 - hinge: 0.0205 - accuracy: 0.9811
     Epoch 10/10
-    loss: -0.8830 - KR: 0.9667 - hinge: 0.0171 - accuracy: 0.9873
+    loss: -0.7998 - KR: 0.9713 - hinge: 0.0211 - accuracy: 0.9791
 
 
 2.6. Plot output countour line
@@ -297,12 +307,12 @@ draw a countour plot to visualize :math:`F`.
 
 .. parsed-literal::
 
-    <a list of 5 text.Text objects>
+    <a list of 6 text.Text objects>
 
 
 
 
-.. image:: wasserstein_toy_classification_files/wasserstein_toy_classification_11_1.png
+.. image:: wasserstein_toy_classification_files/wasserstein_toy_classification_12_1.png
 
 
 The ``vanilla_export()`` method allows us to obtain a ``torch`` module
