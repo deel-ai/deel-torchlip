@@ -16,7 +16,7 @@
 # -- Project information -----------------------------------------------------
 import pytorch_sphinx_theme
 
-project = "torchlip"
+project = "deel-torchlip"
 copyright = (
     "2020, IRT Antoine de Saint Exupéry"
     " - All rights reserved. DEEL is a research program operated by IVADO, "
@@ -95,7 +95,7 @@ html_theme_options = {
     "canonical_url": "https://torchlip.readthedocs.io/en/latest/",
 }
 
-html_logo = "_static/images/logo_white.svg"
+html_logo = "logo.svg"
 html_static_path = ["_static"]
 
 # html_theme = "sphinx_rtd_theme"
@@ -104,7 +104,10 @@ html_static_path = ["_static"]
 #     "**": ["globaltoc.html", "relations.html", "sourcelink.html", "searchbox.html"]
 # }
 
-html_context = {"get_started": "/", "github_url": "https://github.com/deel-ai/torchlip"}
+html_context = {
+    "get_started": "/",
+    "github_url": "https://github.com/deel-ai/deel-torchlip",
+}
 
 html_css_files = [
     "css/theme_overrides.css",

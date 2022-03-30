@@ -12,7 +12,7 @@ In order to make things simple the following rules have been followed during dev
 Which modules are safe to use?
 ------------------------------
 
-Module from ``torchlip`` are mostly wrappers around initializers and normalization hooks
+Modules from ``deel-torchlip`` are mostly wrappers around initializers and normalization hooks
 that ensure their 1-Lipschitz property.
 For instance, the :class:`SpectralLinear` module is simply a :class:`torch.nn.Linear` module
 , with automatic orthogonal initialization and hooks:
@@ -38,7 +38,7 @@ The following table indicates which module are safe to use in a Lipschitz networ
 
    * - ``torch.nn``
      - 1-Lipschitz?
-     - ``torchlip`` equivalent
+     - ``deel-torchlip`` equivalent
      - comments
    * - :class:`torch.nn.Linear`
      - no
@@ -54,8 +54,8 @@ The following table indicates which module are safe to use in a Lipschitz networ
      -
    * - :class:`torch.nn.AvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`torch.nn.AdaptiveAvgPool2d`
      - no
-     - :class:`.ScaledAvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`.ScaledAdaptiveAvgPool2d`
-     - The lipschitz constant is bounded by ``sqrt(pool_h * pool_h)``.
+     - :class:`.ScaledAvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`.ScaledAdaptiveAvgPool2d` \ :raw-html-m2r:`<br>` \ :class:`.ScaledL2NormPool2d`
+     - The Lipschitz constant is bounded by ``sqrt(pool_h * pool_w)``.
    * - :class:`Flatten`
      - yes
      - n/a
@@ -63,7 +63,7 @@ The following table indicates which module are safe to use in a Lipschitz networ
    * - :class:`torch.nn.Dropout`
      - no
      - None
-     - The lipschitz constant is bounded by the dropout factor.
+     - The Lipschitz constant is bounded by the dropout factor.
    * - :class:`torch.nn.BatchNorm1d` \ :raw-html-m2r:`<br>` \ :class:`torch.nn.BatchNorm2d` \ :raw-html-m2r:`<br>` \ :class:`torch.nn.BatchNorm3d`
      - no
      - None
@@ -80,7 +80,9 @@ Here is a simple example showing how to build a 1-Lipschitz network:
     import torch
     from deel import torchlip
 
-    # torchlip layers can be used like any torch.nn layers in
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # deel-torchlip layers can be used like any torch.nn layers in
     # Sequential or other types of container modules.
     model = torch.nn.Sequential(
         torchlip.SpectralConv2d(1, 32, (3, 3), padding=1),
@@ -92,7 +94,7 @@ Here is a simple example showing how to build a 1-Lipschitz network:
         torch.nn.Flatten(),
         torchlip.SpectralLinear(1568, 256),
         torchlip.SpectralLinear(256, 1)
-    )
+    ).to(device)
 
     # Training can be done as usual, except that we are doing
     # binary classification with -1 and +1 labels to the target
@@ -102,9 +104,9 @@ Here is a simple example showing how to build a 1-Lipschitz network:
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = hkr_loss(output, target, alpha=10, min_margin=1)
+        loss = torchlip.functional.hkr_loss(output, target, alpha=10, min_margin=1)
         loss.backward()
         optimizer.step()
 
 
-See :ref:`torchlip-api` for a complete API description.
+See :ref:`deel-torchlip-api` for a complete API description.

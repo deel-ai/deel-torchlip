@@ -1,5 +1,8 @@
 .tutorials-header .header-logo {
-   background-image: url("../images/logo.png");
+   background-image: url("../images/logo.svg");
+   background-size: 270px 45px;
+   height: 45px;
+   width: 270px;
 }
 
 /* override table width restrictions */
@@ -23,4 +26,9 @@
    padding-right: initial;
    right: auto;
    top: auto;
+}
+
+/* By default, images are 100% width. Overriding to get standard image size */
+article.pytorch-article img {
+	width: auto;
 }

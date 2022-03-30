@@ -3,7 +3,7 @@
 .. role:: hidden
     :class: hidden-section
 
-.. _torchlip-api:
+.. _deel-torchlip-api:
 
 deel.torchlip
 =============

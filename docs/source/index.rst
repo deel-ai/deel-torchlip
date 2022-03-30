@@ -3,15 +3,15 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-:github_url: https://github.com/deel-ai/torchlip
+:github_url: https://github.com/deel-ai/deel-torchlip
 
-Welcome to ``torchlip`` documentation!
-=======================================
+Welcome to ``deel-torchlip`` documentation!
+===========================================
 
 Controlling the Lipschitz constant of a layer or a whole neural network has many applications ranging
 from adversarial robustness to Wasserstein distance estimation.
 
-This library provides implementation of **k-Lispchitz layers for** PyTorch.
+This library provides implementation of **k-Lispchitz layers for PyTorch**.
 
 Content of the library
 ----------------------
@@ -30,8 +30,8 @@ You can install ``deel-torchlip`` directly from pypi:
 
    pip install deel-torchlip
 
-In order to use ``torchlip``, you also need a `valid pytorch installation <https://pytorch.org/get-started/locally/#installing-on-linux>`_.
-``torchlip`` supports torch 1.7.0+.
+In order to use ``deel-torchlip``, you also need a `valid pytorch installation <https://pytorch.org/get-started/locally/#installing-on-linux>`_.
+``deel-torchlip`` supports torch 1.7.0+.
 
 Cite this work
 --------------
