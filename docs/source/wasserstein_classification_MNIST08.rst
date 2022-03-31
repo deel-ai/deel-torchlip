@@ -1,8 +1,18 @@
 Example 3: HKR classifier on MNIST dataset
 ==========================================
 
+|Open In Colab|
+
 This notebook demonstrates how to learn a binary classifier on the
 MNIST0-8 dataset (MNIST with only 0 and 8).
+
+.. |Open In Colab| image:: https://colab.research.google.com/assets/colab-badge.svg
+   :target: https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_classification_MNIST08.ipynb
+
+.. code:: ipython3
+
+    # Install the required library deel-torchlip (uncomment line below)
+    # %pip install -qqq deel-torchlip
 
 1. Data preparation
 -------------------
@@ -128,7 +138,6 @@ convolutional layers.
 .. code:: ipython3
 
     from deel.torchlip.functional import kr_loss, hkr_loss, hinge_margin_loss
-    from tqdm import tqdm
 
     # training parameters
     epochs = 10
@@ -145,169 +154,84 @@ convolutional layers.
 
     for epoch in range(epochs):
 
-        print(f"Epoch {epoch + 1}/{epochs}")
-
         m_kr, m_hm, m_acc = 0, 0, 0
         wass.train()
 
-        with tqdm(total=len(train_loader)) as tsteps:
-            for step, (data, target) in enumerate(train_loader):
-                tsteps.update()
+        for step, (data, target) in enumerate(train_loader):
 
-                data, target = data.to(device), target.to(device)
-                optimizer.zero_grad()
-                output = wass(data)
-                loss = hkr_loss(output, target, alpha=alpha, min_margin=min_margin)
-                loss.backward()
-                optimizer.step()
+            data, target = data.to(device), target.to(device)
+            optimizer.zero_grad()
+            output = wass(data)
+            loss = hkr_loss(output, target, alpha=alpha, min_margin=min_margin)
+            loss.backward()
+            optimizer.step()
 
-                # Compute metrics on batch
-                m_kr += kr_loss(output, target, (1, -1))
-                m_hm += hinge_margin_loss(output, target, min_margin)
-                m_acc += (torch.sign(output).flatten() == torch.sign(target)).sum() / len(
-                    target
-                )
-
-                # Print metrics of current batch
-                postfix = {
-                    k: "{:.04f}".format(v)
-                    for k, v in {
-                        "loss": loss,
-                        "kr": m_kr / (step + 1),
-                        "hinge": m_hm / (step + 1),
-                        "acc": m_acc / (step + 1),
-                    }.items()
-                }
-                tsteps.set_postfix(postfix)
-
-            # Compute test loss for the current epoch
-            wass.eval()
-            testo = []
-            for data, target in test_loader:
-                data, target = data.to(device), target.to(device)
-                testo.append(wass(data).detach().cpu())
-            testo = torch.cat(testo).flatten()
-
-            # Print metrics for the current epoch (train and validation metrics)
-            postfix.update(
-                {
-                    f"val_{k}": "{:.04f}".format(v)
-                    for k, v in {
-                        "loss": hkr_loss(
-                            testo, test.tensors[1], alpha=alpha, min_margin=min_margin
-                        ),
-                        "kr": kr_loss(testo.flatten(), test.tensors[1], (1, -1)),
-                        "hinge": hinge_margin_loss(
-                            testo.flatten(), test.tensors[1], min_margin
-                        ),
-                        "acc": (torch.sign(testo).flatten() == torch.sign(test.tensors[1]))
-                        .float()
-                        .mean(),
-                    }.items()
-                }
+            # Compute metrics on batch
+            m_kr += kr_loss(output, target, (1, -1))
+            m_hm += hinge_margin_loss(output, target, min_margin)
+            m_acc += (torch.sign(output).flatten() == torch.sign(target)).sum() / len(
+                target
             )
-            tsteps.set_postfix(postfix)
+
+        # Train metrics for the current epoch
+        metrics = [
+            f"{k}: {v:.04f}"
+            for k, v in {
+                "loss": loss,
+                "KR": m_kr / (step + 1),
+                "acc": m_acc / (step + 1),
+            }.items()
+        ]
+
+        # Compute test loss for the current epoch
+        wass.eval()
+        testo = []
+        for data, target in test_loader:
+            data, target = data.to(device), target.to(device)
+            testo.append(wass(data).detach().cpu())
+        testo = torch.cat(testo).flatten()
+
+        # Validation metrics for the current epoch
+        metrics += [
+            f"val_{k}: {v:.04f}"
+            for k, v in {
+                "loss": hkr_loss(
+                    testo, test.tensors[1], alpha=alpha, min_margin=min_margin
+                ),
+                "KR": kr_loss(testo.flatten(), test.tensors[1], (1, -1)),
+                "acc": (torch.sign(testo).flatten() == torch.sign(test.tensors[1]))
+                .float()
+                .mean(),
+            }.items()
+        ]
+
+        print(f"Epoch {epoch + 1}/{epochs}")
+        print(" - ".join(metrics))
 
 
 
 .. parsed-literal::
 
     Epoch 1/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 68.73it/s, loss=-1.9260, kr=1.8460, hinge=0.2779, acc=0.8957, val_loss=-2.7345, val_kr=3.0710, val_hinge=0.03
-
-
-.. parsed-literal::
-
+    loss: -2.5269 - KR: 1.6177 - acc: 0.8516 - val_loss: -2.7241 - val_KR: 3.0157 - val_acc: 0.9939
     Epoch 2/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 68.95it/s, loss=-4.1241, kr=3.5866, hinge=0.0348, acc=0.9896, val_loss=-3.8917, val_kr=4.1615, val_hinge=0.02
-
-
-.. parsed-literal::
-
+    loss: -3.6040 - KR: 3.8627 - acc: 0.9918 - val_loss: -4.5285 - val_KR: 4.7897 - val_acc: 0.9918
     Epoch 3/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 70.30it/s, loss=-4.8420, kr=4.5263, hinge=0.0304, acc=0.9903, val_loss=-4.6992, val_kr=5.0309, val_hinge=0.03
-
-
-.. parsed-literal::
-
+    loss: -5.7646 - KR: 5.4015 - acc: 0.9922 - val_loss: -5.7246 - val_KR: 6.0067 - val_acc: 0.9898
     Epoch 4/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 70.90it/s, loss=-5.6075, kr=5.3798, hinge=0.0261, acc=0.9909, val_loss=-5.5427, val_kr=5.7997, val_hinge=0.02
-
-
-.. parsed-literal::
-
+    loss: -6.6268 - KR: 6.2105 - acc: 0.9921 - val_loss: -6.2183 - val_KR: 6.4874 - val_acc: 0.9893
     Epoch 5/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 70.62it/s, loss=-6.4990, kr=6.0299, hinge=0.0225, acc=0.9922, val_loss=-5.9950, val_kr=6.3148, val_hinge=0.03
-
-
-.. parsed-literal::
-
+    loss: -6.4072 - KR: 6.5715 - acc: 0.9931 - val_loss: -6.4530 - val_KR: 6.7446 - val_acc: 0.9887
     Epoch 6/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 70.24it/s, loss=-6.5761, kr=6.4610, hinge=0.0207, acc=0.9932, val_loss=-6.4486, val_kr=6.6909, val_hinge=0.02
-
-
-.. parsed-literal::
-
+    loss: -6.7689 - KR: 6.7803 - acc: 0.9926 - val_loss: -6.6342 - val_KR: 6.8849 - val_acc: 0.9898
     Epoch 7/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 70.60it/s, loss=-6.3180, kr=6.7235, hinge=0.0203, acc=0.9935, val_loss=-6.6230, val_kr=6.8221, val_hinge=0.01
-
-
-.. parsed-literal::
-
+    loss: -6.2389 - KR: 6.8948 - acc: 0.9932 - val_loss: -6.7603 - val_KR: 6.9643 - val_acc: 0.9933
     Epoch 8/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 70.38it/s, loss=-6.3673, kr=6.8746, hinge=0.0192, acc=0.9935, val_loss=-6.6473, val_kr=6.9393, val_hinge=0.02
-
-
-.. parsed-literal::
-
+    loss: -6.9207 - KR: 6.9642 - acc: 0.9933 - val_loss: -6.8199 - val_KR: 7.0147 - val_acc: 0.9918
     Epoch 9/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 70.36it/s, loss=-6.5218, kr=6.9664, hinge=0.0190, acc=0.9934, val_loss=-6.8133, val_kr=6.9885, val_hinge=0.01
-
-
-.. parsed-literal::
-
+    loss: -6.9446 - KR: 7.0211 - acc: 0.9936 - val_loss: -6.8038 - val_KR: 7.0666 - val_acc: 0.9887
     Epoch 10/10
-
-
-.. parsed-literal::
-
-    100%|█| 92/92 [00:01<00:00, 70.49it/s, loss=-6.7745, kr=7.0099, hinge=0.0191, acc=0.9940, val_loss=-6.8197, val_kr=7.0787, val_hinge=0.02
+    loss: -6.5403 - KR: 7.0694 - acc: 0.9942 - val_loss: -6.9136 - val_KR: 7.1086 - val_acc: 0.9933
 
 
 4. Evaluate the Lipschitz constant of our networks
@@ -351,17 +275,13 @@ for various inputs.
 
 .. parsed-literal::
 
-    tensor(0.1362)
+    tensor(0.1349)
 
 
 .. code:: ipython3
 
-    from scipy.spatial.distance import pdist
-
-    wass.eval()
-
     p = []
-    for batch, _ in tqdm(train_loader):
+    for batch, _ in train_loader:
         x = batch.numpy()
         y = wass(batch.to(device)).detach().cpu().numpy()
         xd = pdist(x.reshape(batch.shape[0], -1))
@@ -373,16 +293,7 @@ for various inputs.
 
 .. parsed-literal::
 
-    100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 92/92 [00:00<00:00, 180.51it/s]
-
-.. parsed-literal::
-
-    tensor(0.9050, dtype=torch.float64)
-
-
-.. parsed-literal::
-
-
+    tensor(0.9038, dtype=torch.float64)
 
 
 As we can see, using the :math:`\epsilon`-version, we greatly
@@ -414,8 +325,8 @@ are 1.
     === Before export ===
     SpectralLinear(in_features=784, out_features=128, bias=True), min=0.9999998807907104, max=1.0
     SpectralLinear(in_features=128, out_features=64, bias=True), min=0.9999998807907104, max=1.0000001192092896
-    SpectralLinear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.000000238418579
-    FrobeniusLinear(in_features=32, out_features=1, bias=True), min=1.0, max=1.0
+    SpectralLinear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.0
+    FrobeniusLinear(in_features=32, out_features=1, bias=True), min=0.9999999403953552, max=0.9999999403953552
 
 
 .. code:: ipython3
@@ -436,8 +347,8 @@ are 1.
     === After export ===
     Linear(in_features=784, out_features=128, bias=True), min=0.9999998807907104, max=1.0
     Linear(in_features=128, out_features=64, bias=True), min=0.9999998807907104, max=1.0000001192092896
-    Linear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.000000238418579
-    Linear(in_features=32, out_features=1, bias=True), min=1.0, max=1.0
+    Linear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.0
+    Linear(in_features=32, out_features=1, bias=True), min=0.9999999403953552, max=0.9999999403953552
 
 
 As we can see, all our singular values are very close to one.

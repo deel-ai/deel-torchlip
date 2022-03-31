@@ -1,9 +1,19 @@
 Example 2: HKR classifier on toy dataset
 ========================================
 
+|Open in Colab|
+
 In this notebook, we show how to build a robust classifier based on the
 regularized version of the Kantorovitch-Rubinstein duality. We use the
 ``two moons`` synthetic dataset for our experiments.
+
+.. |Open in Colab| image:: https://colab.research.google.com/assets/colab-badge.svg
+   :target: https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_toy_classification.ipynb
+
+.. code:: ipython3
+
+    # Install the required library deel-torchlip (uncomment line below)
+    # %pip install -qqq deel-torchlip
 
 1. Two moons dataset
 --------------------
@@ -50,7 +60,7 @@ We first build our two moons dataset.
 
 
 
-.. image:: wasserstein_toy_classification_files/wasserstein_toy_classification_4_1.png
+.. image:: wasserstein_toy_classification_files/wasserstein_toy_classification_5_1.png
 
 
 2. Relation with optimal transport
@@ -186,7 +196,6 @@ dataset.
 .. code:: ipython3
 
     from deel.torchlip.functional import kr_loss, hkr_loss, hinge_margin_loss
-    from tqdm import tqdm
 
     batch_size = 256
     n_epochs = 10
@@ -204,13 +213,9 @@ dataset.
 
     for epoch in range(n_epochs):
 
-        # print(f"Epoch {epoch + 1}/{n_epochs}")
         m_kr, m_hm, m_acc = 0, 0, 0
 
-        print(f"Epoch {epoch + 1}/{n_epochs}")
-        tsteps = tqdm(loader)
-
-        for step, (data, target) in enumerate(tsteps):
+        for step, (data, target) in enumerate(loader):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = wass(data)
@@ -224,118 +229,38 @@ dataset.
                 torch.sign(output.view(target.shape)) == torch.sign(target)
             ).sum() / len(target)
 
-            tsteps.set_postfix(
-                {
-                    k: "{:.04f}".format(v)
-                    for k, v in {
-                        "loss": loss,
-                        "kr": m_kr / (step + 1),
-                        "hinge": m_hm / (step + 1),
-                        "acc": m_acc / (step + 1),
-                    }.items()
-                }
-            )
+        print(f"Epoch {epoch + 1}/{n_epochs}")
+        print(
+            f"loss: {loss:.04f} - "
+            f"KR: {m_kr / (step + 1):.04f} - "
+            f"hinge: {m_hm / (step + 1):.04f} - "
+            f"accuracy: {m_acc / (step + 1):.04f}"
+        )
 
 
 
 .. parsed-literal::
 
     Epoch 1/10
-
-
-.. parsed-literal::
-
-    100%|██████████████████████████████████████████████████| 20/20 [00:00<00:00, 83.42it/s, loss=1.7372, kr=0.0598, hinge=0.2621, acc=0.5310]
-
-
-.. parsed-literal::
-
+    loss: 1.7240 - KR: 0.0837 - hinge: 0.2519 - accuracy: 0.5387
     Epoch 2/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 83.71it/s, loss=-0.0933, kr=0.5170, hinge=0.1009, acc=0.8691]
-
-
-.. parsed-literal::
-
+    loss: -0.3211 - KR: 0.5286 - hinge: 0.0969 - accuracy: 0.8665
     Epoch 3/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 84.75it/s, loss=-0.5061, kr=0.9271, hinge=0.0541, acc=0.9102]
-
-
-.. parsed-literal::
-
+    loss: -0.7250 - KR: 0.8928 - hinge: 0.0484 - accuracy: 0.9253
     Epoch 4/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.15it/s, loss=-0.7395, kr=0.9545, hinge=0.0359, acc=0.9443]
-
-
-.. parsed-literal::
-
+    loss: -0.6545 - KR: 0.9257 - hinge: 0.0328 - accuracy: 0.9552
     Epoch 5/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.10it/s, loss=-0.6555, kr=0.9587, hinge=0.0264, acc=0.9703]
-
-
-.. parsed-literal::
-
+    loss: -0.5023 - KR: 0.9287 - hinge: 0.0262 - accuracy: 0.9696
     Epoch 6/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 84.98it/s, loss=-0.7719, kr=0.9417, hinge=0.0195, acc=0.9842]
-
-
-.. parsed-literal::
-
+    loss: -0.5727 - KR: 0.9217 - hinge: 0.0223 - accuracy: 0.9785
     Epoch 7/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.03it/s, loss=-0.8012, kr=0.9738, hinge=0.0203, acc=0.9840]
-
-
-.. parsed-literal::
-
+    loss: -0.6651 - KR: 0.9306 - hinge: 0.0202 - accuracy: 0.9862
     Epoch 8/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.06it/s, loss=-0.8991, kr=0.9728, hinge=0.0241, acc=0.9747]
-
-
-.. parsed-literal::
-
+    loss: -0.5247 - KR: 0.9454 - hinge: 0.0208 - accuracy: 0.9810
     Epoch 9/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 84.57it/s, loss=-0.5764, kr=1.0180, hinge=0.0367, acc=0.9475]
-
-
-.. parsed-literal::
-
+    loss: -0.6442 - KR: 0.9496 - hinge: 0.0205 - accuracy: 0.9811
     Epoch 10/10
-
-
-.. parsed-literal::
-
-    100%|█████████████████████████████████████████████████| 20/20 [00:00<00:00, 85.29it/s, loss=-0.7552, kr=0.9870, hinge=0.0265, acc=0.9694]
+    loss: -0.7998 - KR: 0.9713 - hinge: 0.0211 - accuracy: 0.9791
 
 
 2.6. Plot output countour line
@@ -387,7 +312,7 @@ draw a countour plot to visualize :math:`F`.
 
 
 
-.. image:: wasserstein_toy_classification_files/wasserstein_toy_classification_11_1.png
+.. image:: wasserstein_toy_classification_files/wasserstein_toy_classification_12_1.png
 
 
 The ``vanilla_export()`` method allows us to obtain a ``torch`` module

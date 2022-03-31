@@ -1,15 +1,13 @@
-![deel-torchlip](docs/source/logo.svg#gh-light-mode-only)
-![deel-torchlip](docs/source/logo_white.svg#gh-dark-mode-only)
+<img src="docs/source/logo.svg#gh-light-mode-only" alt="logo deel-torchlip" style="width:500px;"/>
+<img src="docs/source/logo_white.svg#gh-dark-mode-only" alt="logo deel-torchlip" style="width:500px;"/>
 
 [![PyPI](https://img.shields.io/pypi/v/deel-torchlip.svg)](https://pypi.org/project/deel-torchlip)
 [![Python](https://img.shields.io/pypi/pyversions/deel-torchlip.svg)](https://pypi.org/project/deel-torchlip)
-[![License](https://img.shields.io/github/license/deel-ai/deel-torchlip.svg)](https://github.com/deel-ai/deel-torchlip/blob/master/LICENSE)
-
 [![Documentation](https://img.shields.io/badge/doc-url-blue.svg)](https://deel-ai.github.io/deel-torchlip)
 [![arXiv](https://img.shields.io/badge/arXiv-2006.06520-b31b1b.svg)](https://arxiv.org/abs/2006.06520)
-
 [![Tests](https://github.com/deel-ai/deel-torchlip/actions/workflows/python-tests.yml/badge.svg?branch=master)](https://github.com/deel-ai/deel-torchlip/actions/workflows/python-tests.yml)
 [![Linters](https://github.com/deel-ai/deel-torchlip/actions/workflows/python-lints.yml/badge.svg?branch=master)](https://github.com/deel-ai/deel-torchlip/actions/workflows/python-lints.yml)
+[![License](https://img.shields.io/github/license/deel-ai/deel-torchlip.svg)](https://github.com/deel-ai/deel-torchlip/blob/master/LICENSE)
 
 [deel-torchlip](https://deel-ai.github.io/deel-torchlip) is an open source Python API to
 build and train Lipschitz neural networks. It is built on top of PyTorch.

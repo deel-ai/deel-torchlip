@@ -44,11 +44,11 @@ docs_requires = [
     "ipython",  # required for Pygments
     "nbsphinx",
     "sphinxcontrib_katex",
-    "pytorch_sphinx_theme @ git+https://github.com/pytorch/pytorch_sphinx_theme.git",
+    "pytorch_sphinx_theme",
 ]
 
 setuptools.setup(
-    name="torchlip",
+    name="deel-torchlip",
     version="0.1.0",
     author=", ".join(
         [
