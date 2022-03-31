@@ -17,7 +17,7 @@ work is not in vain.
   `make prepare-dev && source torchlip_dev_env/bin/activate`.
 - You are ready to install the library:
 
-  `pip install -e .` or run the test suite `make test`.
+  `pip install -e .`
 
 Welcome to the team !
 
