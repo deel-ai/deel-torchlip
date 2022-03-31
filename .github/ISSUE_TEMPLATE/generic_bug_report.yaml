@@ -31,7 +31,7 @@ body:
       required: false
   - type: textarea
     attributes:
-	    label: Current Behavior
+      label: Current Behavior
       description: A clear and concise description of what the bug is.
 	    placeholder: Tell us what you see!
       value: "A bug happened!"
