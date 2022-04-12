@@ -70,7 +70,7 @@ setuptools.setup(
     description="PyTorch implementation for k-Lipschitz layers",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/deel-ai/torchlip",
+    url="https://github.com/deel-ai/deel-torchlip",
     packages=setuptools.find_namespace_packages(include=["deel.*"]),
     install_requires=[
         "numpy",
