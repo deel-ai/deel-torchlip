@@ -25,7 +25,7 @@ jobs:
         run: |
           npm install -g katex
           python -m pip install --upgrade pip
-          pip install sphinx==3.3.1 jinja2<3.1 recommonmark sphinx-rtd-theme sphinx_markdown_builder ipython nbsphinx sphinxcontrib_katex pytorch_sphinx_theme
+          pip install sphinx==3.3.1 recommonmark sphinx-rtd-theme sphinx_markdown_builder ipython nbsphinx sphinxcontrib_katex pytorch_sphinx_theme
           pip install .
 
       - name: "Build Sphinx Doc"
