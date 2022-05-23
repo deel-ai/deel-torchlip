@@ -12,13 +12,6 @@ These management rules are intended to be collaborative and all those involved i
 
 The governance committee is initially composed of DEEL members who contributed to the first version of `deel-torchlip` and are the only contributors to the master branch.
 
-The members of the governance committee are:
-
-   * Franck Mamalet
-   * Thibaut Boissin
-   * Corentin Friedrich
-   * Justin PLAKOO
-
 The governance committee is responsible for the master branch that contains the code of the version of the library that is officially recognised. 
 
 These governance committee members are the only ones able to merge pull requests into this branch which from contributions branches.
