@@ -13,7 +13,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Example 1: Wasserstein distance estimation &mdash; torchlip 1.0.0 documentation</title>
+  <title>Example 1: Wasserstein distance estimation &mdash; deel-torchlip 1.0.0 documentation</title>
   
 
   
@@ -33,9 +33,11 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
-  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
   <link rel="search" title="Search" href="search.html" />
   <link rel="next" title="Example 2: HKR classifier on toy dataset" href="wasserstein_toy_classification.html" />
@@ -63,7 +65,7 @@
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>
@@ -120,9 +122,9 @@
         
         
         
-        <p><span class="caption-text">Shortcuts</span></p>
+        <p class="caption" role="heading"><span class="caption-text">Shortcuts</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to deel-torchlip documentation!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Example 1: Wasserstein distance estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
@@ -200,6 +202,7 @@
                 
   <section id="example-1-wasserstein-distance-estimation">
 <h1>Example 1: Wasserstein distance estimation<a class="headerlink" href="#example-1-wasserstein-distance-estimation" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_toy.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>In this notebook we estimate the Wasserstein distance through its
 Kantorovich-Rubinstein dual representation by using a 1-Lipschitz neural
 network.</p>
@@ -220,6 +223,10 @@ science as the earth mover’s distance.</p>
 <span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub><mo stretchy="false">(</mo><mi>μ</mi><mo separator="true">,</mo><mi>ν</mi><mo stretchy="false">)</mo><mo>=</mo><munder><mrow><mi>inf</mi><mo>⁡</mo></mrow><mrow><mi>π</mi><mo>∈</mo><mi mathvariant="normal">Π</mi><mo stretchy="false">(</mo><mi>μ</mi><mo separator="true">,</mo><mi>ν</mi><mo stretchy="false">)</mo></mrow></munder><mi><munder><mo><mi mathvariant="double-struck">E</mi></mo><mrow><mi>x</mi><mo separator="true">,</mo><mi>z</mi><mo>∼</mo><mi>π</mi></mrow></munder></mi><mi mathvariant="normal">∥</mi><mrow></mrow><mtext mathvariant="bold">x</mtext><mo>−</mo><mtext mathvariant="bold">z</mtext><mi mathvariant="normal">∥</mi><mrow></mrow></mrow><annotation encoding="application/x-tex">W_1(\mu,\nu) = \inf_{\pi \in \Pi(\mu,\nu)}\underset{x,z \sim \pi}{\mathbb{E}}\Vert{} \textbf{x}-\textbf{z} \Vert{}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">μ</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.06366em;">ν</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.716em;vertical-align:-0.966em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6944em;"><span style="top:-2.309em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.03588em;">π</span><span class="mrel mtight">∈</span><span class="mord mtight">Π</span><span class="mopen mtight">(</span><span class="mord mathnormal mtight">μ</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.06366em;">ν</span><span class="mclose mtight">)</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop">in<span style="margin-right:0.07778em;">f</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.966em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.6889em;"><span style="top:-2.4em;margin-left:0em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">x</span><span class="mpunct mtight">,</span><span class="mord mathnormal mtight" style="margin-right:0.04398em;">z</span><span class="mrel mtight">∼</span><span class="mord mathnormal mtight" style="margin-right:0.03588em;">π</span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span><span class="mop mathbb">E</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.8361em;"><span></span></span></span></span></span></span><span class="mord">∥</span><span class="mord"></span><span class="mord text"><span class="mord textbf">x</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord textbf">z</span></span><span class="mord">∥</span><span class="mord"></span></span></span></span></span></div><p>where <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Π</mi><mo stretchy="false">(</mo><mi>μ</mi><mo separator="true">,</mo><mi>ν</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\Pi(\mu,\nu)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">Π</span><span class="mopen">(</span><span class="mord mathnormal">μ</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal" style="margin-right:0.06366em;">ν</span><span class="mclose">)</span></span></span></span></span> is the set of all probability measures on
 <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Ω</mi><mo>×</mo><mi mathvariant="normal">Ω</mi></mrow><annotation encoding="application/x-tex">\Omega\times \Omega</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7667em;vertical-align:-0.0833em;"></span><span class="mord">Ω</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord">Ω</span></span></span></span></span> with marginals <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>μ</mi></mrow><annotation encoding="application/x-tex">\mu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">μ</span></span></span></span></span> and <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ν</mi></mrow><annotation encoding="application/x-tex">\nu</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.06366em;">ν</span></span></span></span></span>.
 In most case this equation is not tractable.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the required library deel-torchlip (uncomment line below)</span>
+<span class="c1"># %pip install -qqq deel-torchlip</span>
+</pre></div>
+</div>
 </section>
 <section id="parameters-input-images">
 <h2>2. Parameters input images<a class="headerlink" href="#parameters-input-images" title="Permalink to this headline">¶</a></h2>
@@ -332,7 +339,7 @@ between the two sets.</p>
 <span class="n">L2</span><span class="o">-</span><span class="n">Norm</span><span class="p">,</span> <span class="n">black</span> <span class="n">vs</span><span class="o">.</span> <span class="s1">&#39;positive&#39;</span> <span class="n">white</span> <span class="o">-&gt;</span> <span class="mf">35.0</span>
 </pre></div>
 </div>
-<img alt="_images/wasserstein_toy_4_1.png" src="_images/wasserstein_toy_4_1.png" />
+<img alt="_images/wasserstein_toy_5_1.png" src="_images/wasserstein_toy_5_1.png" />
 <p>As we can see, the distance between the fully black image and any of the
 two images with an inner square is <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>35</mn></mrow><annotation encoding="application/x-tex">35</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">35</span></span></span></span></span>, and these are the only
 images in our distributions, the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">W_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span> distance between the two
@@ -443,16 +450,16 @@ formulation for the Wasserstein distance.</p>
         <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">({</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.6f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">)})</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:01&lt;00:00, 15.57it/s, loss=-29.044495]
-Epoch 2/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.33it/s, loss=-34.360405]
-Epoch 3/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.57it/s, loss=-34.922119]
-Epoch 4/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.61it/s, loss=-34.975761]
-Epoch 5/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.52it/s, loss=-34.991302]
-Epoch 6/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.33it/s, loss=-34.993919]
-Epoch 7/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.52it/s, loss=-34.994595]
-Epoch 8/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.44it/s, loss=-34.994503]
-Epoch 9/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.30it/s, loss=-34.994770]
-Epoch 10/10: 100%|██████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.62it/s, loss=-34.995167]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.40it/s, loss=-29.041878]
+Epoch 2/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.53it/s, loss=-34.570045]
+Epoch 3/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.14it/s, loss=-34.912281]
+Epoch 4/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.11it/s, loss=-34.984196]
+Epoch 5/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.57it/s, loss=-34.992695]
+Epoch 6/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.14it/s, loss=-34.993195]
+Epoch 7/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.36it/s, loss=-34.994316]
+Epoch 8/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.62it/s, loss=-34.994377]
+Epoch 9/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.47it/s, loss=-34.993877]
+Epoch 10/10: 100%|██████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.35it/s, loss=-34.994080]
 </pre></div>
 </div>
 <p>As we can see the loss converges to the value <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>35</mn></mrow><annotation encoding="application/x-tex">35</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">35</span></span></span></span></span> which is the
@@ -533,10 +540,10 @@ squares).</p>
   
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
+  <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
   <script src="_static/jquery.js"></script>
   <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
-  <script src="_static/language_data.js"></script>
   
 
   
@@ -573,7 +580,7 @@ squares).</p>
             <li class="list-title"><a href="">Home</a></li>
             <li><a href="https://pytorch.org">PyTorch</a></li>
             <li><a href="/">Get Started</a></li>
-            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+            <li><a href="https://github.com/deel-ai/deel-torchlip">GitHub</a></li>
           </ul>
         </div>
 
@@ -608,7 +615,7 @@ squares).</p>
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>

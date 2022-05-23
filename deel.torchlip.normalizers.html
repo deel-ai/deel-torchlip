@@ -13,7 +13,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>deel.torchlip.normalizers module &mdash; torchlip 1.0.0 documentation</title>
+  <title>deel.torchlip.normalizers module &mdash; deel-torchlip 1.0.0 documentation</title>
   
 
   
@@ -33,9 +33,11 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
-  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
   <link rel="search" title="Search" href="search.html" /> 
 
@@ -61,7 +63,7 @@
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>
@@ -118,9 +120,9 @@
         
         
         
-        <p><span class="caption-text">Shortcuts</span></p>
+        <p class="caption" role="heading"><span class="caption-text">Shortcuts</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to deel-torchlip documentation!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
@@ -205,8 +207,8 @@ to normalize weights tensors so that all their singular values equal 1.</p>
 <p>This module contains computation functions for Bjorck and spectral
 normalization. This is most for internal use.</p>
 <dl class="py function">
-<dt id="deel.torchlip.normalizers.bjorck_normalization">
-<code class="sig-prename descclassname">deel.torchlip.normalizers.</code><code class="sig-name descname">bjorck_normalization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">w</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a></span></em>, <em class="sig-param"><span class="n">niter</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">15</span></em>, <em class="sig-param"><span class="n">beta</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.5</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a><a class="reference internal" href="_modules/deel/torchlip/normalizers.html#bjorck_normalization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.normalizers.bjorck_normalization" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="deel.torchlip.normalizers.bjorck_normalization">
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.normalizers.</span></span><span class="sig-name descname"><span class="pre">bjorck_normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/normalizers.html#bjorck_normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.normalizers.bjorck_normalization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply Bjorck normalization on the kernel as per</p>
 <div class="math">
 <span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mtable rowspacing="0.16em" columnalign="left" columnspacing="1em"><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><msub><mi>W</mi><mn>0</mn></msub><mo>=</mo><mi>W</mi></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><msub><mi>W</mi><mrow><mi>n</mi><mo>+</mo><mn>1</mn></mrow></msub><mo>=</mo><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mi>β</mi><mo stretchy="false">)</mo><msub><mi>W</mi><mi>n</mi></msub><mo>−</mo><mi>β</mi><msub><mi>W</mi><mi>n</mi></msub><msubsup><mi>W</mi><mi>n</mi><mi>T</mi></msubsup><msub><mi>W</mi><mi>n</mi></msub></mrow></mstyle></mtd></mtr><mtr><mtd><mstyle scriptlevel="0" displaystyle="false"><mrow><mover accent="true"><mi>W</mi><mo stretchy="true">‾</mo></mover><mo>=</mo><msub><mi>W</mi><mi>N</mi></msub></mrow></mstyle></mtd></mtr></mtable><annotation encoding="application/x-tex">\begin{array}{l}
@@ -233,8 +235,8 @@ eigen value of <code class="docutils literal notranslate"><span class="pre">w</s
 </dd></dl>
 
 <dl class="py function">
-<dt id="deel.torchlip.normalizers.spectral_normalization">
-<code class="sig-prename descclassname">deel.torchlip.normalizers.</code><code class="sig-name descname">spectral_normalization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernel</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a></span></em>, <em class="sig-param"><span class="n">u</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a><span class="p">, </span>None<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">niter</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em><span class="sig-paren">)</span> &#x2192; Tuple<span class="p">[</span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a><span class="p">, </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a><span class="p">, </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)">torch.Tensor</a><span class="p">]</span><a class="reference internal" href="_modules/deel/torchlip/normalizers.html#spectral_normalization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#deel.torchlip.normalizers.spectral_normalization" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="deel.torchlip.normalizers.spectral_normalization">
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.normalizers.</span></span><span class="sig-name descname"><span class="pre">spectral_normalization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">kernel</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">niter</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="_modules/deel/torchlip/normalizers.html#spectral_normalization"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.normalizers.spectral_normalization" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply spectral normalization on the given kernel <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>W</mi></mrow><annotation encoding="application/x-tex">W</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">W</span></span></span></span></span> to set its greatest
 eigen value to approximately 1.</p>
 <div class="admonition note">
@@ -320,10 +322,10 @@ before normalization.</p>
   
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
+  <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
   <script src="_static/jquery.js"></script>
   <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
-  <script src="_static/language_data.js"></script>
   
 
   
@@ -360,7 +362,7 @@ before normalization.</p>
             <li class="list-title"><a href="">Home</a></li>
             <li><a href="https://pytorch.org">PyTorch</a></li>
             <li><a href="/">Get Started</a></li>
-            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+            <li><a href="https://github.com/deel-ai/deel-torchlip">GitHub</a></li>
           </ul>
         </div>
 
@@ -395,7 +397,7 @@ before normalization.</p>
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>

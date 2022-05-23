@@ -13,7 +13,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Example 4: HKR multiclass and fooling &mdash; torchlip 1.0.0 documentation</title>
+  <title>Example 4: HKR multiclass and fooling &mdash; deel-torchlip 1.0.0 documentation</title>
   
 
   
@@ -33,9 +33,11 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
-  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
   <link rel="search" title="Search" href="search.html" />
   <link rel="prev" title="Example 3: HKR classifier on MNIST dataset" href="wasserstein_classification_MNIST08.html" /> 
@@ -62,7 +64,7 @@
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>
@@ -119,9 +121,9 @@
         
         
         
-        <p><span class="caption-text">Shortcuts</span></p>
+        <p class="caption" role="heading"><span class="caption-text">Shortcuts</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to deel-torchlip documentation!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
@@ -199,6 +201,7 @@
                 
   <section id="example-4-hkr-multiclass-and-fooling">
 <h1>Example 4: HKR multiclass and fooling<a class="headerlink" href="#example-4-hkr-multiclass-and-fooling" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_classification_fashionMNIST.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>This notebook will show how to train a Lispchitz network in a multiclass
 configuration. The HKR (hinge-Kantorovich-Rubinstein) loss is extended
 to multiclass using a one-vs all setup. The notebook will go through the
@@ -206,6 +209,10 @@ process of designing and training the network. It will also show how to
 compute robustness certificates from the outputs of the network. Finally
 the guarantee of these certificates will be checked by attacking the
 network.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the required libraries deel-torchlip and foolbox (uncomment below if needed)</span>
+<span class="c1"># %pip install -qqq deel-torchlip foolbox</span>
+</pre></div>
+</div>
 <section id="data-preparation">
 <h2>1. Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h2>
 <p>For this example, the <code class="docutils literal notranslate"><span class="pre">fashion_mnist</span></code> dataset is used. In order to
@@ -324,679 +331,271 @@ paper</a>.</p>
 good robustness without hurting the accuracy too much.</p>
 <p>Finally the <code class="docutils literal notranslate"><span class="pre">kr_multiclass_loss</span></code> gives an indication on the robustness
 of the network (proxy of the average certificate).</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
-
-<span class="n">epochs</span> <span class="o">=</span> <span class="mi">100</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">epochs</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
 <span class="n">hkr_loss</span> <span class="o">=</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">HKRMulticlassLoss</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="mf">0.25</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
     <span class="n">m_kr</span><span class="p">,</span> <span class="n">m_acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 
+    <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
+
+        <span class="c1"># For multiclass HKR loss, the targets must be one-hot encoded</span>
+        <span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="c1"># Forward + backward pass</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+
+        <span class="c1"># Compute metrics on batch</span>
+        <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">kr_multiclass_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">m_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">target</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+
+    <span class="c1"># Train metrics for the current epoch</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+            <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;KR&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Compute validation loss for the current epoch</span>
+    <span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">test_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+        <span class="n">test_targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+        <span class="p">)</span>
+    <span class="n">test_output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">test_output</span><span class="p">)</span>
+    <span class="n">test_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">test_targets</span><span class="p">)</span>
+
+    <span class="n">val_loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span><span class="p">)</span>
+    <span class="n">val_kr</span> <span class="o">=</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">kr_multiclass_loss</span><span class="p">(</span><span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span><span class="p">)</span>
+    <span class="n">val_acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">test_output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">test_targets</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="c1"># Validation metrics for the current epoch</span>
+    <span class="n">metrics</span> <span class="o">+=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;val_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span><span class="p">),</span>
+            <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">test_output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">test_targets</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+            <span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+            <span class="s2">&quot;KR&quot;</span><span class="p">:</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">kr_multiclass_loss</span><span class="p">(</span><span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span><span class="p">),</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">]</span>
+
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">))</span> <span class="k">as</span> <span class="n">tsteps</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
-            <span class="n">tsteps</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-
-            <span class="c1"># For multiclass HKR loss, the targets must be one-hot encoded</span>
-            <span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
-            <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-
-            <span class="c1"># Forward + backward pass</span>
-            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
-
-            <span class="c1"># Compute metrics on batch</span>
-            <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">kr_multiclass_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-            <span class="n">m_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">target</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
-
-            <span class="c1"># Print metrics of current batch</span>
-            <span class="n">postfix</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="n">k</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
-                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
-                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">}</span>
-            <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">postfix</span><span class="p">)</span>
-
-        <span class="c1"># Compute test loss for the current epoch</span>
-        <span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="n">test_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
-            <span class="n">test_targets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
-            <span class="p">)</span>
-        <span class="n">test_output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">test_output</span><span class="p">)</span>
-        <span class="n">test_targets</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">test_targets</span><span class="p">)</span>
-
-        <span class="n">val_loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span><span class="p">)</span>
-        <span class="n">val_kr</span> <span class="o">=</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">kr_multiclass_loss</span><span class="p">(</span><span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span><span class="p">)</span>
-        <span class="n">val_acc</span> <span class="o">=</span> <span class="p">(</span>
-            <span class="p">(</span><span class="n">test_output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">test_targets</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
-        <span class="p">)</span>
-
-        <span class="c1"># Print metrics for the current epoch</span>
-        <span class="n">postfix</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="sa">f</span><span class="s2">&quot;val_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
-                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span><span class="p">),</span>
-                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">test_output</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">test_targets</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
-                    <span class="o">.</span><span class="n">float</span><span class="p">()</span>
-                    <span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
-                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">kr_multiclass_loss</span><span class="p">(</span>
-                        <span class="n">test_output</span><span class="p">,</span> <span class="n">test_targets</span>
-                    <span class="p">),</span>
-                <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
-        <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">postfix</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; - &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">metrics</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">1</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.67it/s, loss=30.2000, acc=0.1436, kr=0.0810, val_loss=29.1302, val_acc=0.2763, val_kr=0.1965]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.67it/s, loss=20.0201, acc=0.4963, kr=0.2746, val_loss=19.6045, val_acc=0.6003, val_kr=0.3541]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.69it/s, loss=15.6437, acc=0.6324, kr=0.4195, val_loss=15.5583, val_acc=0.6358, val_kr=0.4814]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=13.4755, acc=0.6517, kr=0.5201, val_loss=13.5746, val_acc=0.6592, val_kr=0.5528]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.68it/s, loss=12.3127, acc=0.6765, kr=0.5865, val_loss=12.3308, val_acc=0.6770, val_kr=0.6138]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=10.9644, acc=0.6992, kr=0.6388, val_loss=11.5213, val_acc=0.6943, val_kr=0.6577]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.71it/s, loss=10.5638, acc=0.7156, kr=0.6802, val_loss=10.9288, val_acc=0.7090, val_kr=0.6952]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.76it/s, loss=10.1280, acc=0.7253, kr=0.7155, val_loss=10.4868, val_acc=0.7216, val_kr=0.7281]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=10.0916, acc=0.7356, kr=0.7459, val_loss=10.1050, val_acc=0.7279, val_kr=0.7571]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=9.5023, acc=0.7417, kr=0.7745, val_loss=9.7742, val_acc=0.7334, val_kr=0.7828]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">11</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=9.0971, acc=0.7470, kr=0.7990, val_loss=9.4973, val_acc=0.7422, val_kr=0.8060]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">12</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=9.0802, acc=0.7522, kr=0.8220, val_loss=9.2430, val_acc=0.7486, val_kr=0.8271]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">13</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.76it/s, loss=9.0801, acc=0.7555, kr=0.8440, val_loss=9.0003, val_acc=0.7522, val_kr=0.8507]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">14</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.73it/s, loss=8.5745, acc=0.7618, kr=0.8657, val_loss=8.7841, val_acc=0.7523, val_kr=0.8709]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">15</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=8.0554, acc=0.7647, kr=0.8858, val_loss=8.5687, val_acc=0.7561, val_kr=0.8914]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">16</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=8.0398, acc=0.7679, kr=0.9071, val_loss=8.3919, val_acc=0.7606, val_kr=0.9097]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">17</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=7.9438, acc=0.7712, kr=0.9251, val_loss=8.2221, val_acc=0.7663, val_kr=0.9294]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">18</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=8.0154, acc=0.7743, kr=0.9449, val_loss=8.0543, val_acc=0.7648, val_kr=0.9494]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">19</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=7.7195, acc=0.7766, kr=0.9647, val_loss=7.8735, val_acc=0.7718, val_kr=0.9690]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">20</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.69it/s, loss=7.6200, acc=0.7800, kr=0.9830, val_loss=7.7290, val_acc=0.7732, val_kr=0.9858]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">21</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=7.2097, acc=0.7821, kr=1.0012, val_loss=7.6041, val_acc=0.7725, val_kr=1.0047]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">22</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.69it/s, loss=6.6541, acc=0.7838, kr=1.0179, val_loss=7.4834, val_acc=0.7796, val_kr=1.0211]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">23</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.68it/s, loss=7.0025, acc=0.7880, kr=1.0355, val_loss=7.3719, val_acc=0.7774, val_kr=1.0357]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">24</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=7.2880, acc=0.7879, kr=1.0507, val_loss=7.2474, val_acc=0.7831, val_kr=1.0540]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">25</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.65it/s, loss=7.0548, acc=0.7930, kr=1.0699, val_loss=7.1355, val_acc=0.7838, val_kr=1.0715]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">26</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=6.8047, acc=0.7942, kr=1.0860, val_loss=7.0455, val_acc=0.7881, val_kr=1.0870]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">27</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.72it/s, loss=6.4147, acc=0.7972, kr=1.1011, val_loss=6.9661, val_acc=0.7878, val_kr=1.1017]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">28</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=6.7332, acc=0.7971, kr=1.1179, val_loss=6.8569, val_acc=0.7912, val_kr=1.1194]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">29</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=6.6728, acc=0.8003, kr=1.1330, val_loss=6.7894, val_acc=0.7895, val_kr=1.1355]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">30</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=6.6812, acc=0.8021, kr=1.1495, val_loss=6.6940, val_acc=0.7961, val_kr=1.1507]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">31</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.73it/s, loss=6.1188, acc=0.8029, kr=1.1658, val_loss=6.6080, val_acc=0.7962, val_kr=1.1674]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">32</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.76it/s, loss=6.3918, acc=0.8052, kr=1.1805, val_loss=6.5385, val_acc=0.7986, val_kr=1.1812]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">33</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=6.3506, acc=0.8058, kr=1.1948, val_loss=6.4665, val_acc=0.7977, val_kr=1.1968]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">34</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=6.1084, acc=0.8081, kr=1.2113, val_loss=6.3989, val_acc=0.8010, val_kr=1.2104]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">35</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.73it/s, loss=6.0416, acc=0.8107, kr=1.2255, val_loss=6.3671, val_acc=0.8025, val_kr=1.2271]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">36</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=5.8046, acc=0.8110, kr=1.2405, val_loss=6.2684, val_acc=0.8027, val_kr=1.2384]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">37</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=5.9592, acc=0.8115, kr=1.2543, val_loss=6.2166, val_acc=0.8062, val_kr=1.2518]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">38</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.72it/s, loss=6.2462, acc=0.8128, kr=1.2670, val_loss=6.1399, val_acc=0.8065, val_kr=1.2688]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">39</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.70it/s, loss=6.0790, acc=0.8143, kr=1.2809, val_loss=6.0902, val_acc=0.8076, val_kr=1.2820]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">40</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.71it/s, loss=5.6846, acc=0.8163, kr=1.2952, val_loss=6.0258, val_acc=0.8107, val_kr=1.2934]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">41</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.71it/s, loss=5.4129, acc=0.8174, kr=1.3079, val_loss=6.0086, val_acc=0.8094, val_kr=1.3056]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">42</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.71it/s, loss=5.9106, acc=0.8176, kr=1.3197, val_loss=5.9359, val_acc=0.8097, val_kr=1.3216]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">43</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.69it/s, loss=5.3967, acc=0.8199, kr=1.3355, val_loss=5.8801, val_acc=0.8100, val_kr=1.3338]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">44</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.70it/s, loss=5.2553, acc=0.8206, kr=1.3453, val_loss=5.8445, val_acc=0.8119, val_kr=1.3451]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">45</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.69it/s, loss=5.6222, acc=0.8214, kr=1.3580, val_loss=5.8061, val_acc=0.8108, val_kr=1.3577]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">46</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.76it/s, loss=5.6705, acc=0.8215, kr=1.3696, val_loss=5.7312, val_acc=0.8158, val_kr=1.3675]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">47</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=5.4717, acc=0.8220, kr=1.3814, val_loss=5.6903, val_acc=0.8158, val_kr=1.3799]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">48</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.70it/s, loss=5.3415, acc=0.8245, kr=1.3942, val_loss=5.6476, val_acc=0.8177, val_kr=1.3909]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">49</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.67it/s, loss=5.0636, acc=0.8258, kr=1.4043, val_loss=5.6481, val_acc=0.8190, val_kr=1.3989]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">50</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=5.0173, acc=0.8263, kr=1.4139, val_loss=5.5660, val_acc=0.8177, val_kr=1.4114]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">51</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.71it/s, loss=5.4555, acc=0.8262, kr=1.4262, val_loss=5.5223, val_acc=0.8192, val_kr=1.4247]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">52</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.73it/s, loss=5.0637, acc=0.8281, kr=1.4367, val_loss=5.4895, val_acc=0.8198, val_kr=1.4339]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">53</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=5.5016, acc=0.8290, kr=1.4471, val_loss=5.4692, val_acc=0.8182, val_kr=1.4462]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">54</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.72it/s, loss=5.0414, acc=0.8292, kr=1.4579, val_loss=5.4138, val_acc=0.8223, val_kr=1.4535]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">55</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.70it/s, loss=5.0434, acc=0.8295, kr=1.4680, val_loss=5.3816, val_acc=0.8236, val_kr=1.4648]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">56</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.72it/s, loss=4.7568, acc=0.8307, kr=1.4770, val_loss=5.3524, val_acc=0.8257, val_kr=1.4728]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">57</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.68it/s, loss=4.6369, acc=0.8329, kr=1.4879, val_loss=5.3317, val_acc=0.8210, val_kr=1.4853]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">58</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=4.9217, acc=0.8321, kr=1.4985, val_loss=5.2853, val_acc=0.8238, val_kr=1.4971]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">59</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=4.7243, acc=0.8338, kr=1.5077, val_loss=5.2464, val_acc=0.8249, val_kr=1.5054]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">60</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.68it/s, loss=4.8585, acc=0.8333, kr=1.5188, val_loss=5.2077, val_acc=0.8270, val_kr=1.5132]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">61</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.65it/s, loss=4.8504, acc=0.8350, kr=1.5279, val_loss=5.2295, val_acc=0.8224, val_kr=1.5253]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">62</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.65it/s, loss=4.8763, acc=0.8345, kr=1.5351, val_loss=5.2056, val_acc=0.8240, val_kr=1.5308]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">63</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.68it/s, loss=4.7773, acc=0.8353, kr=1.5450, val_loss=5.1410, val_acc=0.8296, val_kr=1.5429]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">64</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.68it/s, loss=4.8620, acc=0.8366, kr=1.5570, val_loss=5.0879, val_acc=0.8297, val_kr=1.5494]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">65</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.69it/s, loss=4.7218, acc=0.8373, kr=1.5654, val_loss=5.0698, val_acc=0.8267, val_kr=1.5599]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">66</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.68it/s, loss=5.0687, acc=0.8370, kr=1.5711, val_loss=5.0683, val_acc=0.8262, val_kr=1.5710]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">67</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.67it/s, loss=4.6142, acc=0.8393, kr=1.5819, val_loss=5.0545, val_acc=0.8323, val_kr=1.5746]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">68</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.67it/s, loss=4.6043, acc=0.8401, kr=1.5894, val_loss=5.0035, val_acc=0.8280, val_kr=1.5857]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">69</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.65it/s, loss=4.6178, acc=0.8388, kr=1.5955, val_loss=4.9740, val_acc=0.8303, val_kr=1.5918]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">70</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.68it/s, loss=4.6509, acc=0.8411, kr=1.6050, val_loss=4.9418, val_acc=0.8328, val_kr=1.5971]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">71</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.67it/s, loss=4.9657, acc=0.8409, kr=1.6137, val_loss=4.9159, val_acc=0.8301, val_kr=1.6092]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">72</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.65it/s, loss=4.5740, acc=0.8413, kr=1.6197, val_loss=4.8943, val_acc=0.8292, val_kr=1.6132]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">73</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.67it/s, loss=4.7415, acc=0.8420, kr=1.6264, val_loss=4.8727, val_acc=0.8359, val_kr=1.6174]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">74</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.71it/s, loss=4.6112, acc=0.8411, kr=1.6323, val_loss=4.8517, val_acc=0.8333, val_kr=1.6285]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">75</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=4.9014, acc=0.8425, kr=1.6399, val_loss=4.8309, val_acc=0.8364, val_kr=1.6357]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">76</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=4.7204, acc=0.8436, kr=1.6484, val_loss=4.8106, val_acc=0.8376, val_kr=1.6430]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">77</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=4.4593, acc=0.8437, kr=1.6533, val_loss=4.8434, val_acc=0.8297, val_kr=1.6484]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">78</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=4.3488, acc=0.8434, kr=1.6608, val_loss=4.7688, val_acc=0.8379, val_kr=1.6522]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">79</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.76it/s, loss=4.4854, acc=0.8439, kr=1.6667, val_loss=4.7244, val_acc=0.8371, val_kr=1.6608]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">80</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=4.6372, acc=0.8453, kr=1.6738, val_loss=4.7326, val_acc=0.8376, val_kr=1.6623]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">81</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=3.9168, acc=0.8461, kr=1.6762, val_loss=4.7040, val_acc=0.8359, val_kr=1.6727]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">82</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=4.4819, acc=0.8459, kr=1.6831, val_loss=4.6923, val_acc=0.8382, val_kr=1.6779]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">83</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=4.2101, acc=0.8466, kr=1.6910, val_loss=4.6570, val_acc=0.8403, val_kr=1.6814]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">84</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=4.1839, acc=0.8476, kr=1.6946, val_loss=4.6394, val_acc=0.8405, val_kr=1.6863]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">85</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=4.1559, acc=0.8466, kr=1.7025, val_loss=4.6774, val_acc=0.8337, val_kr=1.6948]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">86</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=4.0721, acc=0.8475, kr=1.7056, val_loss=4.6079, val_acc=0.8415, val_kr=1.6987]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">87</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.67it/s, loss=4.0041, acc=0.8477, kr=1.7115, val_loss=4.5860, val_acc=0.8403, val_kr=1.7020]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">88</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.66it/s, loss=4.1027, acc=0.8485, kr=1.7177, val_loss=4.5727, val_acc=0.8419, val_kr=1.7091]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">89</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=4.1122, acc=0.8494, kr=1.7223, val_loss=4.5689, val_acc=0.8386, val_kr=1.7194]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">90</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=3.9592, acc=0.8492, kr=1.7292, val_loss=4.5552, val_acc=0.8439, val_kr=1.7182]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">91</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=4.0801, acc=0.8493, kr=1.7327, val_loss=4.5449, val_acc=0.8395, val_kr=1.7275]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">92</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.77it/s, loss=4.0227, acc=0.8500, kr=1.7365, val_loss=4.5189, val_acc=0.8425, val_kr=1.7322]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">93</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=4.2882, acc=0.8506, kr=1.7419, val_loss=4.5133, val_acc=0.8426, val_kr=1.7356]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">94</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=4.0366, acc=0.8506, kr=1.7490, val_loss=4.4820, val_acc=0.8406, val_kr=1.7410]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">95</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=4.1335, acc=0.8510, kr=1.7512, val_loss=4.4676, val_acc=0.8450, val_kr=1.7446]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">96</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.74it/s, loss=4.0049, acc=0.8506, kr=1.7556, val_loss=4.4764, val_acc=0.8431, val_kr=1.7505]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">97</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.75it/s, loss=4.0175, acc=0.8513, kr=1.7595, val_loss=4.4278, val_acc=0.8444, val_kr=1.7504]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">98</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.71it/s, loss=4.1952, acc=0.8517, kr=1.7631, val_loss=4.4052, val_acc=0.8455, val_kr=1.7555]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">99</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.70it/s, loss=4.1029, acc=0.8519, kr=1.7690, val_loss=4.4153, val_acc=0.8463, val_kr=1.7614]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">100</span><span class="o">/</span><span class="mi">100</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|████████████████| 15/15 [00:05&lt;00:00,  2.70it/s, loss=3.9639, acc=0.8526, kr=1.7726, val_loss=4.3812, val_acc=0.8459, val_kr=1.7586]
+<span class="n">loss</span><span class="p">:</span> <span class="mf">29.8065</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.2169</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.1004</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">28.8107</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.4582</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.1890</span>
+<span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">19.8997</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.5137</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.2591</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">19.6618</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.5694</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.3345</span>
+<span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">15.5582</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.6162</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.3930</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">15.7906</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.6218</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.4501</span>
+<span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">13.6293</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.6692</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.4945</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">13.8149</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.6832</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.5319</span>
+<span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">12.3328</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7009</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.5630</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">12.3709</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7038</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.5904</span>
+<span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">11.2218</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7248</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.6149</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">11.3854</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7161</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.6349</span>
+<span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">10.5164</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7351</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.6575</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">10.7304</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7312</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.6749</span>
+<span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">9.9036</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7458</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.6955</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">10.2040</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7389</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.7098</span>
+<span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">9.4456</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7515</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.7283</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">9.7864</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7461</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.7404</span>
+<span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">9.4395</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7565</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.7562</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">9.4458</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7488</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.7644</span>
+<span class="n">Epoch</span> <span class="mi">11</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">8.6899</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7621</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.7809</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">9.1339</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7584</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.7878</span>
+<span class="n">Epoch</span> <span class="mi">12</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">8.8400</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7660</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.8033</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">8.8585</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7603</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.8114</span>
+<span class="n">Epoch</span> <span class="mi">13</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">8.4524</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7698</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.8280</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">8.6265</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7615</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.8348</span>
+<span class="n">Epoch</span> <span class="mi">14</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">8.2200</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7728</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.8497</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">8.4014</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7684</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.8576</span>
+<span class="n">Epoch</span> <span class="mi">15</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">7.5585</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7771</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.8733</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">8.1770</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7731</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.8779</span>
+<span class="n">Epoch</span> <span class="mi">16</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">7.7402</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7789</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.8954</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">7.9923</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7737</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.9000</span>
+<span class="n">Epoch</span> <span class="mi">17</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">7.8116</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7828</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9146</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">7.8163</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7774</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.9193</span>
+<span class="n">Epoch</span> <span class="mi">18</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">7.3096</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7854</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9364</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">7.6657</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7784</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.9392</span>
+<span class="n">Epoch</span> <span class="mi">19</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">7.1890</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7892</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9548</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">7.5001</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7822</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.9597</span>
+<span class="n">Epoch</span> <span class="mi">20</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">7.1856</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7899</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9761</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">7.3783</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7815</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">0.9803</span>
+<span class="n">Epoch</span> <span class="mi">21</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.8862</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7927</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9959</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">7.2480</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7829</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.0005</span>
+<span class="n">Epoch</span> <span class="mi">22</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.7167</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7966</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.0154</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">7.1030</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7862</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.0169</span>
+<span class="n">Epoch</span> <span class="mi">23</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.6035</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.7978</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.0321</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.9949</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7894</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.0359</span>
+<span class="n">Epoch</span> <span class="mi">24</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.5261</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8007</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.0522</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.8867</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7925</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.0526</span>
+<span class="n">Epoch</span> <span class="mi">25</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.3522</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8023</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.0674</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.7934</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7946</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.0706</span>
+<span class="n">Epoch</span> <span class="mi">26</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.3714</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8036</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.0867</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.7136</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7960</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.0874</span>
+<span class="n">Epoch</span> <span class="mi">27</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.2562</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8060</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.1034</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.6595</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7958</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.1038</span>
+<span class="n">Epoch</span> <span class="mi">28</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.1618</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8081</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.1197</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.5398</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7991</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.1196</span>
+<span class="n">Epoch</span> <span class="mi">29</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.0123</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8094</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.1373</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.4722</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.7979</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.1350</span>
+<span class="n">Epoch</span> <span class="mi">30</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">6.1670</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8111</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.1519</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.3815</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8038</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.1519</span>
+<span class="n">Epoch</span> <span class="mi">31</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.8678</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8132</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.1682</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.2972</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8038</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.1675</span>
+<span class="n">Epoch</span> <span class="mi">32</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.8205</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8150</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.1839</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.2579</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8025</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.1849</span>
+<span class="n">Epoch</span> <span class="mi">33</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.8555</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8149</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.2006</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.1964</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8069</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.2005</span>
+<span class="n">Epoch</span> <span class="mi">34</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.8581</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8176</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.2147</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.1072</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8088</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.2144</span>
+<span class="n">Epoch</span> <span class="mi">35</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.7316</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8187</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.2302</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">6.0802</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8062</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.2290</span>
+<span class="n">Epoch</span> <span class="mi">36</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.9217</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8187</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.2449</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.9837</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8122</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.2463</span>
+<span class="n">Epoch</span> <span class="mi">37</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.4302</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8219</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.2589</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.9178</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8151</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.2556</span>
+<span class="n">Epoch</span> <span class="mi">38</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.5795</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8219</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.2732</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.8836</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8157</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.2725</span>
+<span class="n">Epoch</span> <span class="mi">39</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.5917</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8238</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.2878</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.8426</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8138</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.2899</span>
+<span class="n">Epoch</span> <span class="mi">40</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.2440</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8242</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.3040</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.7798</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8190</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.2982</span>
+<span class="n">Epoch</span> <span class="mi">41</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.4507</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8244</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.3157</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.7328</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8176</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.3134</span>
+<span class="n">Epoch</span> <span class="mi">42</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.2139</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8272</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.3277</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.7118</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8166</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.3298</span>
+<span class="n">Epoch</span> <span class="mi">43</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.4277</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8277</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.3446</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.6266</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8203</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.3391</span>
+<span class="n">Epoch</span> <span class="mi">44</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.3023</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8291</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.3555</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.5880</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8214</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.3558</span>
+<span class="n">Epoch</span> <span class="mi">45</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.3210</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8296</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.3705</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.5427</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8206</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.3683</span>
+<span class="n">Epoch</span> <span class="mi">46</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.1909</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8298</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.3833</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.4947</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8214</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.3806</span>
+<span class="n">Epoch</span> <span class="mi">47</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.7530</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8308</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.3961</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.4601</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8256</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.3949</span>
+<span class="n">Epoch</span> <span class="mi">48</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.3041</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8325</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.4094</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.4323</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8238</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.4044</span>
+<span class="n">Epoch</span> <span class="mi">49</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.8817</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8327</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.4206</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.3684</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8263</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.4190</span>
+<span class="n">Epoch</span> <span class="mi">50</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.2699</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8324</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.4354</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.3517</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8294</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.4300</span>
+<span class="n">Epoch</span> <span class="mi">51</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.8224</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8347</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.4470</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.3209</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8250</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.4453</span>
+<span class="n">Epoch</span> <span class="mi">52</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.7981</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8358</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.4586</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.2608</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8266</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.4562</span>
+<span class="n">Epoch</span> <span class="mi">53</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.7855</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8353</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.4731</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.2477</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8254</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.4662</span>
+<span class="n">Epoch</span> <span class="mi">54</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.4214</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8368</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.4807</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.1947</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8286</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.4792</span>
+<span class="n">Epoch</span> <span class="mi">55</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.4762</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8385</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.4953</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.1617</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8304</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.4877</span>
+<span class="n">Epoch</span> <span class="mi">56</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.0611</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8384</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5048</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.1164</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8301</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5023</span>
+<span class="n">Epoch</span> <span class="mi">57</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.7158</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8379</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5154</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.1140</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8283</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5128</span>
+<span class="n">Epoch</span> <span class="mi">58</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.7872</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8389</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5301</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.0908</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8317</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5246</span>
+<span class="n">Epoch</span> <span class="mi">59</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.7114</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8403</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5377</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.0289</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8358</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5359</span>
+<span class="n">Epoch</span> <span class="mi">60</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.8055</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8409</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5506</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">5.0150</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8308</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5439</span>
+<span class="n">Epoch</span> <span class="mi">61</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.5613</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8413</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5563</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.9887</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8373</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5536</span>
+<span class="n">Epoch</span> <span class="mi">62</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.3678</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8413</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5695</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.9495</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8366</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5621</span>
+<span class="n">Epoch</span> <span class="mi">63</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.8015</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8436</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5788</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.9201</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8368</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5737</span>
+<span class="n">Epoch</span> <span class="mi">64</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.6411</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8445</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5881</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.8899</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8352</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5844</span>
+<span class="n">Epoch</span> <span class="mi">65</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.4301</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8446</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.5971</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.8566</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8344</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.5953</span>
+<span class="n">Epoch</span> <span class="mi">66</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.5307</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8449</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6088</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.8410</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8358</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6009</span>
+<span class="n">Epoch</span> <span class="mi">67</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">5.0502</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8443</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6166</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.8211</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8378</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6097</span>
+<span class="n">Epoch</span> <span class="mi">68</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.3426</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8459</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6251</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.7964</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8401</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6198</span>
+<span class="n">Epoch</span> <span class="mi">69</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.2726</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8468</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6320</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.7703</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8373</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6263</span>
+<span class="n">Epoch</span> <span class="mi">70</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.5685</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8464</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6417</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.7610</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8339</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6356</span>
+<span class="n">Epoch</span> <span class="mi">71</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.3319</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8467</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6507</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.7237</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8395</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6403</span>
+<span class="n">Epoch</span> <span class="mi">72</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.8462</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8471</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6573</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.7196</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8406</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6531</span>
+<span class="n">Epoch</span> <span class="mi">73</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.4542</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8485</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6657</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.6709</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8391</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6599</span>
+<span class="n">Epoch</span> <span class="mi">74</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.1947</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8483</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6750</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.6740</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8391</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6628</span>
+<span class="n">Epoch</span> <span class="mi">75</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.1425</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8494</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6824</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.6660</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8394</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6738</span>
+<span class="n">Epoch</span> <span class="mi">76</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.8530</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8501</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6894</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.6159</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8396</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6850</span>
+<span class="n">Epoch</span> <span class="mi">77</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.4014</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8496</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6972</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.5799</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8404</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6898</span>
+<span class="n">Epoch</span> <span class="mi">78</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.1155</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8490</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7033</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.5703</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8428</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6942</span>
+<span class="n">Epoch</span> <span class="mi">79</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.9704</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8494</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7123</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.5954</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8427</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.6996</span>
+<span class="n">Epoch</span> <span class="mi">80</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.4123</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8509</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7168</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.5463</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8435</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7092</span>
+<span class="n">Epoch</span> <span class="mi">81</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.9522</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8505</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7240</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.5268</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8438</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7153</span>
+<span class="n">Epoch</span> <span class="mi">82</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.0600</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8513</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7326</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.4986</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8445</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7214</span>
+<span class="n">Epoch</span> <span class="mi">83</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.0133</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8522</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7343</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.4688</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8435</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7248</span>
+<span class="n">Epoch</span> <span class="mi">84</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.1254</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8529</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7452</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.4479</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8444</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7376</span>
+<span class="n">Epoch</span> <span class="mi">85</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.7917</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8542</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7499</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.4521</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8440</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7433</span>
+<span class="n">Epoch</span> <span class="mi">86</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.2524</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8534</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7584</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.4099</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8434</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7509</span>
+<span class="n">Epoch</span> <span class="mi">87</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.1529</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8541</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7622</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.4031</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8439</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7507</span>
+<span class="n">Epoch</span> <span class="mi">88</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.8418</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8545</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7675</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.3966</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8436</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7644</span>
+<span class="n">Epoch</span> <span class="mi">89</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.3602</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8543</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7753</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.3608</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8429</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7700</span>
+<span class="n">Epoch</span> <span class="mi">90</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.6240</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8537</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7835</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.3561</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8455</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7732</span>
+<span class="n">Epoch</span> <span class="mi">91</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.0434</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8542</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7886</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.3595</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8481</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7735</span>
+<span class="n">Epoch</span> <span class="mi">92</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.0609</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8565</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7890</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.3036</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8479</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7824</span>
+<span class="n">Epoch</span> <span class="mi">93</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.3047</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8554</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.7950</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.2832</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8496</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7867</span>
+<span class="n">Epoch</span> <span class="mi">94</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.9837</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8569</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.8023</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.2719</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8475</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7916</span>
+<span class="n">Epoch</span> <span class="mi">95</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">4.1019</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8563</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.8050</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.3060</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8465</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.7944</span>
+<span class="n">Epoch</span> <span class="mi">96</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.8759</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8571</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.8111</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.2724</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8479</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.8052</span>
+<span class="n">Epoch</span> <span class="mi">97</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.8682</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8564</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.8185</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.2375</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8492</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.8049</span>
+<span class="n">Epoch</span> <span class="mi">98</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.9488</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8580</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.8201</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.2446</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8471</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.8083</span>
+<span class="n">Epoch</span> <span class="mi">99</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.8166</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8579</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.8258</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.2073</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8481</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.8168</span>
+<span class="n">Epoch</span> <span class="mi">100</span><span class="o">/</span><span class="mi">100</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">3.6867</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8586</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.8287</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="mf">4.1908</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.8482</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">1.8212</span>
 </pre></div>
 </div>
 </section>
@@ -1110,16 +709,16 @@ gradient norm preserving, other attacks gives very similar results.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Image</span> <span class="c1">#     Certificate     Distance to adversarial</span>
 <span class="o">---------------------------------------------------</span>
-<span class="n">Image</span> <span class="mi">0</span>        <span class="mf">0.541</span>                <span class="mf">1.74</span>
-<span class="n">Image</span> <span class="mi">1</span>        <span class="mf">1.504</span>                <span class="mf">3.74</span>
-<span class="n">Image</span> <span class="mi">2</span>        <span class="mf">0.406</span>                <span class="mf">1.35</span>
-<span class="n">Image</span> <span class="mi">3</span>        <span class="mf">0.814</span>                <span class="mf">1.87</span>
-<span class="n">Image</span> <span class="mi">4</span>        <span class="mf">0.154</span>                <span class="mf">0.54</span>
-<span class="n">Image</span> <span class="mi">5</span>        <span class="mf">0.270</span>                <span class="mf">0.72</span>
-<span class="n">Image</span> <span class="mi">6</span>        <span class="mf">0.191</span>                <span class="mf">0.72</span>
-<span class="n">Image</span> <span class="mi">7</span>        <span class="mf">0.464</span>                <span class="mf">1.08</span>
-<span class="n">Image</span> <span class="mi">8</span>        <span class="mf">0.906</span>                <span class="mf">2.31</span>
-<span class="n">Image</span> <span class="mi">9</span>        <span class="mf">0.268</span>                <span class="mf">0.75</span>
+<span class="n">Image</span> <span class="mi">0</span>        <span class="mf">0.485</span>                <span class="mf">1.33</span>
+<span class="n">Image</span> <span class="mi">1</span>        <span class="mf">1.510</span>                <span class="mf">3.46</span>
+<span class="n">Image</span> <span class="mi">2</span>        <span class="mf">0.593</span>                <span class="mf">1.79</span>
+<span class="n">Image</span> <span class="mi">3</span>        <span class="mf">0.903</span>                <span class="mf">2.00</span>
+<span class="n">Image</span> <span class="mi">4</span>        <span class="mf">0.090</span>                <span class="mf">0.26</span>
+<span class="n">Image</span> <span class="mi">5</span>        <span class="mf">0.288</span>                <span class="mf">0.73</span>
+<span class="n">Image</span> <span class="mi">6</span>        <span class="mf">0.212</span>                <span class="mf">0.75</span>
+<span class="n">Image</span> <span class="mi">7</span>        <span class="mf">0.520</span>                <span class="mf">1.16</span>
+<span class="n">Image</span> <span class="mi">8</span>        <span class="mf">1.042</span>                <span class="mf">3.03</span>
+<span class="n">Image</span> <span class="mi">9</span>        <span class="mf">0.269</span>                <span class="mf">0.73</span>
 </pre></div>
 </div>
 <p>Finally, we can take a visual look at the obtained images. When looking
@@ -1193,7 +792,7 @@ its decision.</p></li>
 <span class="n">adversarial_viz</span><span class="p">(</span><span class="n">vanilla_model</span><span class="p">,</span> <span class="n">images</span><span class="p">,</span> <span class="n">advs</span><span class="p">,</span> <span class="n">test_set</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span>
 </pre></div>
 </div>
-<img alt="_images/wasserstein_classification_fashionMNIST_14_0.png" src="_images/wasserstein_classification_fashionMNIST_14_0.png" />
+<img alt="_images/wasserstein_classification_fashionMNIST_15_0.png" src="_images/wasserstein_classification_fashionMNIST_15_0.png" />
 </section>
 </section>
 
@@ -1267,10 +866,10 @@ its decision.</p></li>
   
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
+  <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
   <script src="_static/jquery.js"></script>
   <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
-  <script src="_static/language_data.js"></script>
   
 
   
@@ -1307,7 +906,7 @@ its decision.</p></li>
             <li class="list-title"><a href="">Home</a></li>
             <li><a href="https://pytorch.org">PyTorch</a></li>
             <li><a href="/">Get Started</a></li>
-            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+            <li><a href="https://github.com/deel-ai/deel-torchlip">GitHub</a></li>
           </ul>
         </div>
 
@@ -1342,7 +941,7 @@ its decision.</p></li>
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>

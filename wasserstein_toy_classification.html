@@ -13,7 +13,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Example 2: HKR classifier on toy dataset &mdash; torchlip 1.0.0 documentation</title>
+  <title>Example 2: HKR classifier on toy dataset &mdash; deel-torchlip 1.0.0 documentation</title>
   
 
   
@@ -33,9 +33,11 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
-  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
   <link rel="search" title="Search" href="search.html" />
   <link rel="next" title="Example 3: HKR classifier on MNIST dataset" href="wasserstein_classification_MNIST08.html" />
@@ -63,7 +65,7 @@
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>
@@ -120,9 +122,9 @@
         
         
         
-        <p><span class="caption-text">Shortcuts</span></p>
+        <p class="caption" role="heading"><span class="caption-text">Shortcuts</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to deel-torchlip documentation!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Example 2: HKR classifier on toy dataset</a></li>
@@ -200,9 +202,14 @@
                 
   <section id="example-2-hkr-classifier-on-toy-dataset">
 <h1>Example 2: HKR classifier on toy dataset<a class="headerlink" href="#example-2-hkr-classifier-on-toy-dataset" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_toy_classification.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>In this notebook, we show how to build a robust classifier based on the
 regularized version of the Kantorovitch-Rubinstein duality. We use the
 <code class="docutils literal notranslate"><span class="pre">two</span> <span class="pre">moons</span></code> synthetic dataset for our experiments.</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the required library deel-torchlip (uncomment line below)</span>
+<span class="c1"># %pip install -qqq deel-torchlip</span>
+</pre></div>
+</div>
 <section id="two-moons-dataset">
 <h2>1. Two moons dataset<a class="headerlink" href="#two-moons-dataset" title="Permalink to this headline">¶</a></h2>
 <p>We first build our two moons dataset.</p>
@@ -236,7 +243,7 @@ regularized version of the Kantorovitch-Rubinstein duality. We use the
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">AxesSubplot</span><span class="p">:</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/wasserstein_toy_classification_4_1.png" src="_images/wasserstein_toy_classification_4_1.png" />
+<img alt="_images/wasserstein_toy_classification_5_1.png" src="_images/wasserstein_toy_classification_5_1.png" />
 </section>
 <section id="relation-with-optimal-transport">
 <h2>2. Relation with optimal transport<a class="headerlink" href="#relation-with-optimal-transport" title="Permalink to this headline">¶</a></h2>
@@ -340,7 +347,6 @@ norm and the spectral norm (as we only have a single singular value).</p>
 <p>Now we are ready to learn the classification task on the two moons
 dataset.</p>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deel.torchlip.functional</span> <span class="kn">import</span> <span class="n">kr_loss</span><span class="p">,</span> <span class="n">hkr_loss</span><span class="p">,</span> <span class="n">hinge_margin_loss</span>
-<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">256</span>
 <span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">10</span>
@@ -358,13 +364,9 @@ dataset.</p>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
 
-    <span class="c1"># print(f&quot;Epoch {epoch + 1}/{n_epochs}&quot;)</span>
     <span class="n">m_kr</span><span class="p">,</span> <span class="n">m_hm</span><span class="p">,</span> <span class="n">m_acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">tsteps</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">loader</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tsteps</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">loader</span><span class="p">):</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
@@ -378,77 +380,35 @@ dataset.</p>
             <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
 
-        <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="n">k</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
-                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
-                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                    <span class="s2">&quot;hinge&quot;</span><span class="p">:</span> <span class="n">m_hm</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">}</span>
-        <span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2"> - &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;KR: </span><span class="si">{</span><span class="n">m_kr</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2"> - &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;hinge: </span><span class="si">{</span><span class="n">m_hm</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2"> - &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;accuracy: </span><span class="si">{</span><span class="n">m_acc</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">1</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|██████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 83.42it/s, loss=1.7372, kr=0.0598, hinge=0.2621, acc=0.5310]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 83.71it/s, loss=-0.0933, kr=0.5170, hinge=0.1009, acc=0.8691]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 84.75it/s, loss=-0.5061, kr=0.9271, hinge=0.0541, acc=0.9102]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 85.15it/s, loss=-0.7395, kr=0.9545, hinge=0.0359, acc=0.9443]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 85.10it/s, loss=-0.6555, kr=0.9587, hinge=0.0264, acc=0.9703]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 84.98it/s, loss=-0.7719, kr=0.9417, hinge=0.0195, acc=0.9842]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 85.03it/s, loss=-0.8012, kr=0.9738, hinge=0.0203, acc=0.9840]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 85.06it/s, loss=-0.8991, kr=0.9728, hinge=0.0241, acc=0.9747]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 84.57it/s, loss=-0.5764, kr=1.0180, hinge=0.0367, acc=0.9475]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█████████████████████████████████████████████████| 20/20 [00:00&lt;00:00, 85.29it/s, loss=-0.7552, kr=0.9870, hinge=0.0265, acc=0.9694]
+<span class="n">loss</span><span class="p">:</span> <span class="mf">1.7240</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.0837</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.2519</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.5387</span>
+<span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.3211</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.5286</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0969</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.8665</span>
+<span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.7250</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.8928</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0484</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9253</span>
+<span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.6545</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9257</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0328</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9552</span>
+<span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5023</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9287</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0262</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9696</span>
+<span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5727</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9217</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0223</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9785</span>
+<span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.6651</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9306</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0202</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9862</span>
+<span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5247</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9454</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0208</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9810</span>
+<span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.6442</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9496</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0205</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9811</span>
+<span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.7998</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9713</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0211</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9791</span>
 </pre></div>
 </div>
 </section>
@@ -491,7 +451,7 @@ draw a countour plot to visualize <span class="math"><span class="katex"><span c
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="mi">6</span> <span class="n">text</span><span class="o">.</span><span class="n">Text</span> <span class="n">objects</span><span class="o">&gt;</span>
 </pre></div>
 </div>
-<img alt="_images/wasserstein_toy_classification_11_1.png" src="_images/wasserstein_toy_classification_11_1.png" />
+<img alt="_images/wasserstein_toy_classification_12_1.png" src="_images/wasserstein_toy_classification_12_1.png" />
 <p>The <code class="docutils literal notranslate"><span class="pre">vanilla_export()</span></code> method allows us to obtain a <code class="docutils literal notranslate"><span class="pre">torch</span></code> module
 without the overhead from the 1-Lipschitz constraints after training.</p>
 </section>
@@ -572,10 +532,10 @@ without the overhead from the 1-Lipschitz constraints after training.</p>
   
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
+  <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
   <script src="_static/jquery.js"></script>
   <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
-  <script src="_static/language_data.js"></script>
   
 
   
@@ -612,7 +572,7 @@ without the overhead from the 1-Lipschitz constraints after training.</p>
             <li class="list-title"><a href="">Home</a></li>
             <li><a href="https://pytorch.org">PyTorch</a></li>
             <li><a href="/">Get Started</a></li>
-            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+            <li><a href="https://github.com/deel-ai/deel-torchlip">GitHub</a></li>
           </ul>
         </div>
 
@@ -647,7 +607,7 @@ without the overhead from the 1-Lipschitz constraints after training.</p>
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>

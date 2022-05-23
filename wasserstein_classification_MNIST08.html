@@ -13,7 +13,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Example 3: HKR classifier on MNIST dataset &mdash; torchlip 1.0.0 documentation</title>
+  <title>Example 3: HKR classifier on MNIST dataset &mdash; deel-torchlip 1.0.0 documentation</title>
   
 
   
@@ -33,9 +33,11 @@
 
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
-  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
+  <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
   <link rel="search" title="Search" href="search.html" />
   <link rel="next" title="Example 4: HKR multiclass and fooling" href="wasserstein_classification_fashionMNIST.html" />
@@ -63,7 +65,7 @@
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>
@@ -120,9 +122,9 @@
         
         
         
-        <p><span class="caption-text">Shortcuts</span></p>
+        <p class="caption" role="heading"><span class="caption-text">Shortcuts</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to torchlip documentation!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Welcome to deel-torchlip documentation!</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_example.html">Example and usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy.html">Example 1: Wasserstein distance estimation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="wasserstein_toy_classification.html">Example 2: HKR classifier on toy dataset</a></li>
@@ -200,8 +202,13 @@
                 
   <section id="example-3-hkr-classifier-on-mnist-dataset">
 <h1>Example 3: HKR classifier on MNIST dataset<a class="headerlink" href="#example-3-hkr-classifier-on-mnist-dataset" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_classification_MNIST08.ipynb"><img alt="Open In Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>This notebook demonstrates how to learn a binary classifier on the
 MNIST0-8 dataset (MNIST with only 0 and 8).</p>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Install the required library deel-torchlip (uncomment line below)</span>
+<span class="c1"># %pip install -qqq deel-torchlip</span>
+</pre></div>
+</div>
 <section id="data-preparation">
 <h2>1. Data preparation<a class="headerlink" href="#data-preparation" title="Permalink to this headline">¶</a></h2>
 <p>For this task we will select two classes: 0 and 8. Labels are changed to
@@ -305,7 +312,6 @@ convolutional layers.</p>
 <section id="learn-classification-on-mnist">
 <h2>3. Learn classification on MNIST<a class="headerlink" href="#learn-classification-on-mnist" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deel.torchlip.functional</span> <span class="kn">import</span> <span class="n">kr_loss</span><span class="p">,</span> <span class="n">hkr_loss</span><span class="p">,</span> <span class="n">hinge_margin_loss</span>
-<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 
 <span class="c1"># training parameters</span>
 <span class="n">epochs</span> <span class="o">=</span> <span class="mi">10</span>
@@ -322,128 +328,81 @@ convolutional layers.</p>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-
     <span class="n">m_kr</span><span class="p">,</span> <span class="n">m_hm</span><span class="p">,</span> <span class="n">m_acc</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
     <span class="n">wass</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
 
-    <span class="k">with</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">train_loader</span><span class="p">))</span> <span class="k">as</span> <span class="n">tsteps</span><span class="p">:</span>
-        <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
-            <span class="n">tsteps</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">step</span><span class="p">,</span> <span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
 
-            <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
-            <span class="n">output</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-            <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span><span class="p">)</span>
-            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
-            <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span><span class="p">)</span>
+        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
-            <span class="c1"># Compute metrics on batch</span>
-            <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-            <span class="n">m_hm</span> <span class="o">+=</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span>
-            <span class="n">m_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">target</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span>
-                <span class="n">target</span>
-            <span class="p">)</span>
-
-            <span class="c1"># Print metrics of current batch</span>
-            <span class="n">postfix</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="n">k</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
-                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
-                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                    <span class="s2">&quot;hinge&quot;</span><span class="p">:</span> <span class="n">m_hm</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">}</span>
-            <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">postfix</span><span class="p">)</span>
-
-        <span class="c1"># Compute test loss for the current epoch</span>
-        <span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-        <span class="n">testo</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
-            <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="n">testo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
-        <span class="n">testo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
-
-        <span class="c1"># Print metrics for the current epoch (train and validation metrics)</span>
-        <span class="n">postfix</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
-            <span class="p">{</span>
-                <span class="sa">f</span><span class="s2">&quot;val_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.04f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
-                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
-                    <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">hkr_loss</span><span class="p">(</span>
-                        <span class="n">testo</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;kr&quot;</span><span class="p">:</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
-                    <span class="s2">&quot;hinge&quot;</span><span class="p">:</span> <span class="n">hinge_margin_loss</span><span class="p">(</span>
-                        <span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">min_margin</span>
-                    <span class="p">),</span>
-                    <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-                    <span class="o">.</span><span class="n">float</span><span class="p">()</span>
-                    <span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
-                <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
-            <span class="p">}</span>
+        <span class="c1"># Compute metrics on batch</span>
+        <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="n">m_hm</span> <span class="o">+=</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span>
+        <span class="n">m_acc</span> <span class="o">+=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">output</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">target</span><span class="p">))</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">target</span>
         <span class="p">)</span>
-        <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">(</span><span class="n">postfix</span><span class="p">)</span>
+
+    <span class="c1"># Train metrics for the current epoch</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">loss</span><span class="p">,</span>
+            <span class="s2">&quot;KR&quot;</span><span class="p">:</span> <span class="n">m_kr</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="n">m_acc</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Compute test loss for the current epoch</span>
+    <span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">testo</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">test_loader</span><span class="p">:</span>
+        <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">testo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+    <span class="n">testo</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+
+    <span class="c1"># Validation metrics for the current epoch</span>
+    <span class="n">metrics</span> <span class="o">+=</span> <span class="p">[</span>
+        <span class="sa">f</span><span class="s2">&quot;val_</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">v</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="p">{</span>
+            <span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="n">hkr_loss</span><span class="p">(</span>
+                <span class="n">testo</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span>
+            <span class="p">),</span>
+            <span class="s2">&quot;KR&quot;</span><span class="p">:</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">testo</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)),</span>
+            <span class="s2">&quot;acc&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">testo</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">tensors</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="o">.</span><span class="n">float</span><span class="p">()</span>
+            <span class="o">.</span><span class="n">mean</span><span class="p">(),</span>
+        <span class="p">}</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+    <span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot; - &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">metrics</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">1</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 68.73it/s, loss=-1.9260, kr=1.8460, hinge=0.2779, acc=0.8957, val_loss=-2.7345, val_kr=3.0710, val_hinge=0.03
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 68.95it/s, loss=-4.1241, kr=3.5866, hinge=0.0348, acc=0.9896, val_loss=-3.8917, val_kr=4.1615, val_hinge=0.02
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.30it/s, loss=-4.8420, kr=4.5263, hinge=0.0304, acc=0.9903, val_loss=-4.6992, val_kr=5.0309, val_hinge=0.03
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.90it/s, loss=-5.6075, kr=5.3798, hinge=0.0261, acc=0.9909, val_loss=-5.5427, val_kr=5.7997, val_hinge=0.02
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.62it/s, loss=-6.4990, kr=6.0299, hinge=0.0225, acc=0.9922, val_loss=-5.9950, val_kr=6.3148, val_hinge=0.03
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.24it/s, loss=-6.5761, kr=6.4610, hinge=0.0207, acc=0.9932, val_loss=-6.4486, val_kr=6.6909, val_hinge=0.02
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.60it/s, loss=-6.3180, kr=6.7235, hinge=0.0203, acc=0.9935, val_loss=-6.6230, val_kr=6.8221, val_hinge=0.01
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.38it/s, loss=-6.3673, kr=6.8746, hinge=0.0192, acc=0.9935, val_loss=-6.6473, val_kr=6.9393, val_hinge=0.02
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.36it/s, loss=-6.5218, kr=6.9664, hinge=0.0190, acc=0.9934, val_loss=-6.8133, val_kr=6.9885, val_hinge=0.01
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">10</span>
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|█| 92/92 [00:01&lt;00:00, 70.49it/s, loss=-6.7745, kr=7.0099, hinge=0.0191, acc=0.9940, val_loss=-6.8197, val_kr=7.0787, val_hinge=0.02
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.5269</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">1.6177</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.8516</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">2.7241</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">3.0157</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9939</span>
+<span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.6040</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">3.8627</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9918</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">4.5285</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">4.7897</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9918</span>
+<span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.7646</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">5.4015</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9922</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">5.7246</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">6.0067</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9898</span>
+<span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.6268</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">6.2105</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9921</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.2183</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">6.4874</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9893</span>
+<span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.4072</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">6.5715</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9931</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.4530</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">6.7446</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9887</span>
+<span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.7689</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">6.7803</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9926</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.6342</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">6.8849</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9898</span>
+<span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.2389</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">6.8948</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9932</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.7603</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">6.9643</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9933</span>
+<span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.9207</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">6.9642</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9933</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.8199</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">7.0147</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9918</span>
+<span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.9446</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">7.0211</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9936</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.8038</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">7.0666</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9887</span>
+<span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.5403</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">7.0694</span> <span class="o">-</span> <span class="n">acc</span><span class="p">:</span> <span class="mf">0.9942</span> <span class="o">-</span> <span class="n">val_loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">6.9136</span> <span class="o">-</span> <span class="n">val_KR</span><span class="p">:</span> <span class="mf">7.1086</span> <span class="o">-</span> <span class="n">val_acc</span><span class="p">:</span> <span class="mf">0.9933</span>
 </pre></div>
 </div>
 </section>
@@ -476,15 +435,11 @@ convolutional layers.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.1362</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.1349</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">scipy.spatial.distance</span> <span class="kn">import</span> <span class="n">pdist</span>
-
-<span class="n">wass</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
-
-<span class="n">p</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="k">for</span> <span class="n">batch</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">train_loader</span><span class="p">):</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">p</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">batch</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">train_loader</span><span class="p">:</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">batch</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
     <span class="n">xd</span> <span class="o">=</span> <span class="n">pdist</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
@@ -494,10 +449,7 @@ convolutional layers.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>100%|███████████████████████████████████████████████████████████████████████████████████████████████████| 92/92 [00:00&lt;00:00, 180.51it/s]
-</pre></div>
-</div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.9050</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tensor</span><span class="p">(</span><span class="mf">0.9038</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>As we can see, using the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>ϵ</mi></mrow><annotation encoding="application/x-tex">\epsilon</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">ϵ</span></span></span></span></span>-version, we greatly
@@ -523,8 +475,8 @@ are 1.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">===</span> <span class="n">Before</span> <span class="n">export</span> <span class="o">===</span>
 <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
 <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0000001192092896</span>
-<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.000000238418579</span>
-<span class="n">FrobeniusLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="n">FrobeniusLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999999403953552</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">0.9999999403953552</span>
 </pre></div>
 </div>
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">wexport</span> <span class="o">=</span> <span class="n">wass</span><span class="o">.</span><span class="n">vanilla_export</span><span class="p">()</span>
@@ -541,8 +493,8 @@ are 1.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">===</span> <span class="n">After</span> <span class="n">export</span> <span class="o">===</span>
 <span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">784</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
 <span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0000001192092896</span>
-<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.000000238418579</span>
-<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999998807907104</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.0</span>
+<span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.9999999403953552</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">0.9999999403953552</span>
 </pre></div>
 </div>
 <p>As we can see, all our singular values are very close to one.</p>
@@ -622,10 +574,10 @@ are 1.</p>
   
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
+  <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
   <script src="_static/jquery.js"></script>
   <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
-  <script src="_static/language_data.js"></script>
   
 
   
@@ -662,7 +614,7 @@ are 1.</p>
             <li class="list-title"><a href="">Home</a></li>
             <li><a href="https://pytorch.org">PyTorch</a></li>
             <li><a href="/">Get Started</a></li>
-            <li><a href="https://github.com/deel-ai/torchlip">GitHub</a></li>
+            <li><a href="https://github.com/deel-ai/deel-torchlip">GitHub</a></li>
           </ul>
         </div>
 
@@ -697,7 +649,7 @@ are 1.</p>
           </li>
 
           <li>
-            <a href="https://github.com/deel-ai/torchlip">Github</a>
+            <a href="https://github.com/deel-ai/deel-torchlip">Github</a>
           </li>
         </ul>
       </div>
