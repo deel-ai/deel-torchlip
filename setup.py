@@ -49,7 +49,7 @@ docs_requires = [
 
 setuptools.setup(
     name="deel-torchlip",
-    version="0.1.0",
+    version="0.1.1",
     author=", ".join(
         [
             "Mathieu SERRURIER",
