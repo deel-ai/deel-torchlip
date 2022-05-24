@@ -12,7 +12,7 @@ body:
     id: module
     attributes:
       label: Module
-      description: Select the modules to which the bug refers:
+      description: Select the modules to which the bug refers.
       options:
         - Layers
         - Activation functions
