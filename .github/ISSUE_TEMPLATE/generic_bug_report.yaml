@@ -57,9 +57,9 @@ body:
       label: Environment
       description: |
         examples: 
-          - **OS**: linux
-	  - **Python version**: 3.7
-	  - **Packages used version**: PyTorch, Numpy, scikit-learn, etc..
+         - **OS**: linux
+	 - **Python version**: 3.7
+	 - **Packages used version**: PyTorch, Numpy, scikit-learn, etc..
       value: |
         - OS:
         - Python version:
