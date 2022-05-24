@@ -58,13 +58,13 @@ body:
       description: |
         examples:
           - **OS**: linux
-		      - **Python version**: 3.7
-		      - **Packages used version**: PyTorch, Numpy, scikit-learn, etc..
-	    value: |
+	  - **Python version**: 3.7
+	  - **Packages used version**: PyTorch, Numpy, scikit-learn, etc..
+	value: |
         - OS:
         - Python version:
         - PyTorch version:
-		    - Packages used version:
+	- Packages used version:
       render: markdown
     validations:
       required: false
