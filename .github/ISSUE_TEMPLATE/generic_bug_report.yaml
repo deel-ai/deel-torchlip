@@ -60,7 +60,7 @@ body:
           - **OS**: linux
 	  - **Python version**: 3.7
 	  - **Packages used version**: PyTorch, Numpy, scikit-learn, etc..
-	value: |
+      value: |
         - OS:
         - Python version:
         - PyTorch version:
