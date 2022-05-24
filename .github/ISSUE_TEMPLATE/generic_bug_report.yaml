@@ -53,7 +53,7 @@ body:
   validations:
     required: true
 - type: textarea
-attributes:
+  attributes:
   label: Environment
   description: |
     examples:
