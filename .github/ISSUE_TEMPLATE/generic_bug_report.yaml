@@ -53,14 +53,14 @@ body:
     validations:
       required: true
   - type: textarea
-    attributes:
+  attributes:
     label: Environment
     description: |
       examples:
-        - **OS**: linux
-	- **Python version**: 3.7
-	- **Packages used version**: PyTorch, Numpy, scikit-learn, etc..
-      value: |
+        - **OS**: Ubuntu 20.04
+        - **Node**: 13.14.0
+        - **npm**: 7.6.3
+    value: |
         - OS:
         - Python version:
         - PyTorch version:
