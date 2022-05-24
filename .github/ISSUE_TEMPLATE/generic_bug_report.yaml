@@ -33,7 +33,7 @@ body:
     attributes:
       label: Current Behavior
       description: A clear and concise description of what the bug is.
-	    placeholder: Tell us what you see!
+      placeholder: Tell us what you see!
       value: "A bug happened!"
     validations:
       required: true
