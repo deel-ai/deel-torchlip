@@ -16,7 +16,7 @@ body:
     options:
       - Layers
       - Activation functions
-      - Initializers 
+      - Initializers
       - Loss functions
       - Normalizers
   validations:
