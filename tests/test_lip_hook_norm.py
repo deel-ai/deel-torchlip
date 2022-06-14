@@ -65,7 +65,7 @@ def test_frobenius_norm():
     torch.nn.init.uniform_(m.weight)
     w1 = m.weight / torch.norm(m.weight)
 
-    frobenius_norm(m)
+    frobenius_norm(m, disjoint_neurons=False)
     assert not isinstance(m.weight, torch.nn.Parameter)
 
     x = torch.rand(2)
@@ -75,6 +75,21 @@ def test_frobenius_norm():
     remove_frobenius_norm(m)
     assert isinstance(m.weight, torch.nn.Parameter)
     tt.assert_equal(w1, m.weight)
+
+
+def test_frobenius_norm_disjoint_neurons():
+    """
+    Test `disjoint_neurons=True` parameter in frobenius_norm hook
+    """
+    m = torch.nn.Linear(in_features=5, out_features=3)
+
+    # Set hook and perform a forward pass to compute new weights
+    frobenius_norm(m, disjoint_neurons=True)
+    m(torch.rand(5))
+
+    # Assert that all rows of matrix weight are independently normalized
+    for i in range(m.out_features):
+        tt.assert_allclose(torch.norm(m.weight[i, :]), torch.tensor(1.0), rtol=2e-7)
 
 
 def test_lconv_norm():
