@@ -13,7 +13,7 @@ work is not in vain.
 - Clone the repo `git clone https://github.com/deel-ai/deel-torchlip.git`.
 - Go to your freshly downloaded repo `cd deel-torchlip`
 - Create a virtual environment and install the necessary dependencies for development:
-  
+
   `make prepare-dev && source torchlip_dev_env/bin/activate`.
 - You are ready to install the library:
 
