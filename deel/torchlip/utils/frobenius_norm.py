@@ -33,34 +33,40 @@ from .hook_norm import HookNorm
 
 
 class FrobeniusNorm(HookNorm):
-    def __init__(self, module: torch.nn.Module, name: str):
+    def __init__(self, module: torch.nn.Module, name: str, disjoint_neurons: bool):
         super().__init__(module, name)
+        self.dim_norm = 1 if disjoint_neurons else None
 
     def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
         w: torch.Tensor = self.weight(module)
-        return w / torch.norm(w)  # type: ignore
+        return w / torch.norm(w, dim=self.dim_norm, keepdim=True)  # type: ignore
 
     @staticmethod
-    def apply(module: torch.nn.Module, name: str) -> "FrobeniusNorm":
-        return FrobeniusNorm(module, name)
+    def apply(
+        module: torch.nn.Module, name: str, disjoint_neurons: bool
+    ) -> "FrobeniusNorm":
+        return FrobeniusNorm(module, name, disjoint_neurons)
 
 
 T_module = TypeVar("T_module", bound=torch.nn.Module)
 
 
-def frobenius_norm(module: T_module, name: str = "weight") -> T_module:
+def frobenius_norm(
+    module: T_module, name: str = "weight", disjoint_neurons: bool = True
+) -> T_module:
     r"""
     Applies Frobenius normalization to a parameter in the given module.
 
     .. math::
          \mathbf{W} = \dfrac{\mathbf{W}}{\Vert{}\mathbf{W}\Vert{}}
 
-    This is implemented via a hook that applies Bjorck normalization before every
+    This is implemented via a hook that applies Frobenius normalization before every
     ``forward()`` call.
 
     Args:
         module: Containing module.
         name: Name of weight parameter.
+        disjoint_neurons: Normalize, independently per neuron or not, the matrix weight.
 
     Returns:
         The original module with the Frobenius normalization hook.
@@ -72,7 +78,7 @@ def frobenius_norm(module: T_module, name: str = "weight") -> T_module:
         Linear(in_features=20, out_features=40, bias=True)
 
     """
-    FrobeniusNorm.apply(module, name)
+    FrobeniusNorm.apply(module, name, disjoint_neurons)
     return module
 
 

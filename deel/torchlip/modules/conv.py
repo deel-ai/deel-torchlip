@@ -170,7 +170,7 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
         if self.bias is not None:
             self.bias.data.fill_(0.0)
 
-        frobenius_norm(self, name="weight")
+        frobenius_norm(self, name="weight", disjoint_neurons=False)
         lconv_norm(self)
         self.register_forward_pre_hook(self._hook)
 

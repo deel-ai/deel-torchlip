@@ -103,7 +103,22 @@ class SpectralLinear(torch.nn.Linear, LipschitzModule):
 
 class FrobeniusLinear(torch.nn.Linear, LipschitzModule):
     """
-    Same a SpectralLinear, but in the case of a single output.
+    This class is a Linear Layer constrained such that the Frobenius norm of the weight
+    is 1. In the case of a single output neuron, it is equivalent and faster than the
+    SpectralLinear layer. For multi-neuron case, the "disjoint_neurons" parameter
+    affects the behaviour:
+
+    - if ``disjoint_neurons`` is True (default), it corresponds to the stacking of
+      independent 1-Lipschitz neurons.
+    - if ``disjoint_neurons`` is False, the matrix weight is normalized by its Frobenius
+      norm.
+
+    Args:
+        in_features: Size of each input sample.
+        out_features: Size of each output sample.
+        bias: If ``False``, the layer will not learn an additive bias.
+        disjoint_neurons: Normalize, independently per neuron or not, the matrix weight.
+        k_coef_lip: Lipschitz constant to ensure.
     """
 
     def __init__(
@@ -111,6 +126,7 @@ class FrobeniusLinear(torch.nn.Linear, LipschitzModule):
         in_features: int,
         out_features: int,
         bias: bool = True,
+        disjoint_neurons: bool = True,
         k_coef_lip: float = 1.0,
     ):
         torch.nn.Linear.__init__(
@@ -125,7 +141,7 @@ class FrobeniusLinear(torch.nn.Linear, LipschitzModule):
         if self.bias is not None:
             self.bias.data.fill_(0.0)
 
-        frobenius_norm(self, name="weight")
+        frobenius_norm(self, name="weight", disjoint_neurons=disjoint_neurons)
         self.register_forward_pre_hook(self._hook)
 
     def vanilla_export(self):
