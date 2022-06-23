@@ -29,6 +29,7 @@ This module contains equivalents for Model and Sequential. These classes add sup
 for condensation and vanilla exportation.
 """
 import abc
+from collections import OrderedDict
 import copy
 import logging
 import math
@@ -118,9 +119,9 @@ class Sequential(TorchSequential, LipschitzModule):
             A Vanilla torch.nn.Sequential model.
         """
         layers = []
-        for layer in self.children():
+        for name, layer in self.named_children():
             if isinstance(layer, LipschitzModule):
-                layers.append(layer.vanilla_export())
+                layers.append((name, layer.vanilla_export()))
             else:
-                layers.append(copy.deepcopy(layer))
-        return TorchSequential(*layers)
+                layers.append((name, copy.deepcopy(layer)))
+        return TorchSequential(OrderedDict(layers))
