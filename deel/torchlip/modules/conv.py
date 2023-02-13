@@ -27,7 +27,7 @@
 import numpy as np
 import torch
 from torch.nn.common_types import _size_2_t
-from torch.nn.utils import spectral_norm
+from torch.nn.utils.parametrizations import spectral_norm
 
 from ..utils import bjorck_norm
 from ..utils import DEFAULT_NITER_BJORCK
@@ -111,8 +111,8 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
             n_power_iterations=niter_spectral,
         )
         bjorck_norm(self, name="weight", n_iterations=niter_bjorck)
-        lconv_norm(self)
-        self.register_forward_pre_hook(self._hook)
+        lconv_norm(self, name="weight")
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self):
         layer = torch.nn.Conv2d(
@@ -172,7 +172,7 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
 
         frobenius_norm(self, name="weight", disjoint_neurons=False)
         lconv_norm(self)
-        self.register_forward_pre_hook(self._hook)
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self):
         layer = torch.nn.Conv2d(

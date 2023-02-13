@@ -24,9 +24,9 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
-from deel import torchlip
-
 from collections import OrderedDict
+
+from deel import torchlip
 
 
 def get_named_model():

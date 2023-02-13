@@ -290,10 +290,12 @@ def train_k_lip_model(
     empirical_lip_const = evaluate_lip_const(model=model, x=x, seed=42)
     # save the model
     model_checkpoint_path = os.path.join(logdir, "model.h5")
-    save(model, model_checkpoint_path)
+    save(model.state_dict(), model_checkpoint_path)
     del model
 
-    model = load(model_checkpoint_path)
+    # load model
+    model = generate_k_lip_model(layer_type, layer_params, k_lip_model)
+    model.load_state_dict(load(model_checkpoint_path))
     model.eval()
     np.random.seed(42)
     manual_seed(42)

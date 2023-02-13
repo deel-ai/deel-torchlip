@@ -29,8 +29,8 @@ from typing import Tuple
 
 import numpy as np
 import torch
-
-from .hook_norm import HookNorm
+import torch.nn as nn
+import torch.nn.utils.parametrize as parametrize
 
 
 def compute_lconv_coef(
@@ -58,32 +58,68 @@ def compute_lconv_coef(
     return coefLip  # type: ignore
 
 
-class LConvNorm(HookNorm):
+class _LConvNorm(nn.Module):
+    """Parametrization module for Lipschitz normalization."""
+
+    def __init__(self, lconv_coefficient: float) -> None:
+        super().__init__()
+        self.lconv_coefficient = lconv_coefficient
+
+    def forward(self, weight: torch.Tensor) -> torch.Tensor:
+        return weight * self.lconv_coefficient
+
+
+class LConvNormHook:
 
     """
     Kernel normalization for Lipschitz convolution. Normalize weights
     based on input shape and kernel size, see https://arxiv.org/abs/2006.06520
     """
 
-    @staticmethod
-    def apply(module: torch.nn.Module) -> "LConvNorm":
+    def apply(self, module: torch.nn.Module, name: str = "weight") -> None:
+        self.name = name
+        self.coefficient = None
 
         if not isinstance(module, torch.nn.Conv2d):
             raise RuntimeError(
                 "Can only apply lconv_norm hooks on 2D-convolutional layer."
             )
 
-        return LConvNorm(module, "weight")
+        module.register_forward_pre_hook(self)
 
-    def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
-        assert isinstance(module, torch.nn.Conv2d)
+    def __call__(self, module: torch.nn.Conv2d, inputs: Any):
         coefficient = compute_lconv_coef(
             module.kernel_size, inputs[0].shape[-4:], module.stride
         )
-        return self.weight(module) * coefficient
+        # the parametrization is updated only if the coefficient has changed
+        if coefficient != self.coefficient:
+            if hasattr(module, "parametrizations"):
+                self.remove_parametrization(module)
+            parametrize.register_parametrization(
+                module, self.name, _LConvNorm(coefficient)
+            )
+            self.coefficient = coefficient
+
+    def remove_parametrization(self, module: nn.Module) -> nn.Module:
+        r"""
+        Removes the normalization reparameterization from a module.
+
+        Args:
+            module: Containing module.
+
+        Example:
+            >>> m = bjorck_norm(nn.Linear(20, 40))
+            >>> remove_bjorck_norm(m)
+        """
+        for key, m in module.parametrizations[self.name]._modules.items():
+            if isinstance(m, _LConvNorm):
+                if len(module.parametrizations[self.name]) == 1:
+                    parametrize.remove_parametrizations(module, self.name)
+                else:
+                    del module.parametrizations[self.name]._modules[key]
 
 
-def lconv_norm(module: torch.nn.Conv2d) -> torch.nn.Conv2d:
+def lconv_norm(module: torch.nn.Conv2d, name: str = "weight") -> torch.nn.Conv2d:
     r"""
     Applies Lipschitz normalization to a kernel in the given convolutional.
     This is implemented via a hook that multiplies the kernel by a value computed
@@ -94,6 +130,7 @@ def lconv_norm(module: torch.nn.Conv2d) -> torch.nn.Conv2d:
 
     Args:
         module: Containing module.
+        name: Name of weight parameter.
 
     Returns:
         The original module with the Lipschitz normalization hook.
@@ -105,7 +142,7 @@ def lconv_norm(module: torch.nn.Conv2d) -> torch.nn.Conv2d:
         Conv2d(16, 16, kernel_size=(3, 3), stride=(1, 1))
 
     """
-    LConvNorm.apply(module)
+    LConvNormHook().apply(module, name)
     return module
 
 
@@ -122,8 +159,8 @@ def remove_lconv_norm(module: torch.nn.Conv2d) -> torch.nn.Conv2d:
         >>> remove_lconv_norm(m)
     """
     for k, hook in module._forward_pre_hooks.items():
-        if isinstance(hook, LConvNorm):
-            hook.remove(module)
+        if isinstance(hook, LConvNormHook):
+            hook.remove_parametrization(module)
             del module._forward_pre_hooks[k]
             return module
 
