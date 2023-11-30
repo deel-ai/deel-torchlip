@@ -44,6 +44,25 @@ from torch.nn import Sequential as TorchSequential
 logger = logging.getLogger("deel.torchlip")
 
 
+def vanilla_model(model: nn.Module):
+    """Convert lipschitz modules into their non-lipschitz counterpart (for
+    instance, SpectralConv2d layers become Conv2d layers).
+
+    Warning: This function modifies the model in-place.
+
+    Args:
+        model (nn.Module): Lipschitz neural network
+    """
+    for n, module in model.named_children():
+        if len(list(module.children())) > 0:
+            # compound module, go inside it
+            vanilla_model(module)
+
+        if isinstance(module, LipschitzModule):
+            # simple module
+            setattr(model, n, module.vanilla_export())
+
+
 class _LipschitzCoefMultiplication(nn.Module):
     """Parametrization module for lipschitz global coefficient multiplication."""
 
