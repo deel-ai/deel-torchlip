@@ -111,7 +111,7 @@ def test_lconv_norm():
     """
     m = torch.nn.Conv2d(1, 2, kernel_size=(3, 3), stride=(1, 1))
     torch.nn.init.orthogonal_(m.weight)
-    w1 = m.weight * compute_lconv_coef(m.kernel_size, (1, 1, 5, 5), m.stride)
+    w1 = m.weight * compute_lconv_coef(m.kernel_size, None, m.stride)
 
     # lconv norm parametrization
     lconv_norm(m)
