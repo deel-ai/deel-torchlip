@@ -25,7 +25,7 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 import torch
-from torch.nn.utils import spectral_norm
+from torch.nn.utils.parametrizations import spectral_norm
 
 from ..utils import bjorck_norm
 from ..utils import DEFAULT_NITER_BJORCK
@@ -87,7 +87,7 @@ class SpectralLinear(torch.nn.Linear, LipschitzModule):
             n_power_iterations=niter_spectral,
         )
         bjorck_norm(self, name="weight", n_iterations=niter_bjorck)
-        self.register_forward_pre_hook(self._hook)
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self) -> torch.nn.Linear:
         layer = torch.nn.Linear(
@@ -142,7 +142,7 @@ class FrobeniusLinear(torch.nn.Linear, LipschitzModule):
             self.bias.data.fill_(0.0)
 
         frobenius_norm(self, name="weight", disjoint_neurons=disjoint_neurons)
-        self.register_forward_pre_hook(self._hook)
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self):
         layer = torch.nn.Linear(

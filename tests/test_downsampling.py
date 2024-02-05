@@ -31,7 +31,6 @@ from deel.torchlip.functional import invertible_downsample
 
 
 def test_invertible_downsample():
-
     # 1D input
     x = torch.tensor([[[1, 2, 3, 4], [5, 6, 7, 8]]])
     x = invertible_downsample(x, (2,))

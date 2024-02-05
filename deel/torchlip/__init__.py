@@ -55,4 +55,5 @@ __all__ = [
     "Sequential",
     "SpectralConv2d",
     "SpectralLinear",
+    "vanilla_model",
 ]

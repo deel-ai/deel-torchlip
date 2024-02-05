@@ -31,7 +31,6 @@ from deel.torchlip.functional import invertible_upsample
 
 
 def test_invertible_upsample():
-
     # 1D input
     x = torch.tensor([[[1, 2], [3, 4], [5, 6], [7, 8]]])
     x = invertible_upsample(x, (2,))
