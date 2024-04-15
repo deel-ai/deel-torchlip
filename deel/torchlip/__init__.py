@@ -39,6 +39,7 @@ __all__ = [
     "GroupSort2",
     "HKRLoss",
     "HKRMulticlassLoss",
+    "SoftHKRMulticlassLoss",
     "HingeMarginLoss",
     "HingeMulticlassLoss",
     "InvertibleDownSampling",

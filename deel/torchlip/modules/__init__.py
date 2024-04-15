@@ -59,6 +59,7 @@ from .loss import HingeMarginLoss
 from .loss import HingeMulticlassLoss
 from .loss import HKRLoss
 from .loss import HKRMulticlassLoss
+from .loss import SoftHKRMulticlassLoss
 from .loss import KRLoss
 from .loss import KRMulticlassLoss
 from .loss import NegKRLoss
