@@ -93,6 +93,8 @@ class LipschitzModule(abc.ABC):
 
     def apply_lipschitz_factor(self):
         """Multiply the layer weights by a lipschitz factor."""
+        if self._coefficient_lip == 1.0:
+            return
         parametrize.register_parametrization(
             self, "weight", _LipschitzCoefMultiplication(self._coefficient_lip)
         )
