@@ -295,4 +295,5 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
             input = torch.Tensor(input, dtype=input.dtype)
         if not (isinstance(target, torch.Tensor)):
             target = torch.Tensor(target, dtype=input.dtype)
-        return self.fct(target, input)
+        loss_batch = self.fct(target, input)
+        return torch.mean(loss_batch)
