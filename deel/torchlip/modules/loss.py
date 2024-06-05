@@ -223,7 +223,7 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
             self.alpha_mean * self.current_mean
             + (1 - self.alpha_mean) * current_global_mean
         )
-        self.current_mean = self.clamp_current_mean(current_global_mean)
+        self.current_mean = self.clamp_current_mean(current_global_mean).detach()
         total_mean = current_global_mean
         total_mean = torch.clamp(total_mean, self.min_margin_v, 20000)
         return total_mean
