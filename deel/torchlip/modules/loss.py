@@ -27,7 +27,7 @@
 from typing import Tuple
 
 import torch
-
+import torch.nn.functional as TF
 from .. import functional as F
 
 
@@ -138,7 +138,47 @@ class HingeMulticlassLoss(torch.nn.Module):
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
         return F.hinge_multiclass_loss(input, target, self.min_margin)
 
+class HKRMultiLoss(torch.nn.Module):
+    """
+    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
+    duality with a hinge regularization.
+    """
 
+    def __init__(
+        self,
+        alpha: float = 1.,
+        margin: float = 1.,
+        temperature: float = 1.,
+    ):
+        """
+        Args:
+            alpha: Regularization factor between the hinge and the KR loss.
+            min_margin: Minimal margin for the hinge loss.
+            true_values: tuple containing the two label for each predicted class.
+        """
+        super().__init__()
+        self.alpha = alpha
+        self.margin = margin
+        self.temperature = temperature*margin
+
+    def forward(self, y_pred: torch.Tensor, y_true: torch.Tensor) -> torch.Tensor:
+        total_mean = y_pred.abs().mean().detach()
+        total_mean = torch.clamp(total_mean, self.margin, 20000)
+        current_temperature = torch.clamp(self.temperature / total_mean, 0.005, 500).detach()
+        opposite_values = torch.where(y_true == 1, -float('inf'), current_temperature * y_pred)
+        F_soft_KR = TF.softmax(opposite_values, dim=1)
+        F_soft_KR = torch.where(y_true == 1, torch.tensor(1.0), F_soft_KR) 
+        KR = torch.where(y_true == 0, -y_pred, y_pred)
+        hinge_row = TF.relu((self.margin / 2) - KR) * F_soft_KR
+        hinge_row = torch.sum(hinge_row, dim=1)
+
+        kr_row = torch.sum(F_soft_KR * KR, dim=1)
+       
+        loss_val = torch.mean((1-1./self.alpha)*hinge_row  - 1./self.alpha * kr_row)
+
+        return loss_val
+
+        
 class HKRMulticlassLoss(torch.nn.Module):
     """
     Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
