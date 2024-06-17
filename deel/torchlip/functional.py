@@ -238,7 +238,15 @@ def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.T
     return torch.sort(fv)[0].reshape(input.shape)
 
 
-def group_sort_2(input: torch.Tensor) -> torch.Tensor:
+
+def group_sort_2_conv(x: torch.Tensor, axis=1)-> torch.Tensor:
+    
+    a, b = x.split(x.size(axis) // 2, axis)
+    a, b = torch.max(a, b), torch.min(a, b)
+    return torch.cat([a, b], dim=axis)
+    
+
+def group_sort_2(x: torch.Tensor, axis = 1) -> torch.Tensor:
     r"""
     Applies GroupSort-2 activation on the given tensor. This function is equivalent
     to ``group_sort(input, 2)``.
@@ -246,7 +254,9 @@ def group_sort_2(input: torch.Tensor) -> torch.Tensor:
     See Also:
         :py:func:`group_sort`
     """
-    return group_sort(input, 2)
+    a, b = x.split(x.size(axis) // 2, axis)
+    a, b = torch.max(a, b), torch.min(a, b)
+    return torch.cat([a, b], dim=axis)
 
 
 def full_sort(input: torch.Tensor) -> torch.Tensor:
@@ -308,7 +318,16 @@ def kr_loss(
 
     v0, v1 = true_values
     target = target.view(input.shape)
-    return torch.mean(input[target == v0]) - torch.mean(input[target == v1])
+
+    c1 =  torch.mean(input[target == v0])
+    c2 =  torch.mean(input[target == v1])
+    if torch.isnan(c1) and torch.isnan(c2):
+        return 0
+    if torch.isnan(c1):
+        return -c2
+    if torch.isnan(c2):
+        return c1
+    return c1 -c2
 
 
 def neg_kr_loss(
@@ -391,10 +410,11 @@ def hkr_loss(
     """
     if alpha == np.inf:  # alpha negative hinge only
         return hinge_margin_loss(input, target, min_margin)
-
+    if alpha == 0:
+        return -kr_loss(input, target,(true_values[1], true_values[0]))
     # true value: positive value should be the first to be coherent with the
     # hinge loss (positive y_pred)
-    return alpha * hinge_margin_loss(input, target, min_margin) - kr_loss(
+    return  (1-1./alpha)*hinge_margin_loss(input, target, min_margin) -1./alpha* kr_loss(
         input, target, (true_values[1], true_values[0])
     )
 
