@@ -135,6 +135,79 @@ class ScaledAdaptiveAvgPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
     def vanilla_export(self):
         return self
 
+class ScaledGlobalL2NormPooling(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
+    def __init__(
+        self,
+        output_size: _size_2_t,
+        k_coef_lip: float = 1.0,
+        eps_grad_sqrt: float = 1e-6,
+        axis = -1
+
+    ):
+        self.axis = axis
+        torch.nn.AdaptiveAvgPool2d.__init__(self, output_size)
+        LipschitzModule.__init__(self, k_coef_lip)
+        self.eps_grad_sqrt = eps_grad_sqrt
+
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        #coeff = math.sqrt(input.shape[-2] * input.shape[-1]) * self._coefficient_lip
+        #return torch.nn.AdaptiveAvgPool2d.forward(self, input) * coeff
+        return (  # type: ignore
+            sqrt_with_gradeps(
+                torch.square(input).sum(axis = self.axis),
+                self.eps_grad_sqrt,
+            )
+            * 1.
+        )
+    def vanilla_export(self):
+        return self
+
+class ScaledGlobalL2NormPooling2D(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
+    def __init__(
+        self,
+        output_size: _size_2_t,
+        k_coef_lip: float = 1.0,
+        eps_grad_sqrt: float = 1e-6,
+    ):
+        """
+        Applies a 2D adaptive max pooling over an input signal composed of several
+        input planes.
+
+        The output is of size H x W, for any input size.
+        The number of output features is equal to the number of input planes.
+
+        Args:
+            output_size: The target output size of the image of the form H x W.
+                Can be a tuple (H, W) or a single H for a square image H x H.
+                H and W can be either a ``int``, or ``None`` which means the
+                size will be the same as that of the input.
+            k_coef_lip: The Lipschitz factor to ensure. The output will be scaled
+                by this factor.
+
+        This documentation reuse the body of the original
+        nn.AdaptiveAvgPool2d doc.
+        """
+        torch.nn.AdaptiveAvgPool2d.__init__(self, output_size)
+        LipschitzModule.__init__(self, k_coef_lip)
+        self.eps_grad_sqrt = eps_grad_sqrt
+
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        #coeff = math.sqrt(input.shape[-2] * input.shape[-1]) * self._coefficient_lip
+        #return torch.nn.AdaptiveAvgPool2d.forward(self, input) * coeff
+        return (  # type: ignore
+            sqrt_with_gradeps(
+                torch.square(input).sum(axis = (2,3), keepdim = True),
+                self.eps_grad_sqrt,
+            )
+            * 1.
+        )
+
+
+    def vanilla_export(self):
+        return self
+
 
 class ScaledL2NormPool2d(torch.nn.AvgPool2d, LipschitzModule):
     def __init__(
