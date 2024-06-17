@@ -37,13 +37,16 @@ def compute_lconv_coef(
     kernel_size: Tuple[int, ...],
     input_shape: Tuple[int, ...],
     strides: Tuple[int, ...] = (1, 1),
+    padding_mode: str = "zeros"
 ) -> float:
     # See https://arxiv.org/abs/2006.06520
     stride = np.prod(strides)
     k1, k2 = kernel_size
     h, w = input_shape[-2:]
-
-    if stride == 1:
+    if padding_mode == "replicate" or padding_mode == "circular" or padding_mode == "reflect":
+        #print(padding_mode)
+        coefLip = float(strides[0])/float(k1)
+    elif stride == 1:
         k1_div2 = (k1 - 1) / 2
         k2_div2 = (k2 - 1) / 2
         coefLip = np.sqrt(
@@ -54,8 +57,18 @@ def compute_lconv_coef(
         sn1 = strides[0]
         sn2 = strides[1]
         coefLip = np.sqrt(1.0 / (np.ceil(k1 / sn1) * np.ceil(k2 / sn2)))
-
+    #print(coefLip)
     return coefLip  # type: ignore
+
+
+def compute_lconv_coef_1d(
+    kernel_size,
+    input_shape,
+    strides,
+    padding_mode
+) -> float:
+    # See https://arxiv.org/abs/2006.06520
+    return 1.  #à faire
 
 
 class LConvNorm(HookNorm):
@@ -68,7 +81,7 @@ class LConvNorm(HookNorm):
     @staticmethod
     def apply(module: torch.nn.Module) -> "LConvNorm":
 
-        if not isinstance(module, torch.nn.Conv2d):
+        if not isinstance(module, (torch.nn.Conv2d,torch.nn.Conv1d)):
             raise RuntimeError(
                 "Can only apply lconv_norm hooks on 2D-convolutional layer."
             )
@@ -76,14 +89,19 @@ class LConvNorm(HookNorm):
         return LConvNorm(module, "weight")
 
     def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
-        assert isinstance(module, torch.nn.Conv2d)
-        coefficient = compute_lconv_coef(
-            module.kernel_size, inputs[0].shape[-4:], module.stride
-        )
+        assert isinstance(module, (torch.nn.Conv2d,torch.nn.Conv1d))
+        if isinstance(module, torch.nn.Conv1d):
+            coefficient = compute_lconv_coef_1d(
+                module.kernel_size, inputs[0].shape[-4:], module.stride,module.padding_mode
+            )
+        else:
+            coefficient = compute_lconv_coef(
+                module.kernel_size, inputs[0].shape[-4:], module.stride,module.padding_mode
+            )
         return self.weight(module) * coefficient
 
 
-def lconv_norm(module: torch.nn.Conv2d) -> torch.nn.Conv2d:
+def lconv_norm(module) :
     r"""
     Applies Lipschitz normalization to a kernel in the given convolutional.
     This is implemented via a hook that multiplies the kernel by a value computed
