@@ -33,22 +33,25 @@ from .hook_norm import HookNorm
 
 
 class FrobeniusNorm(HookNorm):
-    def __init__(self, module: torch.nn.Module, name: str):
+    def __init__(self, module: torch.nn.Module, name: str, disjoint: bool = False):
         super().__init__(module, name)
+        self.disjoint = disjoint
 
     def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
         w: torch.Tensor = self.weight(module)
+        if self.disjoint:
+            return w / torch.norm(w, dim=1, keepdim=True)
         return w / torch.norm(w)  # type: ignore
 
     @staticmethod
-    def apply(module: torch.nn.Module, name: str) -> "FrobeniusNorm":
-        return FrobeniusNorm(module, name)
+    def apply(module: torch.nn.Module, name: str, disjoint = False) -> "FrobeniusNorm":
+        return FrobeniusNorm(module, name, disjoint = disjoint)
 
 
 T_module = TypeVar("T_module", bound=torch.nn.Module)
 
 
-def frobenius_norm(module: T_module, name: str = "weight") -> T_module:
+def frobenius_norm(module: T_module, name: str = "weight", disjoint: bool = False) -> T_module:
     r"""
     Applies Frobenius normalization to a parameter in the given module.
 
@@ -72,7 +75,7 @@ def frobenius_norm(module: T_module, name: str = "weight") -> T_module:
         Linear(in_features=20, out_features=40, bias=True)
 
     """
-    FrobeniusNorm.apply(module, name)
+    FrobeniusNorm.apply(module, name, disjoint = disjoint)
     return module
 
 
