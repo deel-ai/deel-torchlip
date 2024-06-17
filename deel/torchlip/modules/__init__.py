@@ -51,14 +51,16 @@ from .activation import GroupSort2
 from .activation import LPReLU
 from .activation import MaxMin
 from .conv import FrobeniusConv2d
-from .conv import SpectralConv2d
+from .conv import SpectralConv2d,SpectralConv1d
+from.normalization import LayerCentering,LayerCentering2D
+from.normalization import BatchCentering, BatchCentering2D,BatchCenteringBiases,BatchCenteringBiases2D
 from .downsampling import InvertibleDownSampling
 from .linear import FrobeniusLinear
 from .linear import SpectralLinear
 from .loss import HingeMarginLoss
 from .loss import HingeMulticlassLoss
 from .loss import HKRLoss
-from .loss import HKRMulticlassLoss
+from .loss import HKRMulticlassLoss,HKRMultiLoss
 from .loss import KRLoss
 from .loss import KRMulticlassLoss
 from .loss import NegKRLoss
@@ -67,4 +69,5 @@ from .module import Sequential
 from .pooling import ScaledAdaptiveAvgPool2d
 from .pooling import ScaledAvgPool2d
 from .pooling import ScaledL2NormPool2d
+from .pooling import ScaledGlobalL2NormPooling2D,ScaledGlobalL2NormPooling
 from .upsampling import InvertibleUpSampling
