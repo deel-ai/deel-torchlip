@@ -70,10 +70,23 @@ def bjorck_normalization(
     shape = w.shape
     cout = w.size(0)
     w_mat = w.reshape(cout, -1)
-    for i in range(niter):
-        w_mat = (1.0 + beta) * w_mat - beta * torch.mm(
-            w_mat, torch.mm(w_mat.t(), w_mat)
-        )
+
+    #print(w_mat.shape)
+    # for i in range(niter):
+    #     w_mat = (1.0 + beta) * w_mat - beta * torch.mm(
+    #         w_mat, torch.mm(w_mat.t(), w_mat)
+    #     )
+
+    if w_mat.shape[0]>w_mat.shape[1]:
+        for i in range(niter):
+            w_mat = (1.0 + beta) * w_mat - beta * torch.mm(
+                w_mat, torch.mm(w_mat.t(), w_mat)
+            )
+    else:
+        for i in range(niter):
+            w_mat = (1.0 + beta) * w_mat - beta * torch.mm(
+                torch.mm(w_mat, w_mat.t()), w_mat
+            )
     w = w_mat.reshape(shape)
     return w
 
