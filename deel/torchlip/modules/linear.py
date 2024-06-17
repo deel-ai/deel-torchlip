@@ -111,6 +111,7 @@ class FrobeniusLinear(torch.nn.Linear, LipschitzModule):
         in_features: int,
         out_features: int,
         bias: bool = True,
+        disjoint: bool = False,
         k_coef_lip: float = 1.0,
     ):
         torch.nn.Linear.__init__(
@@ -124,8 +125,8 @@ class FrobeniusLinear(torch.nn.Linear, LipschitzModule):
         torch.nn.init.orthogonal_(self.weight)
         if self.bias is not None:
             self.bias.data.fill_(0.0)
-
-        frobenius_norm(self, name="weight")
+        self.disjoint = disjoint
+        frobenius_norm(self, name="weight",disjoint = disjoint)
         self.register_forward_pre_hook(self._hook)
 
     def vanilla_export(self):
