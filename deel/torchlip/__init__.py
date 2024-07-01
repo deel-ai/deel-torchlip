@@ -37,6 +37,8 @@ __all__ = [
     "FullSort",
     "GroupSort",
     "GroupSort2",
+    "BatchCentering",
+    "LayerCentering",
     "HKRLoss",
     "HKRMulticlassLoss",
     "SoftHKRMulticlassLoss",

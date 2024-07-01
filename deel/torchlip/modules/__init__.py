@@ -52,6 +52,13 @@ from .activation import LPReLU
 from .activation import MaxMin
 from .conv import FrobeniusConv2d
 from .conv import SpectralConv2d
+from .normalization import LayerCentering, LayerCentering2D
+from .normalization import (
+    BatchCentering,
+    BatchCentering2D,
+    BatchCenteringBiases,
+    BatchCenteringBiases2D,
+)
 from .downsampling import InvertibleDownSampling
 from .linear import FrobeniusLinear
 from .linear import SpectralLinear
