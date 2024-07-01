@@ -238,7 +238,7 @@ def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.T
     return torch.sort(fv)[0].reshape(input.shape)
 
 
-def group_sort_2(input: torch.Tensor) -> torch.Tensor:
+def group_sort_2(input: torch.Tensor, axis=1) -> torch.Tensor:
     r"""
     Applies GroupSort-2 activation on the given tensor. This function is equivalent
     to ``group_sort(input, 2)``.
@@ -246,7 +246,9 @@ def group_sort_2(input: torch.Tensor) -> torch.Tensor:
     See Also:
         :py:func:`group_sort`
     """
-    return group_sort(input, 2)
+    a, b = input.split(input.size(axis) // 2, axis)
+    a, b = torch.max(a, b), torch.min(a, b)
+    return torch.cat([a, b], dim=axis)
 
 
 def full_sort(input: torch.Tensor) -> torch.Tensor:
@@ -281,9 +283,7 @@ def lipschitz_prelu(
 
 
 def kr_loss(
-    input: torch.Tensor,
-    target: torch.Tensor,
-    true_values: Tuple[int, int] = (0, 1),
+    input: torch.Tensor, target: torch.Tensor, true_values: Tuple[int, int] = (0, 1),
 ) -> torch.Tensor:
     r"""
     Loss to estimate the Wasserstein-1 distance using Kantorovich-Rubinstein duality,
@@ -312,9 +312,7 @@ def kr_loss(
 
 
 def neg_kr_loss(
-    input: torch.Tensor,
-    target: torch.Tensor,
-    true_values: Tuple[int, int] = (0, 1),
+    input: torch.Tensor, target: torch.Tensor, true_values: Tuple[int, int] = (0, 1),
 ) -> torch.Tensor:
     """
     Loss to estimate the negative wasserstein-1 distance using Kantorovich-Rubinstein
@@ -335,9 +333,7 @@ def neg_kr_loss(
 
 
 def hinge_margin_loss(
-    input: torch.Tensor,
-    target: torch.Tensor,
-    min_margin: float = 1,
+    input: torch.Tensor, target: torch.Tensor, min_margin: float = 1,
 ) -> torch.Tensor:
     r"""
     Compute the hinge margin loss as per
@@ -357,10 +353,7 @@ def hinge_margin_loss(
     """
     target = target.view(input.shape)
     return torch.mean(
-        torch.max(
-            torch.zeros_like(input),
-            min_margin - torch.sign(target) * input,
-        )
+        torch.max(torch.zeros_like(input), min_margin - torch.sign(target) * input,)
     )
 
 
@@ -399,10 +392,7 @@ def hkr_loss(
     )
 
 
-def kr_multiclass_loss(
-    input: torch.Tensor,
-    target: torch.Tensor,
-) -> torch.Tensor:
+def kr_multiclass_loss(input: torch.Tensor, target: torch.Tensor,) -> torch.Tensor:
     r"""
     Loss to estimate average of W1 distance using Kantorovich-Rubinstein
     duality over outputs. In this multiclass setup thr KR term is computed
@@ -423,9 +413,7 @@ def kr_multiclass_loss(
 
 
 def hinge_multiclass_loss(
-    input: torch.Tensor,
-    target: torch.Tensor,
-    min_margin: float = 1,
+    input: torch.Tensor, target: torch.Tensor, min_margin: float = 1,
 ) -> torch.Tensor:
     """
     Loss to estimate the Hinge loss in a multiclass setup. It compute the
