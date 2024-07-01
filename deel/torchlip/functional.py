@@ -283,7 +283,9 @@ def lipschitz_prelu(
 
 
 def kr_loss(
-    input: torch.Tensor, target: torch.Tensor, true_values: Tuple[int, int] = (0, 1),
+    input: torch.Tensor,
+    target: torch.Tensor,
+    true_values: Tuple[int, int] = (0, 1),
 ) -> torch.Tensor:
     r"""
     Loss to estimate the Wasserstein-1 distance using Kantorovich-Rubinstein duality,
@@ -308,11 +310,22 @@ def kr_loss(
 
     v0, v1 = true_values
     target = target.view(input.shape)
-    return torch.mean(input[target == v0]) - torch.mean(input[target == v1])
+
+    c1 = torch.mean(input[target == v0])
+    c2 = torch.mean(input[target == v1])
+    if torch.isnan(c1) and torch.isnan(c2):
+        return 0
+    if torch.isnan(c1):
+        return -c2
+    if torch.isnan(c2):
+        return c1
+    return c1 - c2
 
 
 def neg_kr_loss(
-    input: torch.Tensor, target: torch.Tensor, true_values: Tuple[int, int] = (0, 1),
+    input: torch.Tensor,
+    target: torch.Tensor,
+    true_values: Tuple[int, int] = (0, 1),
 ) -> torch.Tensor:
     """
     Loss to estimate the negative wasserstein-1 distance using Kantorovich-Rubinstein
@@ -333,7 +346,9 @@ def neg_kr_loss(
 
 
 def hinge_margin_loss(
-    input: torch.Tensor, target: torch.Tensor, min_margin: float = 1,
+    input: torch.Tensor,
+    target: torch.Tensor,
+    min_margin: float = 1,
 ) -> torch.Tensor:
     r"""
     Compute the hinge margin loss as per
@@ -353,7 +368,10 @@ def hinge_margin_loss(
     """
     target = target.view(input.shape)
     return torch.mean(
-        torch.max(torch.zeros_like(input), min_margin - torch.sign(target) * input,)
+        torch.max(
+            torch.zeros_like(input),
+            min_margin - torch.sign(target) * input,
+        )
     )
 
 
@@ -382,17 +400,21 @@ def hkr_loss(
         :py:func:`hinge_margin_loss`
         :py:func:`kr_loss`
     """
-    if alpha == np.inf:  # alpha negative hinge only
+    assert alpha <= 1.0
+    if alpha == 1.0:  # alpha negative hinge only
         return hinge_margin_loss(input, target, min_margin)
-
+    if alpha == 0:
+        return -kr_loss(input, target, (true_values[1], true_values[0]))
     # true value: positive value should be the first to be coherent with the
     # hinge loss (positive y_pred)
-    return alpha * hinge_margin_loss(input, target, min_margin) - kr_loss(
-        input, target, (true_values[1], true_values[0])
-    )
+    return alpha * hinge_margin_loss(input, target, min_margin)
+    -(1 - alpha) * kr_loss(input, target, (true_values[1], true_values[0]))
 
 
-def kr_multiclass_loss(input: torch.Tensor, target: torch.Tensor,) -> torch.Tensor:
+def kr_multiclass_loss(
+    input: torch.Tensor,
+    target: torch.Tensor,
+) -> torch.Tensor:
     r"""
     Loss to estimate average of W1 distance using Kantorovich-Rubinstein
     duality over outputs. In this multiclass setup thr KR term is computed
@@ -413,7 +435,9 @@ def kr_multiclass_loss(input: torch.Tensor, target: torch.Tensor,) -> torch.Tens
 
 
 def hinge_multiclass_loss(
-    input: torch.Tensor, target: torch.Tensor, min_margin: float = 1,
+    input: torch.Tensor,
+    target: torch.Tensor,
+    min_margin: float = 1,
 ) -> torch.Tensor:
     """
     Loss to estimate the Hinge loss in a multiclass setup. It compute the
@@ -469,6 +493,5 @@ def hkr_multiclass_loss(
     elif alpha == 0.0:  # alpha = 0 => KR only
         return -kr_multiclass_loss(input, target)
     else:
-        return -kr_multiclass_loss(input, target) + alpha * hinge_multiclass_loss(
-            input, target, min_margin
-        )
+        return alpha * hinge_multiclass_loss(input, target, min_margin)
+        -(1 - alpha) * kr_multiclass_loss(input, target)
