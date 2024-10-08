@@ -34,7 +34,8 @@ from tests.utils_framework import Lorth2d, LorthRegularizer
 
 
 @pytest.mark.skipif(
-    hasattr(Lorth2d, "unavailable_class"), reason="Lorth2d not available",
+    hasattr(Lorth2d, "unavailable_class"),
+    reason="Lorth2d not available",
 )
 @pytest.mark.parametrize(
     "kernel_shape,stride,delta,padding",
@@ -77,7 +78,8 @@ def test_set_kernel_shape(kernel_shape, stride, delta, padding):
 
 
 @pytest.mark.skipif(
-    hasattr(Lorth2d, "unavailable_class"), reason="Lorth2d not available",
+    hasattr(Lorth2d, "unavailable_class"),
+    reason="Lorth2d not available",
 )
 @pytest.mark.parametrize(
     "kernel_shape,stride,err,err_msg",
@@ -115,7 +117,8 @@ def test_existence_orthogonal_conv(kernel_shape, stride, err, err_msg):
 
 
 @pytest.mark.skipif(
-    hasattr(Lorth2d, "unavailable_class"), reason="Lorth2d not available",
+    hasattr(Lorth2d, "unavailable_class"),
+    reason="Lorth2d not available",
 )
 def test_compute_lorth():
     """Assert Lorth2d computation on an identity kernel => must return 0"""

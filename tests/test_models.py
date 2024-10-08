@@ -200,7 +200,8 @@ def test_deel_lip_Sequential():
 
 
 @pytest.mark.skipif(
-    hasattr(tModel, "unavailable_class"), reason="tModel not available",
+    hasattr(tModel, "unavailable_class"),
+    reason="tModel not available",
 )
 def test_Model():
     """Assert vanilla conversion of a tf.keras.Model model"""
@@ -224,7 +225,8 @@ def test_Model():
 
 
 @pytest.mark.skipif(
-    hasattr(Model, "unavailable_class"), reason="Model not available",
+    hasattr(Model, "unavailable_class"),
+    reason="Model not available",
 )
 def test_lip_Model():
     """Assert vanilla conversion of a deel.lip.Model model"""
@@ -279,7 +281,10 @@ def test_warning_unsupported_1Lip_layers():
         with warnings.catch_warnings(record=True) as w:
             if lay is not None:
                 _ = uft.generate_k_lip_model(
-                    Sequential, {"layers": [lay]}, input_shape=None, k=None,
+                    Sequential,
+                    {"layers": [lay]},
+                    input_shape=None,
+                    k=None,
                 )
                 assert len(w) == 0, f"Layer {lay} shouldn't raise warning"
 
@@ -308,7 +313,10 @@ def test_warning_unsupported_1Lip_layers():
         with pytest.warns(Warning):
             if lay is not None:
                 _ = uft.generate_k_lip_model(
-                    Sequential, {"layers": [lay]}, input_shape=None, k=None,
+                    Sequential,
+                    {"layers": [lay]},
+                    input_shape=None,
+                    k=None,
                 )
 
 

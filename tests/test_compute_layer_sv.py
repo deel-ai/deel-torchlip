@@ -295,7 +295,11 @@ def train_compute_and_verifySV(
         ),
         dict(
             layer_type=SpectralConv2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3),},
+            layer_params={
+                "in_channels": 1,
+                "out_channels": 2,
+                "kernel_size": (3, 3),
+            },
             batch_size=100,
             steps_per_epoch=125,
             epochs=5,
@@ -364,7 +368,11 @@ def train_compute_and_verifySV(
         ),
         dict(
             layer_type=FrobeniusConv2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3),},
+            layer_params={
+                "in_channels": 1,
+                "out_channels": 2,
+                "kernel_size": (3, 3),
+            },
             batch_size=100,
             steps_per_epoch=125,
             epochs=5,
@@ -395,7 +403,11 @@ def train_compute_and_verifySV(
         ),
         dict(
             layer_type=FrobeniusConv2d,
-            layer_params={"in_channels": 3, "out_channels": 2, "kernel_size": (3, 3),},
+            layer_params={
+                "in_channels": 3,
+                "out_channels": 2,
+                "kernel_size": (3, 3),
+            },
             batch_size=100,
             steps_per_epoch=125,
             epochs=5,

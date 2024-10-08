@@ -145,7 +145,8 @@ def test_padding(padding_tested, input_shape, batch_size, kernel_size, filters):
 
 
 @pytest.mark.skipif(
-    hasattr(PadConv2d, "unavailable_class"), reason="PadConv2d not available",
+    hasattr(PadConv2d, "unavailable_class"),
+    reason="PadConv2d not available",
 )
 @pytest.mark.parametrize(
     "padding_tested", ["circular", "constant", "symmetric", "reflect", "same", "valid"]
@@ -217,7 +218,8 @@ def test_predict(padding_tested, input_shape, batch_size, kernel_size, filters):
 
 
 @pytest.mark.skipif(
-    hasattr(PadConv2d, "unavailable_class"), reason="PadConv2d not available",
+    hasattr(PadConv2d, "unavailable_class"),
+    reason="PadConv2d not available",
 )
 @pytest.mark.parametrize(
     "padding_tested", ["circular", "constant", "symmetric", "reflect", "same", "valid"]

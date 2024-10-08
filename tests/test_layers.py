@@ -209,7 +209,13 @@ def train_k_lip_model(
 
     traind_ds = linear_generator(batch_size, input_shape, kernel)
     uft.train(
-        traind_ds, model, loss_fn, optimizer, epochs, batch_size, steps_per_epoch=10,
+        traind_ds,
+        model,
+        loss_fn,
+        optimizer,
+        epochs,
+        batch_size,
+        steps_per_epoch=10,
     )
     # the seed is set to compare all models with the same data
     test_dl = linear_generator(batch_size, input_shape, kernel)
@@ -271,13 +277,19 @@ def _check_emp_lip_const(emp_lip_const, from_disk_emp_lip_const, test_params):
 
 def _apply_tests_bank(test_params):
     pp.pprint(test_params)
-    (mse, emp_lip_const, from_disk_mse, from_disk_emp_lip_const,) = train_k_lip_model(
-        **test_params
-    )
+    (
+        mse,
+        emp_lip_const,
+        from_disk_mse,
+        from_disk_emp_lip_const,
+    ) = train_k_lip_model(**test_params)
     print("test mse: %f" % mse)
     print(
         "empirical lip const: %f ( expected %s )"
-        % (emp_lip_const, min(test_params["k_lip_model"], test_params["k_lip_data"]),)
+        % (
+            emp_lip_const,
+            min(test_params["k_lip_model"], test_params["k_lip_data"]),
+        )
     )
     _check_mse_results(mse, from_disk_mse, test_params)
     _check_emp_lip_const(emp_lip_const, from_disk_emp_lip_const, test_params)
