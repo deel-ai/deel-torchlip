@@ -67,7 +67,6 @@ from .utils_framework import (
     ],
 )
 def test_initializer(layer_type, layer_params, input_shape, orthogonal_test):
-    batch_size = 1000
     np.random.seed(42)
     # clear session to avoid side effects from previous train
     uft.init_session()  # K.clear_session()
@@ -86,7 +85,7 @@ def test_initializer(layer_type, layer_params, input_shape, orthogonal_test):
         loss=uft.MeanSquaredError(),
         metrics=[uft.metric_mse()],
     )
-    #######model.build((batch_size,) + input_shape)
+
     sigmas = np.linalg.svd(
         uft.to_numpy(uft.get_layer_weights_by_index(model, 0)),
         full_matrices=False,

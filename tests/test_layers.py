@@ -192,14 +192,7 @@ def train_k_lip_model(
     # define logging features
     logdir = os.path.join("logs", uft.LIP_LAYERS, "%s" % layer_type.__name__)
     os.makedirs(logdir, exist_ok=True)
-    hparams = dict(
-        layer_type=layer_type.__name__,
-        batch_size=batch_size,
-        steps_per_epoch=steps_per_epoch,
-        epochs=epochs,
-        k_lip_data=k_lip_data,
-        k_lip_model=k_lip_model,
-    )
+    
     callback_list = (
         []
     )  # [callbacks.TensorBoard(logdir), hp.KerasCallback(logdir, hparams)]

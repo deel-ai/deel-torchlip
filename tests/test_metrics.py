@@ -25,7 +25,6 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 import pytest
-from collections import defaultdict
 import numpy as np
 import os
 
@@ -41,7 +40,8 @@ from .utils_framework import (
 
 
 def one_hot_data(x, n_class):
-    """Return a Framework float32 tensor of shape [N, n_class] from a list/np.array of shape [N]"""
+    """Return a Framework float32 tensor of shape [N, n_class] 
+        from a list/np.array of shape [N]"""
     return np.eye(n_class)[x]
 
 
@@ -94,7 +94,7 @@ def test_serialization(nb_class, loss, loss_params, nb_classes):
     loss_fn, optimizer, metrics = uft.compile_model(
         m,
         optimizer=uft.get_instance_framework(
-            SGD, inst_params={"lr": 0.001, "model": m}
+            uft.SGD, inst_params={"lr": 0.001, "model": m}
         ),
         loss=uft.get_instance_framework(loss, inst_params=loss_params),
     )
@@ -184,7 +184,8 @@ def test_provable_vs_adjusted(loss, loss_params, nb_class):
     diff = np.min(np.abs(l1 - l2))
     assert (
         diff > 1e-4
-    ), f"{loss} provable and adjusted robustness must give different values when y_true!=y_pred"
+    ), f"{loss} provable and adjusted robustness must give 
+        different values when y_true!=y_pred"
 
 
 @pytest.mark.parametrize(

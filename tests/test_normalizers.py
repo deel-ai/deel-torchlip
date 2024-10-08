@@ -145,9 +145,9 @@ def test_kernel_conv_svd(kernel_shape, strides):
     """Compare power iteration conv against SVD."""
 
     if hasattr(spectral_normalization_conv, "unavailable_class"):
-        pytest.skip(f"spectral_normalization_conv not implemented")
+        pytest.skip("spectral_normalization_conv not implemented")
     if hasattr(_padding_circular, "unavailable_class"):
-        pytest.skip(f"_padding_circular not implemented")
+        pytest.skip("_padding_circular not implemented")
 
     kernel = np.random.normal(size=kernel_shape).astype("float32")
     spectral_input_shape, RO_case, cPad = set_spectral_input_shape(kernel, strides)
@@ -264,7 +264,7 @@ def test_bjorck_normalization(kernel_shape):
 )
 def test_reshaped_kernel_orthogonalization(kernel_shape):
     if hasattr(reshaped_kernel_orthogonalization, "unavailable_class"):
-        pytest.skip(f"reshaped_kernel_orthogonalization not implemented")
+        pytest.skip("reshaped_kernel_orthogonalization not implemented")
 
     kernel = np.random.normal(size=kernel_shape).astype("float32")
     """Compare max singular value using power iteration and tf.linalg.svd"""
@@ -429,7 +429,7 @@ def test_lconv_norm():
     shape = uft.to_framework_channel(shape)
     x = np.random.rand(*shape)
     x = uft.to_tensor(x)
-    y = m(x)
+    _ = m(x)
 
     # ensure that the original weight is the only torch parameter
     uft.check_parametrization(m, is_parametrized=True)

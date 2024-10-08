@@ -40,7 +40,6 @@ from .utils_framework import (
     SpectralConv2d,
     SpectralLinear,
 )
-from .utils_framework import Sequential
 from .utils_framework import OrthLinearRegularizer
 
 from . import utils_framework as uft
@@ -166,14 +165,7 @@ def train_compute_and_verifySV(
     # define logging features
     logdir = os.path.join("logs", uft.LIP_LAYERS, "%s" % layer_type.__name__)
     os.makedirs(logdir, exist_ok=True)
-    hparams = dict(
-        layer_type=layer_type.__name__,
-        batch_size=batch_size,
-        steps_per_epoch=steps_per_epoch,
-        epochs=epochs,
-        k_lip_data=k_lip_data,
-        k_lip_model=k_lip_model,
-    )
+
     callback_list = []  # [hp.KerasCallback(logdir, hparams)]
     if "callbacks" in kwargs and (kwargs["callbacks"] is not None):
         callback_list = callback_list + kwargs["callbacks"]

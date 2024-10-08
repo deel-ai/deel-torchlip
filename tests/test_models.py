@@ -27,7 +27,6 @@
 """These tests assert that deel.lip Sequential and Model objects behave as expected."""
 
 import warnings
-from packaging import version
 import pytest
 import numpy as np
 from collections import OrderedDict
@@ -333,6 +332,6 @@ def test_vanilla_export_with_named_layers():
     )
     x = np.random.normal(size=(1,) + input_shape)
     x = uft.to_tensor(x)
-    y = model(x)
+    _ = model(x)
     names = [name for name, _ in uft.get_named_children(model.vanilla_export())]
     assert names == ["features", "classifier"]

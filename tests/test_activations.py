@@ -191,7 +191,7 @@ def test_Householder_serialization():
 
     # Instantiation error because of wrong data format
     with pytest.raises(RuntimeError):
-        hh = uft.get_instance_framework(Householder, {"data_format": "channels_first"})
+        _ = uft.get_instance_framework(Householder, {"data_format": "channels_first"})
 
 
 @pytest.mark.skipif(

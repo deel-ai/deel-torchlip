@@ -170,7 +170,6 @@ def get_instance_withcheck(
 
 
 getters_dict = {
-    # GroupSort: partial(get_instance_withreplacement, dict_keys_replace={'n':'group_size'}),
     ScaledAdaptiveAvgPool2d: partial(
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
@@ -223,17 +222,7 @@ getters_dict = {
             ),
         },
     ),
-    # InvertibleDownSampling: partial(get_instance_withreplacement, dict_keys_replace={'pool_size':'kernel_size'}),
-    # InvertibleUpSampling: partial(get_instance_withreplacement, dict_keys_replace={'pool_size':'kernel_size'}),
 }
-"""def get_optim_generic(instance_type, inst_params):
-    layp = copy.deepcopy(inst_params)
-    layp.pop('model',None)
-    if 'lr' in layp:
-        layp['learning_rate'] = layp.pop('lr')
-    return instance_type(**layp)
-"""
-
 
 def get_instance_framework(instance_type, inst_params):
     if instance_type not in getters_dict:
@@ -378,7 +367,7 @@ def Adam(lr=0.01, model=None):
 
 
 def CategoricalCrossentropy(from_logits=True):
-    assert from_logits == True, "from_logits has to be True"
+    assert from_logits, "from_logits has to be True"
     return CrossEntropyLoss()
 
 

@@ -38,7 +38,6 @@ from tests.utils_framework import (
     copy_model_parameters,
     Sequential,
     tModel,
-    Model,
 )
 
 from tests.utils_framework import (

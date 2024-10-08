@@ -92,16 +92,18 @@ def check_serialization(nb_class, loss):
 
 
 def binary_data(x):
-    """Return a Framework float32 tensor of shape [N, 1] from a list/np.array of shape [N]"""
+    """Return a Framework float32 tensor of shape [N, 1] 
+        from a list/np.array of shape [N]"""
     return np.expand_dims(np.array(x, dtype=np.float32), axis=-1)
 
 
 def one_hot_data(x, n_class):
-    """Return a Framework float32 tensor of shape [N, n_class] from a list/np.array of shape [N]"""
+    """Return a Framework float32 tensor of shape [N, n_class] 
+        from a list/np.array of shape [N]"""
     return np.eye(n_class)[x]
 
 
-## global test values
+# global test values
 y_true1 = [1.0, 1.0, 1.0, 0.0, 0.0, 0.0]
 y_pred1 = [0.5, 1.5, -0.5, -0.5, -1.5, 0.5]
 
@@ -157,7 +159,7 @@ y_true4 = np.random.randint(2, size=num_items4)
 y_pred4 = np.random.normal(size=(num_items4,))
 
 
-############Qui de la HKR????
+# TODO add  HKR tests
 @pytest.mark.parametrize(
     "loss_instance, loss_params, y_true_np, y_pred_np, expected_loss,rtol",
     [
@@ -199,7 +201,7 @@ y_pred4 = np.random.normal(size=(num_items4,))
             {
                 "alpha": 5.0,
                 "min_margin": 0.2,
-            },  ##Warning alpha replaced by alpha/(1+alpha)
+            },  # Warning alpha replaced by alpha/(1+alpha)
             y_true2,
             y_pred2,
             np.float32(1.0897621 * uft.scaleAlpha(5.0)),
@@ -356,7 +358,7 @@ def test_softhkrmulticlass_loss():
     y_true_np, y_pred_np = y_true2, y_pred2
     expected_loss = np.float32(1.0897621) * uft.scaleAlpha(
         5.0
-    )  ##warning alpha scaled to be in [0,1]
+    )  # warning alpha scaled to be in [0,1]
     rtol = 1e-5
     loss = uft.get_instance_framework(
         loss_instance, inst_params={"alpha": 5.0, "min_margin": 0.2}
@@ -838,8 +840,9 @@ def test_minibatches_binary_loss_generic(
 def test_multilabel_loss_generic(loss_instance, loss_params, rtol):
     """
     Assert binary losses with multilabels.
-    Three losses are tested (KRLoss, HingeMarginLoss and HKRLoss). We compare losses with three
-    separate binary classification and the corresponding multilabel problem.
+    Three losses are tested (KRLoss, HingeMarginLoss and HKRLoss). 
+    We compare losses with three separate binary classification and 
+    the corresponding multilabel problem.
     """
     # Create predictions and labels for 3 binary problems and the concatenated
     # multilabel one.
