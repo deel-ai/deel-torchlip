@@ -29,17 +29,10 @@ from collections import defaultdict
 import numpy as np
 import os
 
-from tests.utils_framework import (
-    generate_k_lip_model,
+from . import utils_framework as uft
+
+from .utils_framework import (
     tLinear,
-    compile_model,
-    get_instance_framework,
-    save_model,
-    load_model,
-    to_tensor,
-    SGD,
-)
-from tests.utils_framework import (
     CategoricalProvableRobustAccuracy,
     BinaryProvableRobustAccuracy,
     CategoricalProvableAvgRobustness,
@@ -91,24 +84,24 @@ def test_serialization(nb_class, loss, loss_params, nb_classes):
     n = 255
     x = np.random.uniform(size=(n, 42))
     y = one_hot_data(np.random.randint(nb_classes, size=n), nb_classes)
-    x, y = to_tensor(x), to_tensor(y)
-    m = generate_k_lip_model(
+    x, y = uft.to_tensor(x), uft.to_tensor(y)
+    m = uft.generate_k_lip_model(
         tLinear,
         layer_params={"in_features": 42, "out_features": nb_class},
         input_shape=(42,),
     )
 
-    loss_fn, optimizer, metrics = compile_model(
+    loss_fn, optimizer, metrics = uft.compile_model(
         m,
-        optimizer=get_instance_framework(SGD, inst_params={"lr": 0.001, "model": m}),
-        loss=get_instance_framework(loss, inst_params=loss_params),
+        optimizer=uft.get_instance_framework(SGD, inst_params={"lr": 0.001, "model": m}),
+        loss=uft.get_instance_framework(loss, inst_params=loss_params),
     )
 
     l1 = m.evaluate(x, y)
     name = loss.__class__.__name__
     path = os.path.join("logs", "losses", name)
-    save_model(m, path)
-    m2 = load_model(
+    uft.save_model(m, path)
+    m2 = uft.load_model(
         path,
         compile=True,
         layer_type=tLinear,
@@ -164,14 +157,14 @@ def test_provable_vs_adjusted(loss, loss_params, nb_class):
         y = one_hot_data(np.random.randint(nb_class, size=n), nb_class)
     else:
         y = np.random.randint(2, size=n)
-    x, y = to_tensor(x), to_tensor(y)
+    x, y = uft.to_tensor(x), uft.to_tensor(y)
 
-    pr = get_instance_framework(loss, inst_params=loss_params)
+    pr = uft.get_instance_framework(loss, inst_params=loss_params)
     if pr is None:
         pytest.skip(f"{loss} not implemented")
     other_param = loss_params.copy()
     other_param["negative_robustness"] = not loss_params["negative_robustness"]
-    ar = get_instance_framework(loss, inst_params=other_param)
+    ar = uft.get_instance_framework(loss, inst_params=other_param)
     l1 = pr(y, y).numpy()
     l2 = ar(y, y).numpy()
     np.testing.assert_allclose(
@@ -216,11 +209,11 @@ def test_data_format(loss, loss_params, nb_class):
 
     if hasattr(loss, "unavailable_class"):
         pytest.skip(f"{loss} not implemented")
-    pr = get_instance_framework(loss, inst_params=loss_params)
+    pr = uft.get_instance_framework(loss, inst_params=loss_params)
 
     other_param = loss_params.copy()
     other_param["negative_robustness"] = not loss_params["negative_robustness"]
-    ar = get_instance_framework(loss, inst_params=other_param)
+    ar = uft.get_instance_framework(loss, inst_params=other_param)
 
     for metric in [pr, ar]:
         x = np.random.uniform(size=(n, nb_class))
@@ -232,7 +225,7 @@ def test_data_format(loss, loss_params, nb_class):
         for neg_val in [0.0, -1.0]:
             y_pred_case = x
             y_true_case = np.where(y > 0, 1.0, neg_val)
-            y_pred_case, y_true_case = to_tensor(y_pred_case), to_tensor(y_true_case)
+            y_pred_case, y_true_case = uft.to_tensor(y_pred_case), uft.to_tensor(y_true_case)
             metrics_values.append(metric(y_true_case, y_pred_case).numpy())
         assert all(
             [m == metrics_values[0] for m in metrics_values]
@@ -268,12 +261,12 @@ def test_disjoint_neurons(loss, loss_params, nb_class):
     if hasattr(loss, "unavailable_class"):
         pytest.skip(f"{loss} not implemented")
 
-    pr = get_instance_framework(loss, inst_params=loss_params)
+    pr = uft.get_instance_framework(loss, inst_params=loss_params)
     # if pr is None:
     #     pytest.skip(f"{loss} not implemented")
     other_param = loss_params.copy()
     other_param["disjoint_neurons"] = True
-    pdr = get_instance_framework(loss, inst_params=other_param)
+    pdr = uft.get_instance_framework(loss, inst_params=other_param)
 
     x = np.random.uniform(size=(n, nb_class))
     if nb_class > 1:
@@ -284,7 +277,7 @@ def test_disjoint_neurons(loss, loss_params, nb_class):
     for neg_val in [0.0, -1.0]:
         y_pred_case = x
         y_true_case = np.where(y > 0, 1.0, neg_val)
-        y_pred_case, y_true_case = to_tensor(y_pred_case), to_tensor(y_true_case)
+        y_pred_case, y_true_case = uft.to_tensor(y_pred_case), uft.to_tensor(y_true_case)
         metrics_values.append(pr(y_true_case, y_pred_case).numpy())
         metrics_values.append(
             pdr(y_true_case, y_pred_case * (np.sqrt(2) / 2.0)).numpy()
@@ -371,8 +364,8 @@ y_true2 = [1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0]
 def test_hardcoded_values(loss, loss_params, y_pred, y_true, expected_value):
     if hasattr(loss, "unavailable_class"):
         pytest.skip(f"{loss} not implemented")
-    pr = get_instance_framework(loss, inst_params=loss_params)
-    y_pred, y_true = to_tensor(y_pred), to_tensor(y_true)
+    pr = uft.get_instance_framework(loss, inst_params=loss_params)
+    y_pred, y_true = uft.to_tensor(y_pred), uft.to_tensor(y_true)
     val = pr(y_true, y_pred).numpy()
     np.testing.assert_allclose(
         val,

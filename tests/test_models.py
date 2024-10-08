@@ -33,26 +33,22 @@ import numpy as np
 from collections import OrderedDict
 
 
-from tests.utils_framework import (
+from . import utils_framework as uft
+
+from .utils_framework import (
     Sequential,
     Model,
-    vanillaModel,
     tSequential,
     tModel,
-    vanilla_require_a_copy,
-    copy_model_parameters,
-    build_named_sequential,
-    get_named_children,
-)
-from tests.utils_framework import (
+    vanillaModel,
     SpectralConv2d,
     SpectralLinear,
     ScaledL2NormPool2d,
     FrobeniusLinear,
     tInput,
 )
-from tests.utils_framework import GroupSort2, Flatten
-from tests.utils_framework import (
+from .utils_framework import GroupSort2, Flatten
+from .utils_framework import (
     tAdd,
     tLinear,
     tReLU,
@@ -65,29 +61,19 @@ from tests.utils_framework import (
     tUpSampling2d,
 )
 
-from tests.utils_framework import (
-    to_tensor,
-    to_numpy,
-    get_instance_framework,
-    to_framework_channel,
-    generate_k_lip_model,
-    get_functional_model,
-    compute_predict,
-)
-
 
 def sequential_layers(input_shape):
     """Return list of layers for a Sequential model"""
     return [
-        get_instance_framework(tInput, {"shape": input_shape}),  # (20, 20, 3)
-        get_instance_framework(
+        uft.get_instance_framework(tInput, {"shape": input_shape}),  # (20, 20, 3)
+        uft.get_instance_framework(
             SpectralConv2d,
             {"in_channels": 3, "out_channels": 6, "kernel_size": 3, "padding": 1},
         ),
-        get_instance_framework(ScaledL2NormPool2d, {"kernel_size": (2, 2)}),
-        get_instance_framework(GroupSort2, {}),
-        get_instance_framework(Flatten, {}),
-        get_instance_framework(
+        uft.get_instance_framework(ScaledL2NormPool2d, {"kernel_size": (2, 2)}),
+        uft.get_instance_framework(GroupSort2, {}),
+        uft.get_instance_framework(Flatten, {}),
+        uft.get_instance_framework(
             SpectralLinear, {"in_features": 600, "out_features": 10}
         ),
     ]
@@ -95,10 +81,10 @@ def sequential_layers(input_shape):
 
 def get_functional_tensors(input_shape):
     dict_functional_tensors = {}
-    dict_functional_tensors["inputs"] = get_instance_framework(
+    dict_functional_tensors["inputs"] = uft.get_instance_framework(
         tInput, {"shape": input_shape}
     )
-    dict_functional_tensors["conv1"] = get_instance_framework(
+    dict_functional_tensors["conv1"] = uft.get_instance_framework(
         SpectralConv2d,
         {
             "in_channels": 3,
@@ -108,11 +94,11 @@ def get_functional_tensors(input_shape):
             "padding": 1,
         },
     )
-    dict_functional_tensors["act1"] = get_instance_framework(GroupSort2, {})
-    dict_functional_tensors["pool1"] = get_instance_framework(
+    dict_functional_tensors["act1"] = uft.get_instance_framework(GroupSort2, {})
+    dict_functional_tensors["pool1"] = uft.get_instance_framework(
         ScaledL2NormPool2d, {"kernel_size": (2, 2), "k_coef_lip": 2.0}
     )
-    dict_functional_tensors["conv2"] = get_instance_framework(
+    dict_functional_tensors["conv2"] = uft.get_instance_framework(
         SpectralConv2d,
         {
             "in_channels": 2,
@@ -122,16 +108,16 @@ def get_functional_tensors(input_shape):
             "padding": 1,
         },
     )
-    dict_functional_tensors["act2"] = get_instance_framework(GroupSort2, {})
-    dict_functional_tensors["add2"] = get_instance_framework(tAdd, {})
-    dict_functional_tensors["flatten"] = get_instance_framework(Flatten, {})
-    dict_functional_tensors["dense1"] = get_instance_framework(
+    dict_functional_tensors["act2"] = uft.get_instance_framework(GroupSort2, {})
+    dict_functional_tensors["add2"] = uft.get_instance_framework(tAdd, {})
+    dict_functional_tensors["flatten"] = uft.get_instance_framework(Flatten, {})
+    dict_functional_tensors["dense1"] = uft.get_instance_framework(
         tLinear, {"in_features": 32, "out_features": 4}
     )
-    dict_functional_tensors["dense2"] = get_instance_framework(
+    dict_functional_tensors["dense2"] = uft.get_instance_framework(
         SpectralLinear, {"in_features": 4, "out_features": 4, "k_coef_lip": 2.0}
     )
-    dict_functional_tensors["dense3"] = get_instance_framework(
+    dict_functional_tensors["dense3"] = uft.get_instance_framework(
         SpectralLinear, {"in_features": 4, "out_features": 2, "k_coef_lip": 2.0}
     )
     return dict_functional_tensors
@@ -164,29 +150,29 @@ def functional_input_output_tensors(dict_functional_tensors, x):
 def assert_model_outputs(input_shape, model1, model2):
     """Assert outputs are identical for both models on random inputs"""
     x = np.random.random((10,) + input_shape).astype(np.float32)
-    x = to_tensor(x)
-    y1 = compute_predict(model1, x, training=False)  # .predict(x) #
-    y2 = compute_predict(model2, x, training=False)  # .predict(x) #model2(x)  #
-    np.testing.assert_allclose(to_numpy(y2), to_numpy(y1), atol=1e-5)
+    x = uft.to_tensor(x)
+    y1 = uft.compute_predict(model1, x, training=False)  # .predict(x) #
+    y2 = uft.compute_predict(model2, x, training=False)  # .predict(x) #model2(x)  #
+    np.testing.assert_allclose(uft.to_numpy(y2), uft.to_numpy(y1), atol=1e-5)
 
 
 def test_keras_Sequential():
     """Assert vanilla conversion of a tf.keras.Sequential model"""
-    input_shape = to_framework_channel((3, 20, 20))
-    model = generate_k_lip_model(
+    input_shape = uft.to_framework_channel((3, 20, 20))
+    model = uft.generate_k_lip_model(
         tSequential,
         {"layers": sequential_layers(input_shape)},
         input_shape=input_shape,
         k=None,
     )
-    if vanilla_require_a_copy():
-        model2 = generate_k_lip_model(
+    if uft.vanilla_require_a_copy():
+        model2 = uft.generate_k_lip_model(
             tSequential,
             {"layers": sequential_layers(input_shape)},
             input_shape=input_shape,
             k=None,
         )
-        copy_model_parameters(model, model2)
+        uft.copy_model_parameters(model, model2)
         vanilla_model = vanillaModel(model2)
     else:
         vanilla_model = vanillaModel(model)
@@ -196,17 +182,17 @@ def test_keras_Sequential():
 
 def test_deel_lip_Sequential():
     """Assert vanilla conversion of a deel.lip.Sequential model"""
-    input_shape = to_framework_channel((3, 20, 20))
-    model = generate_k_lip_model(
+    input_shape = uft.to_framework_channel((3, 20, 20))
+    model = uft.generate_k_lip_model(
         Sequential, {"layers": sequential_layers(input_shape)}, input_shape=input_shape
     )
-    if vanilla_require_a_copy():
-        model2 = generate_k_lip_model(
+    if uft.vanilla_require_a_copy():
+        model2 = uft.generate_k_lip_model(
             Sequential,
             {"layers": sequential_layers(input_shape)},
             input_shape=input_shape,
         )
-        copy_model_parameters(model, model2)
+        uft.copy_model_parameters(model, model2)
         vanilla_model = model2.vanilla_export()
     else:
         vanilla_model = model.vanilla_export()
@@ -219,17 +205,17 @@ def test_deel_lip_Sequential():
 )
 def test_Model():
     """Assert vanilla conversion of a tf.keras.Model model"""
-    input_shape = to_framework_channel((3, 8, 8))
+    input_shape = uft.to_framework_channel((3, 8, 8))
     dict_tensors = get_functional_tensors(input_shape)
-    model = get_functional_model(tModel, dict_tensors, functional_input_output_tensors)
+    model = uft.get_functional_model(tModel, dict_tensors, functional_input_output_tensors)
     # inputs, outputs = functional_input_output_tensors()
     #    model = tf.keras.Model(inputs, outputs)
-    if vanilla_require_a_copy():
+    if uft.vanilla_require_a_copy():
         dict_tensors2 = get_functional_tensors(input_shape)
-        model2 = get_functional_model(
+        model2 = uft.get_functional_model(
             tModel, dict_tensors2, functional_input_output_tensors
         )
-        copy_model_parameters(model, model2)
+        uft.copy_model_parameters(model, model2)
         vanilla_model = vanillaModel(model2)
     else:
         vanilla_model = vanillaModel(model)
@@ -242,17 +228,17 @@ def test_Model():
 )
 def test_lip_Model():
     """Assert vanilla conversion of a deel.lip.Model model"""
-    input_shape = to_framework_channel((3, 8, 8))
+    input_shape = uft.to_framework_channel((3, 8, 8))
     dict_tensors = get_functional_tensors(input_shape)
-    model = get_functional_model(Model, dict_tensors, functional_input_output_tensors)
+    model = uft.get_functional_model(Model, dict_tensors, functional_input_output_tensors)
     # inputs, outputs = functional_input_output_tensors()
     # model = Model(inputs, outputs)
-    if vanilla_require_a_copy():
+    if uft.vanilla_require_a_copy():
         dict_tensors2 = get_functional_tensors(input_shape)
-        model2 = get_functional_model(
+        model2 = uft.get_functional_model(
             Model, dict_tensors2, functional_input_output_tensors
         )
-        copy_model_parameters(model, model2)
+        uft.copy_model_parameters(model, model2)
         vanilla_model = model2.vanilla_export()
     else:
         vanilla_model = model.vanilla_export()
@@ -265,28 +251,28 @@ def test_warning_unsupported_1Lip_layers():
     """
 
     # Check that supported 1-Lipschitz layers do not raise a warning
-    input_shape = to_framework_channel((3, 32, 32))
+    input_shape = uft.to_framework_channel((3, 32, 32))
     supported_layers = [
-        get_instance_framework(
+        uft.get_instance_framework(
             tInput, {"shape": input_shape}
         ),  # kl.tInput((32, 32, 3)),
-        get_instance_framework(tReLU, {}),  # kl.ReLU(),
-        get_instance_framework(
+        uft.get_instance_framework(tReLU, {}),  # kl.ReLU(),
+        uft.get_instance_framework(
             tActivation, {"activation": "relu"}
         ),  # kl.Activation("relu"),
-        get_instance_framework(tSoftmax, {}),  # kl.Softmax(),
-        get_instance_framework(Flatten, {}),  # kl.Flatten(),
-        get_instance_framework(tReshape, {"target_shape": (10,)}),  # kl.Reshape(),
-        get_instance_framework(tMaxPool2d, {"kernel_size": (2, 2)}),  # kl.MaxPool2d(),
-        get_instance_framework(SpectralLinear, {"in_features": 3, "out_features": 3}),
-        get_instance_framework(
+        uft.get_instance_framework(tSoftmax, {}),  # kl.Softmax(),
+        uft.get_instance_framework(Flatten, {}),  # kl.Flatten(),
+        uft.get_instance_framework(tReshape, {"target_shape": (10,)}),  # kl.Reshape(),
+        uft.get_instance_framework(tMaxPool2d, {"kernel_size": (2, 2)}),  # kl.MaxPool2d(),
+        uft.get_instance_framework(SpectralLinear, {"in_features": 3, "out_features": 3}),
+        uft.get_instance_framework(
             ScaledL2NormPool2d, {"kernel_size": (2, 2)}
         ),  # ScaledL2NormPool2d(),
     ]
     for lay in supported_layers:
         with warnings.catch_warnings(record=True) as w:
             if lay is not None:
-                _ = generate_k_lip_model(
+                _ = uft.generate_k_lip_model(
                     Sequential,
                     {"layers": [lay]},
                     input_shape=None,
@@ -296,19 +282,19 @@ def test_warning_unsupported_1Lip_layers():
 
     # Check that unsupported layers raise a warning
     unsupported_layers = [
-        get_instance_framework(
+        uft.get_instance_framework(
             tMaxPool2d, {"pool_size": 3, "strides": 2}
         ),  # kl.MaxPool2d(),
-        get_instance_framework(tAdd, {}),  # kl.Add(),
-        get_instance_framework(tConcatenate, {}),  # kl.Concatenate(),
-        get_instance_framework(
+        uft.get_instance_framework(tAdd, {}),  # kl.Add(),
+        uft.get_instance_framework(tConcatenate, {}),  # kl.Concatenate(),
+        uft.get_instance_framework(
             tLinear, {"in_features": 5, "out_features": 5}
         ),  # kl.tLinear(5),
-        get_instance_framework(
+        uft.get_instance_framework(
             tConv2d, {"in_channels": 10, "out_channels": 10, "kernel_size": 3}
         ),  # kl.Conv2d(10, 3),
-        get_instance_framework(tUpSampling2d, {}),  # kl.UpSampling2d(),
-        get_instance_framework(
+        uft.get_instance_framework(tUpSampling2d, {}),  # kl.UpSampling2d(),
+        uft.get_instance_framework(
             tActivation, {"activation": "gelu"}
         ),  # kl.Activation("relu"),
     ]
@@ -318,7 +304,7 @@ def test_warning_unsupported_1Lip_layers():
     for lay in unsupported_layers:
         with pytest.warns(Warning):
             if lay is not None:
-                _ = generate_k_lip_model(
+                _ = uft.generate_k_lip_model(
                     Sequential,
                     {"layers": [lay]},
                     input_shape=None,
@@ -327,16 +313,16 @@ def test_warning_unsupported_1Lip_layers():
 
 
 def test_vanilla_export_with_named_layers():
-    input_shape = to_framework_channel((3, 20, 20))
-    feat = generate_k_lip_model(
+    input_shape = uft.to_framework_channel((3, 20, 20))
+    feat = uft.generate_k_lip_model(
         Sequential, {"layers": sequential_layers(input_shape)}, input_shape=input_shape
     )
-    cl = get_instance_framework(FrobeniusLinear, {"in_features": 10, "out_features": 1})
-    model = build_named_sequential(
+    cl = uft.get_instance_framework(FrobeniusLinear, {"in_features": 10, "out_features": 1})
+    model = uft.build_named_sequential(
         Sequential, OrderedDict([("features", feat), ("classifier", cl)])
     )
     x = np.random.normal(size=(1,) + input_shape)
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     y = model(x)
-    names = [name for name, _ in get_named_children(model.vanilla_export())]
+    names = [name for name, _ in uft.get_named_children(model.vanilla_export())]
     assert names == ["features", "classifier"]

@@ -29,8 +29,8 @@ import pytest
 
 import numpy as np
 
+from . import utils_framework as uft
 from tests.utils_framework import Lorth2d, LorthRegularizer
-from tests.utils_framework import to_tensor, get_instance_framework
 
 
 @pytest.mark.skipif(
@@ -48,9 +48,9 @@ from tests.utils_framework import to_tensor, get_instance_framework
 def test_set_kernel_shape(kernel_shape, stride, delta, padding):
     """Assert that set_kernel_shape() correctly sets parameters."""
     if stride is None:
-        lorth = get_instance_framework(Lorth2d, {})
+        lorth = uft.get_instance_framework(Lorth2d, {})
     else:
-        lorth = get_instance_framework(Lorth2d, {"stride": stride})
+        lorth = uft.get_instance_framework(Lorth2d, {"stride": stride})
     if kernel_shape is not None:
         lorth.set_kernel_shape(kernel_shape)
     assert lorth.kernel_shape == kernel_shape
@@ -97,12 +97,12 @@ def test_existence_orthogonal_conv(kernel_shape, stride, err, err_msg):
     # RO case
     if err != Warning:
         with pytest.raises(err):
-            get_instance_framework(
+            uft.get_instance_framework(
                 Lorth2d, {"kernel_shape": kernel_shape, "stride": stride}
             )
     else:
         with pytest.warns(err):
-            get_instance_framework(
+            uft.get_instance_framework(
                 Lorth2d, {"kernel_shape": kernel_shape, "stride": stride}
             )
         # # CO case
@@ -135,8 +135,8 @@ def test_compute_lorth():
     channels = np.random.randint(1, 100)
     w = _identity_kernel(kernel_size, channels)
 
-    w = to_tensor(w)
-    lorth = get_instance_framework(Lorth2d, {"kernel_shape": w.shape})
+    w = uft.to_tensor(w)
+    lorth = uft.get_instance_framework(Lorth2d, {"kernel_shape": w.shape})
     loss = lorth.compute_lorth(w)
     np.testing.assert_allclose(loss.numpy(), 0, atol=1e-6)
     # self.assertAlmostEqual(loss.numpy(), 0)
@@ -159,7 +159,7 @@ def test_LorthRegularizer_init():
     kshape2 = (5, 5, 16, 8)
     stride = np.random.randint(1, 4)
     lambda_lorth = np.random.normal()
-    regul = get_instance_framework(
+    regul = uft.get_instance_framework(
         LorthRegularizer,
         {"kernel_shape": kshape1, "stride": stride, "lambda_lorth": lambda_lorth},
     )
@@ -185,4 +185,4 @@ def test_LorthRegularizer_init():
 def test_1D_not_supported():
     """Assert that 1D convolutions are not supported."""
     with pytest.raises(NotImplementedError):
-        get_instance_framework(LorthRegularizer, {"dim": 1})
+        uft.get_instance_framework(LorthRegularizer, {"dim": 1})

@@ -28,36 +28,24 @@ import pytest
 import os
 import numpy as np
 
-from tests.utils_framework import (
-    Sequential,
-    Loss,
-    tLinear,
-    generate_k_lip_model,
-    get_instance_framework,
-    compile_model,
-    save_model,
-    SGD,
-    load_model,
-    to_tensor,
-    type_int32,
-    compute_loss,
-)
+from . import utils_framework as uft
 
-from tests.utils_framework import (
+from .utils_framework import (
+    tLinear,
+    Loss,
     KRLoss,
     HingeMarginLoss,
     HKRLoss,
-    KRMulticlassLoss,  # MulticlassKR,
-    HingeMulticlassLoss,  # MulticlassHinge,
-    HKRMulticlassLoss,  # MulticlassHKR,
-    SoftHKRMulticlassLoss,  # MulticlassSoftHKR,
+    KRMulticlassLoss,  
+    HingeMulticlassLoss,  
+    HKRMulticlassLoss,  
+    SoftHKRMulticlassLoss,  
     MultiMarginLoss,
     TauCategoricalCrossentropyLoss,
     TauSparseCategoricalCrossentropyLoss,
     TauBinaryCrossentropyLoss,
     CategoricalHingeLoss,
     process_labels_for_multi_gpu,
-    scaleAlpha,
 )
 
 
@@ -80,17 +68,17 @@ def get_gaussian_data(n=500, mean1=1.0, mean2=-1.0):
 def check_serialization(nb_class, loss):
     layer_type = tLinear
     layer_params = {"in_features": 10, "out_features": nb_class}
-    m = generate_k_lip_model(layer_type, layer_params, input_shape=(10,), k=1)
+    m = uft.generate_k_lip_model(layer_type, layer_params, input_shape=(10,), k=1)
     assert m is not None
-    loss, optimizer, _ = compile_model(
+    loss, optimizer, _ = uft.compile_model(
         m,
-        optimizer=get_instance_framework(SGD, inst_params={"model": m}),
+        optimizer=uft.get_instance_framework(uft.SGD, inst_params={"model": m}),
         loss=loss,
     )
     name = loss.__class__.__name__ if isinstance(loss, Loss) else loss.__name__
     path = os.path.join("logs", "losses", name)
-    save_model(m, path)
-    m2 = load_model(
+    uft.save_model(m, path)
+    m2 = uft.load_model(
         path,
         compile=True,
         layer_type=layer_type,
@@ -99,7 +87,7 @@ def check_serialization(nb_class, loss):
         k=1,
     )
     x = np.random.uniform(size=(255, 10))
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     m2(x)
 
 
@@ -203,7 +191,7 @@ y_pred4 = np.random.normal(size=(num_items4,))
             {"alpha": 5.0, "min_margin": 2.0},
             y_true2,
             y_pred2,
-            np.float32(1071.0 / 200.0) * scaleAlpha(5.0),
+            np.float32(1071.0 / 200.0) * uft.scaleAlpha(5.0),
             1e-7,
         ),
         (
@@ -214,7 +202,7 @@ y_pred4 = np.random.normal(size=(num_items4,))
             },  ##Warning alpha replaced by alpha/(1+alpha)
             y_true2,
             y_pred2,
-            np.float32(1.0897621 * scaleAlpha(5.0)),
+            np.float32(1.0897621 * uft.scaleAlpha(5.0)),
             1e-5,
         ),
         (
@@ -232,12 +220,12 @@ def test_loss_generic_value(
 ):
     if hasattr(loss_instance, "unavailable_class"):
         pytest.skip(f"{loss_instance} not implemented")
-    loss = get_instance_framework(loss_instance, inst_params=loss_params)
+    loss = uft.get_instance_framework(loss_instance, inst_params=loss_params)
     if loss is None:
         pytest.skip(f"{loss_instance}  with params {loss_params} not implemented")
-    y_true, y_pred = to_tensor(y_true_np), to_tensor(y_pred_np)
+    y_true, y_pred = uft.to_tensor(y_true_np), uft.to_tensor(y_pred_np)
 
-    loss_val = compute_loss(loss, y_pred, y_true).numpy()
+    loss_val = uft.compute_loss(loss, y_pred, y_true).numpy()
     print("loss_val", loss_val, expected_loss)
     np.testing.assert_allclose(
         loss_val,
@@ -321,13 +309,13 @@ def test_loss_generic_equal(
 ):
     if hasattr(loss_instance, "unavailable_class"):
         pytest.skip(f"{loss_instance} not implemented")
-    loss = get_instance_framework(loss_instance, inst_params=loss_params)
+    loss = uft.get_instance_framework(loss_instance, inst_params=loss_params)
     if loss is None:
         pytest.skip(f"{loss_instance} with params {loss_params} not implemented")
-    y_true, y_pred = to_tensor(y_true_np), to_tensor(y_pred_np)
-    loss_val = compute_loss(loss, y_pred, y_true).numpy()
-    y_true = to_tensor(y_true_np, dtype=type_int32)
-    loss_val_2 = compute_loss(loss, y_pred, y_true).numpy()
+    y_true, y_pred = uft.to_tensor(y_true_np), uft.to_tensor(y_pred_np)
+    loss_val = uft.compute_loss(loss, y_pred, y_true).numpy()
+    y_true = uft.to_tensor(y_true_np, dtype=uft.type_int32)
+    loss_val_2 = uft.compute_loss(loss, y_pred, y_true).numpy()
     np.testing.assert_equal(
         loss_val_2,
         loss_val,
@@ -335,8 +323,8 @@ def test_loss_generic_equal(
     )
     if test_minus1:
         y_true2_np = np.where(y_true_np == 1.0, 1.0, -1.0)
-        y_true2 = to_tensor(y_true2_np)
-        loss_val_3 = compute_loss(loss, y_pred, y_true2).numpy()
+        y_true2 = uft.to_tensor(y_true2_np)
+        loss_val_3 = uft.compute_loss(loss, y_pred, y_true2).numpy()
         np.testing.assert_equal(
             loss_val_3,
             loss_val,
@@ -351,7 +339,7 @@ def test_hkr_loss():
     loss_instance = HKRLoss
     if hasattr(loss_instance, "unavailable_class"):
         pytest.skip(f"{loss_instance} not implemented")
-    loss = get_instance_framework(
+    loss = uft.get_instance_framework(
         loss_instance,
         inst_params={"true_values": (1, 0), "alpha": 0.5, "min_margin": 2.0},
     )
@@ -366,50 +354,50 @@ def test_softhkrmulticlass_loss():
     if hasattr(loss_instance, "unavailable_class"):
         pytest.skip(f"{loss_instance} not implemented")
     y_true_np, y_pred_np = y_true2, y_pred2
-    expected_loss = np.float32(1.0897621) * scaleAlpha(
+    expected_loss = np.float32(1.0897621) * uft.scaleAlpha(
         5.0
     )  ##warning alpha scaled to be in [0,1]
     rtol = 1e-5
-    loss = get_instance_framework(
+    loss = uft.get_instance_framework(
         loss_instance, inst_params={"alpha": 5.0, "min_margin": 0.2}
     )
     if loss is None:
         pytest.skip(f"{loss_instance}   with params  not implemented")
-    y_true, y_pred = to_tensor(y_true_np), to_tensor(y_pred_np)
-    loss_val = compute_loss(loss, y_pred, y_true).numpy()
+    y_true, y_pred = uft.to_tensor(y_true_np), uft.to_tensor(y_pred_np)
+    loss_val = uft.compute_loss(loss, y_pred, y_true).numpy()
     np.testing.assert_allclose(loss_val, np.float32(expected_loss), rtol=rtol)
 
     # moving mean should change and thus loss value
-    loss_val_bis = compute_loss(loss, y_pred, y_true).numpy()
+    loss_val_bis = uft.compute_loss(loss, y_pred, y_true).numpy()
     np.testing.assert_allclose(
-        loss_val_bis, np.float32(1.0834466) * scaleAlpha(5.0), rtol=rtol
+        loss_val_bis, np.float32(1.0834466) * uft.scaleAlpha(5.0), rtol=rtol
     )
 
     y_true_np, y_pred_np = y_trueonehot, y_predonehot
-    loss = get_instance_framework(
+    loss = uft.get_instance_framework(
         loss_instance, inst_params={"alpha": 5.0, "min_margin": 0.2}
     )
-    y_true, y_pred = to_tensor(y_true_np), to_tensor(y_pred_np)
-    loss_val = compute_loss(loss, y_pred, y_true).numpy()
+    y_true, y_pred = uft.to_tensor(y_true_np), uft.to_tensor(y_pred_np)
+    loss_val = uft.compute_loss(loss, y_pred, y_true).numpy()
 
     # equality require a new instance
-    loss2 = get_instance_framework(
+    loss2 = uft.get_instance_framework(
         loss_instance, inst_params={"alpha": 5.0, "min_margin": 0.2}
     )
-    y_true = to_tensor(y_true_np, dtype=type_int32)
-    loss_val_2 = compute_loss(loss2, y_pred, y_true).numpy()
+    y_true = uft.to_tensor(y_true_np, dtype=uft.type_int32)
+    loss_val_2 = uft.compute_loss(loss2, y_pred, y_true).numpy()
     np.testing.assert_equal(
         loss_val_2,
         loss_val,
         err_msg=f"{loss_instance} test failed when y_true has dtype int32",
     )
 
-    loss3 = get_instance_framework(
+    loss3 = uft.get_instance_framework(
         loss_instance, inst_params={"alpha": 5.0, "min_margin": 0.2}
     )
     y_true2_np = np.where(y_true_np == 1.0, 1.0, -1.0)
-    y_true2 = to_tensor(y_true2_np)
-    loss_val_3 = compute_loss(loss3, y_pred, y_true2).numpy()
+    y_true2 = uft.to_tensor(y_true2_np)
+    loss_val_3 = uft.compute_loss(loss3, y_pred, y_true2).numpy()
     np.testing.assert_equal(
         loss_val_3,
         loss_val,
@@ -532,7 +520,7 @@ def test_softhkrmulticlass_loss():
                     1.1028761,
                 ]
             )
-            * scaleAlpha(5.0),
+            * uft.scaleAlpha(5.0),
             1e-7,
         ),
     ],
@@ -546,11 +534,11 @@ def test_no_reduction_loss_generic(
     """
     if hasattr(loss_instance, "unavailable_class"):
         pytest.skip(f"{loss_instance} not implemented")
-    loss = get_instance_framework(loss_instance, inst_params=loss_params)
+    loss = uft.get_instance_framework(loss_instance, inst_params=loss_params)
     if loss is None:
         pytest.skip(f"{loss_instance}   with params {loss_params} not implemented")
-    y_true, y_pred = to_tensor(y_true_np), to_tensor(y_pred_np)
-    loss_val = compute_loss(loss, y_pred, y_true).numpy()
+    y_true, y_pred = uft.to_tensor(y_true_np), uft.to_tensor(y_pred_np)
+    loss_val = uft.compute_loss(loss, y_pred, y_true).numpy()
     np.testing.assert_allclose(
         loss_val,
         expected_loss,
@@ -750,12 +738,12 @@ def test_minibatches_binary_loss_generic(
     if hasattr(loss_instance, "unavailable_class"):
         pytest.skip(f"{loss_instance} not implemented")
 
-    loss = get_instance_framework(loss_instance, inst_params=loss_params)
+    loss = uft.get_instance_framework(loss_instance, inst_params=loss_params)
     if loss is None:
         pytest.skip(f"{loss_instance}  with params {loss_params} not implemented")
-    y_true, y_pred = to_tensor(y_true_np), to_tensor(y_pred_np)
+    y_true, y_pred = uft.to_tensor(y_true_np), uft.to_tensor(y_pred_np)
     y_true = process_labels_for_multi_gpu(y_true)
-    loss_val = compute_loss(loss, y_pred, y_true).numpy()
+    loss_val = uft.compute_loss(loss, y_pred, y_true).numpy()
     if expected_loss is not None:
         np.testing.assert_allclose(
             loss_val,
@@ -766,7 +754,7 @@ def test_minibatches_binary_loss_generic(
         )
     loss_val_minibatches = 0
     for i in range(len(segments) - 1):
-        loss_val_minibatches += compute_loss(
+        loss_val_minibatches += uft.compute_loss(
             loss,
             y_pred[segments[i] : segments[i + 1]],
             y_true[segments[i] : segments[i + 1]],
@@ -866,20 +854,20 @@ def test_multilabel_loss_generic(loss_instance, loss_params, rtol):
     y_pred_np = np.concatenate([y_pred1_np, y_pred2_np, y_pred3_np], axis=-1)
     y_true_np = np.concatenate([y_true1_np, y_true2_np, y_true3_np], axis=-1)
 
-    loss = get_instance_framework(loss_instance, inst_params=loss_params)
+    loss = uft.get_instance_framework(loss_instance, inst_params=loss_params)
     if loss is None:
         pytest.skip(f"{loss_instance}  with params {loss_params} not implemented")
 
-    y_true1, y_pred1 = to_tensor(y_true1_np), to_tensor(y_pred1_np)
-    loss_val1 = compute_loss(loss, y_pred1, y_true1).numpy()
-    y_true2, y_pred2 = to_tensor(y_true2_np), to_tensor(y_pred2_np)
-    loss_val2 = compute_loss(loss, y_pred2, y_true2).numpy()
-    y_true3, y_pred3 = to_tensor(y_true3_np), to_tensor(y_pred3_np)
-    loss_val3 = compute_loss(loss, y_pred3, y_true3).numpy()
+    y_true1, y_pred1 = uft.to_tensor(y_true1_np), uft.to_tensor(y_pred1_np)
+    loss_val1 = uft.compute_loss(loss, y_pred1, y_true1).numpy()
+    y_true2, y_pred2 = uft.to_tensor(y_true2_np), uft.to_tensor(y_pred2_np)
+    loss_val2 = uft.compute_loss(loss, y_pred2, y_true2).numpy()
+    y_true3, y_pred3 = uft.to_tensor(y_true3_np), uft.to_tensor(y_pred3_np)
+    loss_val3 = uft.compute_loss(loss, y_pred3, y_true3).numpy()
     mean_loss_vals = (loss_val1 + loss_val2 + loss_val3) / 3
 
-    y_true, y_pred = to_tensor(y_true_np), to_tensor(y_pred_np)
-    loss_val_multilabel = compute_loss(loss, y_pred, y_true).numpy()
+    y_true, y_pred = uft.to_tensor(y_true_np), uft.to_tensor(y_pred_np)
+    loss_val_multilabel = uft.compute_loss(loss, y_pred, y_true).numpy()
 
     np.testing.assert_allclose(
         loss_val_multilabel,

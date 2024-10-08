@@ -28,39 +28,19 @@ import os
 import pprint
 import pytest
 import numpy as np
-from tests.test_layers_pytest import linear_generator, build_kernel
+from .test_layers import linear_generator, build_kernel
 
-from tests.utils_framework import (
-    Sequential,
-    tModel,
-    evaluate_lip_const,
-    generate_k_lip_model,
-    get_functional_model,
-    get_instance_framework,
-    init_session,
-    compile_model,
-    compute_output_shape,
-    train,
-    set_seed,
-    to_tensor,
-    to_numpy,
-    run_test,
-    Adam,
-    metric_mse,
-    MeanSquaredError,
-    load_model,
-    save_model,
-    to_framework_channel,
-    LIP_LAYERS,
-    MODEL_PATH,
-)
+from . import utils_framework as uft
 
 from tests.utils_framework import (
     vanillaModel,
     vanilla_require_a_copy,
     copy_model_parameters,
+    Sequential,
+    tModel,
+    Model,
 )
-from tests.utils_framework import Sequential, Model
+
 from tests.utils_framework import (
     SpectralLinear,
     SpectralConv2d,
@@ -70,7 +50,6 @@ from tests.utils_framework import (
     ScaledL2NormPool2d,
 )
 from tests.utils_framework import Flatten, tLinear, tInput
-from tests.utils_framework import Adam
 
 np.random.seed(42)
 pp = pprint.PrettyPrinter(indent=4)
@@ -79,10 +58,10 @@ pp = pprint.PrettyPrinter(indent=4)
 def sequential_layers(input_shape):
     """Return list of layers for a Sequential model"""
     in_ch = input_shape[0]
-    input_shape = to_framework_channel(input_shape)
+    input_shape = uft.to_framework_channel(input_shape)
     return [
-        get_instance_framework(tInput, {"shape": input_shape}),
-        get_instance_framework(
+        uft.get_instance_framework(tInput, {"shape": input_shape}),
+        uft.get_instance_framework(
             SpectralConv2d,
             {
                 "in_channels": in_ch,
@@ -91,30 +70,30 @@ def sequential_layers(input_shape):
                 "padding": 1,
             },
         ),
-        get_instance_framework(ScaledL2NormPool2d, {"kernel_size": (2, 2)}),
-        get_instance_framework(
+        uft.get_instance_framework(ScaledL2NormPool2d, {"kernel_size": (2, 2)}),
+        uft.get_instance_framework(
             FrobeniusConv2d,
             {"in_channels": 2, "out_channels": 2, "kernel_size": (3, 3), "padding": 1},
         ),
-        get_instance_framework(
+        uft.get_instance_framework(
             SpectralConv2dTranspose,
             {"in_channels": 2, "out_channels": 5, "kernel_size": (3, 3), "padding": 1},
         ),
-        get_instance_framework(Flatten, {}),
-        get_instance_framework(tLinear, {"in_features": 80, "out_features": 4}),
-        get_instance_framework(SpectralLinear, {"in_features": 4, "out_features": 4}),
-        get_instance_framework(FrobeniusLinear, {"in_features": 4, "out_features": 2}),
+        uft.get_instance_framework(Flatten, {}),
+        uft.get_instance_framework(tLinear, {"in_features": 80, "out_features": 4}),
+        uft.get_instance_framework(SpectralLinear, {"in_features": 4, "out_features": 4}),
+        uft.get_instance_framework(FrobeniusLinear, {"in_features": 4, "out_features": 2}),
     ]
 
 
 def get_functional_tensors(input_shape):
     in_ch = input_shape[0]
-    input_shape = to_framework_channel(input_shape)
+    input_shape = uft.to_framework_channel(input_shape)
     dict_functional_tensors = {}
-    dict_functional_tensors["inputs"] = get_instance_framework(
+    dict_functional_tensors["inputs"] = uft.get_instance_framework(
         tInput, {"shape": input_shape}
     )
-    dict_functional_tensors["conv1"] = get_instance_framework(
+    dict_functional_tensors["conv1"] = uft.get_instance_framework(
         SpectralConv2d,
         {
             "in_channels": in_ch,
@@ -124,10 +103,10 @@ def get_functional_tensors(input_shape):
             "padding": 1,
         },
     )
-    dict_functional_tensors["pool1"] = get_instance_framework(
+    dict_functional_tensors["pool1"] = uft.get_instance_framework(
         ScaledL2NormPool2d, {"kernel_size": (2, 2), "k_coef_lip": 2.0}
     )
-    dict_functional_tensors["conv2"] = get_instance_framework(
+    dict_functional_tensors["conv2"] = uft.get_instance_framework(
         FrobeniusConv2d,
         {
             "in_channels": 2,
@@ -137,18 +116,18 @@ def get_functional_tensors(input_shape):
             "padding": 1,
         },
     )
-    dict_functional_tensors["convt2"] = get_instance_framework(
+    dict_functional_tensors["convt2"] = uft.get_instance_framework(
         SpectralConv2dTranspose,
         {"in_channels": 2, "out_channels": 5, "kernel_size": (3, 3), "padding": 1},
     )
-    dict_functional_tensors["flatten"] = get_instance_framework(Flatten, {})
-    dict_functional_tensors["dense1"] = get_instance_framework(
+    dict_functional_tensors["flatten"] = uft.get_instance_framework(Flatten, {})
+    dict_functional_tensors["dense1"] = uft.get_instance_framework(
         tLinear, {"in_features": 80, "out_features": 4}
     )
-    dict_functional_tensors["dense2"] = get_instance_framework(
+    dict_functional_tensors["dense2"] = uft.get_instance_framework(
         SpectralLinear, {"in_features": 4, "out_features": 4}
     )
-    dict_functional_tensors["dense3"] = get_instance_framework(
+    dict_functional_tensors["dense3"] = uft.get_instance_framework(
         FrobeniusLinear, {"in_features": 4, "out_features": 2}
     )
     return dict_functional_tensors
@@ -177,13 +156,13 @@ def functional_input_output_tensors(dict_functional_tensors, x):
 
 def get_model(layer_type, layer_params, input_shape, k_coef_lip):
     if layer_type == tModel:
-        return get_functional_model(
+        return uft.get_functional_model(
             tModel,
             layer_params["dict_tensors"],
             layer_params["functional_input_output_tensors"],
         )
     else:
-        return generate_k_lip_model(
+        return uft.generate_k_lip_model(
             layer_type, layer_params, input_shape=input_shape, k=k_coef_lip
         )
 
@@ -214,35 +193,35 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     k_lip_data = 2.0
 
     # clear session to avoid side effects from previous train
-    init_session()  # K.clear_session()
+    uft.init_session()  # K.clear_session()
     np.random.seed(42)
-    input_shape = to_framework_channel(input_shape)
+    input_shape = uft.to_framework_channel(input_shape)
 
     model = get_model(layer_type, layer_params, input_shape, k_coef_lip)
 
     # create the keras model, defin opt, and compile it
-    optimizer = get_instance_framework(Adam, inst_params={"lr": 0.001, "model": model})
+    optimizer = uft.get_instance_framework(uft.Adam, inst_params={"lr": 0.001, "model": model})
 
-    loss_fn, optimizer, metrics = compile_model(
+    loss_fn, optimizer, metrics = uft.compile_model(
         model,
         optimizer=optimizer,
-        loss=MeanSquaredError(),
-        metrics=[metric_mse()],
+        loss=uft.MeanSquaredError(),
+        metrics=[uft.metric_mse()],
     )
     # create the synthetic data generator
-    output_shape = compute_output_shape(input_shape, model)
-    # output_shape = model.compute_output_shape((batch_size,) + input_shape)[1:]
+    output_shape = uft.compute_output_shape(input_shape, model)
+    # output_shape = model.uft.compute_output_shape((batch_size,) + input_shape)[1:]
     kernel = build_kernel(input_shape, output_shape, k_lip_data)
     # define logging features
     logdir = os.path.join(
-        "logs", LIP_LAYERS, "condense_test"
+        "logs", uft.LIP_LAYERS, "condense_test"
     )  # , datetime.now().strftime("%Y_%m_%d-%H_%M_%S")))
     os.makedirs(logdir, exist_ok=True)
     callback_list = []  # callbacks.TensorBoard(logdir)]
     # train model
 
     traind_ds = linear_generator(batch_size, input_shape, kernel)
-    train(
+    uft.train(
         traind_ds,
         model,
         loss_fn,
@@ -263,7 +242,7 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     np.random.seed(42)
     # get original results
     test_dl = linear_generator(batch_size, input_shape, kernel)
-    loss, mse = run_test(model, test_dl, loss_fn, metrics, steps=10)
+    loss, mse = uft.run_test(model, test_dl, loss_fn, metrics, steps=10)
     # loss, mse = model.__getattribute__(EVALUATE)(
     #     linear_generator(batch_size, input_shape, kernel),
     #     steps=10,
@@ -277,11 +256,11 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     else:
         vanilla_model = vanillaModel(model)
     # vanilla_model = model.vanilla_export()
-    loss_fn, optimizer, metrics = compile_model(
+    loss_fn, optimizer, metrics = uft.compile_model(
         vanilla_model,
         optimizer=optimizer,
-        loss=MeanSquaredError(),
-        metrics=[metric_mse()],
+        loss=uft.MeanSquaredError(),
+        metrics=[uft.metric_mse()],
     )
     # vanilla_model.compile(
     #     optimizer=optimizer, loss="mean_squared_error", metrics=[metrics.mse]
@@ -289,7 +268,7 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     np.random.seed(42)
     # evaluate vanilla
     test_dl = linear_generator(batch_size, input_shape, kernel)
-    loss2, mse2 = run_test(model, test_dl, loss_fn, metrics, steps=10)
+    loss2, mse2 = uft.run_test(model, test_dl, loss_fn, metrics, steps=10)
     # loss2, mse2 = model.__getattribute__(EVALUATE)(
     #     linear_generator(batch_size, input_shape, kernel),
     #     steps=10,
@@ -298,7 +277,7 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     np.random.seed(42)
     # check if original has changed
     test_dl = linear_generator(batch_size, input_shape, kernel)
-    vanilla_loss, vanilla_mse = run_test(
+    vanilla_loss, vanilla_mse = uft.run_test(
         vanilla_model, test_dl, loss_fn, metrics, steps=10
     )
     # vanilla_loss, vanilla_mse = vanilla_model.__getattribute__(EVALUATE)(
@@ -320,7 +299,7 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     # add one epoch to orginal
 
     traind_ds = linear_generator(batch_size, input_shape, kernel)
-    train(
+    uft.train(
         traind_ds,
         model,
         loss_fn,
@@ -339,7 +318,7 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     # )
     np.random.seed(42)
     test_dl = linear_generator(batch_size, input_shape, kernel)
-    loss3, mse3 = run_test(model, test_dl, loss_fn, metrics, steps=10)
+    loss3, mse3 = uft.run_test(model, test_dl, loss_fn, metrics, steps=10)
     # loss3, mse3 = model.__getattribute__(EVALUATE)(
     #     linear_generator(batch_size, input_shape, kernel),
     #     steps=10,
@@ -348,7 +327,7 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     # check if vanilla has changed
     np.random.seed(42)
     test_dl = linear_generator(batch_size, input_shape, kernel)
-    vanilla_loss2, vanilla_mse2 = run_test(
+    vanilla_loss2, vanilla_mse2 = uft.run_test(
         vanilla_model, test_dl, loss_fn, metrics, steps=10
     )
     # vanilla_loss2, vanilla_mse2 = vanilla_model.__getattribute__(EVALUATE)(

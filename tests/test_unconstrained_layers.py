@@ -28,30 +28,17 @@ import pytest
 
 import numpy as np
 
-from tests.utils_framework import pad_input, PadConv2d
+from . import utils_framework as uft
 
-from tests.utils_framework import (
-    Sequential,
-    evaluate_lip_const,
-    generate_k_lip_model,
-    get_instance_framework,
-    compute_predict,
-    copy_model_parameters,
-    to_tensor,
-    to_framework_channel,
-    to_NCHW,
-    to_numpy,
-    get_NCHW,
-)
-
-from tests.utils_framework import tConv2d, PadConv2d, is_supported_padding
-from tests.utils_framework import vanillaModel, vanilla_require_a_copy
+from .utils_framework import pad_input, PadConv2d
+from .utils_framework import tConv2d
+from .utils_framework import vanillaModel
 
 
 def compare(x, x_ref, index_x=[], index_x_ref=[]):
     """Compare a tensor and its padded version, based on index_x and ref."""
-    x = to_numpy(to_NCHW(x))
-    x_ref = to_numpy(to_NCHW(x_ref))
+    x = uft.to_numpy(uft.to_NCHW(x))
+    x_ref = uft.to_numpy(uft.to_NCHW(x_ref))
     x_cropped = x[:, :, index_x[0] : index_x[1], index_x[3] : index_x[4]][
         :, :, :: index_x[2], :: index_x[5]
     ]
@@ -82,19 +69,19 @@ def compare(x, x_ref, index_x=[], index_x_ref=[]):
 )
 def test_padding(padding_tested, input_shape, batch_size, kernel_size, filters):
     """Test different padding types: assert values in original and padded tensors"""
-    input_shape = to_framework_channel(input_shape)
-    if not is_supported_padding(padding_tested):
+    input_shape = uft.to_framework_channel(input_shape)
+    if not uft.is_supported_padding(padding_tested):
         pytest.skip(f"Padding {padding_tested} not supported")
     kernel_size_list = kernel_size
     if isinstance(kernel_size, (int, float)):
         kernel_size_list = [kernel_size, kernel_size]
 
     x = np.random.normal(size=(batch_size,) + input_shape).astype("float32")
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     x_pad = pad_input(x, padding_tested, kernel_size)
     p_vert, p_hor = kernel_size_list[0] // 2, kernel_size_list[1] // 2
-    x_pad_NCHW = get_NCHW(x_pad)
-    x_NCHW = get_NCHW(x)
+    x_pad_NCHW = uft.get_NCHW(x_pad)
+    x_NCHW = uft.get_NCHW(x)
 
     center_x_pad = [p_vert, -p_vert, 1, p_hor, -p_hor, 1, "center"]
     upper_x_pad = [0, p_vert, 1, p_hor, -p_hor, 1, "upper"]
@@ -176,9 +163,9 @@ def test_padding(padding_tested, input_shape, batch_size, kernel_size, filters):
 def test_predict(padding_tested, input_shape, batch_size, kernel_size, filters):
     """Compare predictions between pad+Conv2d and PadConv2d layers."""
     in_ch = input_shape[0]
-    input_shape = to_framework_channel(input_shape)
+    input_shape = uft.to_framework_channel(input_shape)
 
-    if not is_supported_padding(padding_tested):
+    if not uft.is_supported_padding(padding_tested):
         pytest.skip(f"Padding {padding_tested} not supported")
     layer_params = {
         "out_channels": 2,
@@ -195,19 +182,19 @@ def test_predict(padding_tested, input_shape, batch_size, kernel_size, filters):
     else:
         ks = kernel_size[0]
     x = np.random.normal(size=(batch_size,) + input_shape).astype("float32")
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     x_pad = pad_input(x, padding_tested, layer_params["kernel_size"])
     layer_params_ref = layer_params.copy()
     if padding_tested.lower() == "same":
         layer_params_ref["padding"] = ks // 2  # same
 
-    model_ref = generate_k_lip_model(
+    model_ref = uft.generate_k_lip_model(
         layer_type=tConv2d,
         layer_params=layer_params_ref,
         input_shape=x_pad.shape[1:],
         k=1.0,
     )
-    y_ref = compute_predict(model_ref, x_pad)
+    y_ref = uft.compute_predict(model_ref, x_pad)
 
     layer_params_pad = layer_params.copy()
 
@@ -216,16 +203,16 @@ def test_predict(padding_tested, input_shape, batch_size, kernel_size, filters):
     else:
         layer_params_pad["padding"] = ks // 2
     layer_params_pad["padding_mode"] = padding_tested
-    model = generate_k_lip_model(
+    model = uft.generate_k_lip_model(
         layer_type=PadConv2d,
         layer_params=layer_params_pad,
         input_shape=input_shape,
         k=1.0,
     )
-    copy_model_parameters(model_ref, model)
-    y = compute_predict(model, x)
-    y_ref = to_numpy(y_ref)
-    y = to_numpy(y)
+    uft.copy_model_parameters(model_ref, model)
+    y = uft.compute_predict(model, x)
+    y_ref = uft.to_numpy(y_ref)
+    y = uft.to_numpy(y)
 
     np.testing.assert_allclose(y_ref, y, 1e-2, 0)
 
@@ -249,9 +236,9 @@ def test_predict(padding_tested, input_shape, batch_size, kernel_size, filters):
 def test_vanilla(padding_tested, input_shape, batch_size, kernel_size, filters):
     """Compare predictions between PadConv2d and its vanilla export."""
     in_ch = input_shape[0]
-    input_shape = to_framework_channel(input_shape)
+    input_shape = uft.to_framework_channel(input_shape)
 
-    if not is_supported_padding(padding_tested):
+    if not uft.is_supported_padding(padding_tested):
         pytest.skip(f"Padding {padding_tested} not supported")
     layer_params = {
         "out_channels": 2,
@@ -268,34 +255,34 @@ def test_vanilla(padding_tested, input_shape, batch_size, kernel_size, filters):
     else:
         ks = kernel_size[0]
     x = np.random.normal(size=(batch_size,) + input_shape).astype("float32")
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     layer_params_pad = layer_params.copy()
     if padding_tested.lower() == "valid":
         layer_params_pad["padding"] = 0
     else:
         layer_params_pad["padding"] = ks // 2
     layer_params_pad["padding_mode"] = padding_tested
-    model = generate_k_lip_model(
+    model = uft.generate_k_lip_model(
         layer_type=PadConv2d,
         layer_params=layer_params_pad,
         input_shape=input_shape,
         k=1.0,
     )
-    y = compute_predict(model, x)
+    y = uft.compute_predict(model, x)
 
-    if vanilla_require_a_copy():
-        model2 = generate_k_lip_model(
+    if uft.vanilla_require_a_copy():
+        model2 = uft.generate_k_lip_model(
             layer_type=PadConv2d,
             layer_params=layer_params_pad,
             input_shape=input_shape,
             k=1.0,
         )
 
-        copy_model_parameters(model, model2)
+        uft.copy_model_parameters(model, model2)
         model_v = vanillaModel(model2)
     else:
         model_v = vanillaModel(model)
-    y_v = compute_predict(model_v, x)
-    y_v = to_numpy(y_v)
-    y = to_numpy(y)
+    y_v = uft.compute_predict(model_v, x)
+    y_v = uft.to_numpy(y_v)
+    y = uft.to_numpy(y)
     np.testing.assert_allclose(y_v, y, 1e-2, 0)

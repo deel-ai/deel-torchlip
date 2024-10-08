@@ -27,26 +27,9 @@
 import pytest
 import numpy as np
 
-from tests.utils_framework import (
-    Sequential,
-    generate_k_lip_model,
-    get_instance_framework,
-    init_session,
-    compile_model,
-    compute_output_shape,
-    to_tensor,
-    to_numpy,
-    Adam,
-    metric_mse,
-    MeanSquaredError,
-    to_framework_channel,
-    get_layer_weights_by_index,
-    initialize_kernel,
-    LIP_LAYERS,
-    MODEL_PATH,
-)
+from . import utils_framework as uft
 
-from tests.utils_framework import (
+from .utils_framework import (
     SpectralInitializer,
     tLinear,
 )
@@ -60,7 +43,7 @@ from tests.utils_framework import (
             {
                 "in_features": 5,
                 "out_features": 4,
-                "kernel_initializer": get_instance_framework(
+                "kernel_initializer": uft.get_instance_framework(
                     SpectralInitializer,
                     inst_params={"eps_spectral": 1e-6, "eps_bjorck": 1e-6},
                 ),
@@ -73,7 +56,7 @@ from tests.utils_framework import (
             {
                 "in_features": 5,
                 "out_features": 100,
-                "kernel_initializer": get_instance_framework(
+                "kernel_initializer": uft.get_instance_framework(
                     SpectralInitializer,
                     inst_params={"eps_spectral": 1e-6, "eps_bjorck": None},
                 ),
@@ -87,29 +70,29 @@ def test_initializer(layer_type, layer_params, input_shape, orthogonal_test):
     batch_size = 1000
     np.random.seed(42)
     # clear session to avoid side effects from previous train
-    init_session()  # K.clear_session()
-    input_shape = to_framework_channel(input_shape)
+    uft.init_session()  # K.clear_session()
+    input_shape = uft.to_framework_channel(input_shape)
     # create the keras model, defin opt, and compile it
-    model = generate_k_lip_model(layer_type, layer_params, input_shape)
-    initialize_kernel(model, 0, layer_params["kernel_initializer"])
+    model = uft.generate_k_lip_model(layer_type, layer_params, input_shape)
+    uft.initialize_kernel(model, 0, layer_params["kernel_initializer"])
 
-    optimizer = get_instance_framework(
-        Adam, inst_params={"lr": 0.001, "model": model}
-    )  # Adam(lr=0.001)
+    optimizer = uft.get_instance_framework(
+        uft.Adam, inst_params={"lr": 0.001, "model": model}
+    )  # uft.Adam(lr=0.001)
 
-    loss_fn, optimizer, metrics = compile_model(
+    loss_fn, optimizer, metrics = uft.compile_model(
         model,
         optimizer=optimizer,
-        loss=MeanSquaredError(),
-        metrics=[metric_mse()],
+        loss=uft.MeanSquaredError(),
+        metrics=[uft.metric_mse()],
     )
     #######model.build((batch_size,) + input_shape)
     sigmas = np.linalg.svd(
-        to_numpy(get_layer_weights_by_index(model, 0)),
+        uft.to_numpy(uft.get_layer_weights_by_index(model, 0)),
         full_matrices=False,
         compute_uv=False,
     )
     if orthogonal_test:
-        np.testing.assert_allclose(sigmas, np.ones_like(sigmas), 1e-5, 0)
+        np.testing.assert_allclose(sigmas, np.ones_like(sigmas), atol=1e-5)
     else:
-        np.testing.assert_allclose(sigmas.max(), 1.0, 1e-2)
+        np.testing.assert_allclose(sigmas.max(), 1.0, atol=1e-2)

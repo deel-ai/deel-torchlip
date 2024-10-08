@@ -32,43 +32,19 @@ import pytest
 
 import numpy as np
 
-from tests.utils_framework import compute_layer_sv
-from tests.utils_framework import (
+from .utils_framework import compute_layer_sv
+from .utils_framework import (
     tLinear,
     FrobeniusConv2d,
     FrobeniusLinear,
-    LipschitzLayer,
     SpectralConv2d,
     SpectralLinear,
 )
-from tests.utils_framework import Sequential
-from tests.utils_framework import OrthLinearRegularizer
+from .utils_framework import Sequential
+from .utils_framework import OrthLinearRegularizer
 
-from tests.utils_framework import (
-    Sequential,
-    tModel,
-    evaluate_lip_const,
-    generate_k_lip_model,
-    get_functional_model,
-    get_instance_framework,
-    init_session,
-    compile_model,
-    compute_output_shape,
-    train,
-    set_seed,
-    to_tensor,
-    to_numpy,
-    run_test,
-    Adam,
-    metric_mse,
-    MeanSquaredError,
-    load_model,
-    save_model,
-    to_framework_channel,
-    LIP_LAYERS,
-    MODEL_PATH,
-    get_children,
-)
+from . import utils_framework as uft
+ 
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -129,9 +105,6 @@ def build_kernel(input_shape: tuple, output_shape: tuple, k=1.0):
     return kernel
 
 
-# class LipschitzLayersSVTest(unittest.TestCase):
-
-
 def train_compute_and_verifySV(
     layer_type: type,
     layer_params: dict,
@@ -165,31 +138,31 @@ def train_compute_and_verifySV(
     if "k_lip_tolerance_factor" not in kwargs.keys():
         kwargs["k_lip_tolerance_factor"] = 1.02
     # clear session to avoid side effects from previous train
-    init_session()  # K.clear_session()
+    uft.init_session()  # K.clear_session()
     np.random.seed(42)
-    input_shape = to_framework_channel(input_shape)
+    input_shape = uft.to_framework_channel(input_shape)
 
-    # tf.random.set_seed(1234)
+    # tf.random.uft.set_seed(1234)
     # create the keras model, defin opt, and compile it
-    model = generate_k_lip_model(layer_type, layer_params, input_shape, k_lip_model)
+    model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, k_lip_model)
 
-    optimizer = get_instance_framework(Adam, inst_params={"lr": 0.001, "model": model})
-    # optimizer = Adam(lr=0.001)
-    loss_fn, optimizer, metrics = compile_model(
+    optimizer = uft.get_instance_framework(uft.Adam, inst_params={"lr": 0.001, "model": model})
+    # optimizer = uft.Adam(lr=0.001)
+    loss_fn, optimizer, metrics = uft.compile_model(
         model,
         optimizer=optimizer,
-        loss=MeanSquaredError(),
-        metrics=[metric_mse()],
+        loss=uft.MeanSquaredError(),
+        metrics=[uft.metric_mse()],
     )
     # model.compile(
     #     optimizer=optimizer, loss="mean_squared_error", metrics=[metrics.mse]
     # )
     # create the synthetic data generator
-    output_shape = compute_output_shape(input_shape, model)
-    # output_shape = model.compute_output_shape((batch_size,) + input_shape)[1:]
+    output_shape = uft.compute_output_shape(input_shape, model)
+    # output_shape = model.uft.compute_output_shape((batch_size,) + input_shape)[1:]
     kernel = build_kernel(input_shape, output_shape, k_lip_data)
     # define logging features
-    logdir = os.path.join("logs", LIP_LAYERS, "%s" % layer_type.__name__)
+    logdir = os.path.join("logs", uft.LIP_LAYERS, "%s" % layer_type.__name__)
     os.makedirs(logdir, exist_ok=True)
     hparams = dict(
         layer_type=layer_type.__name__,
@@ -205,7 +178,7 @@ def train_compute_and_verifySV(
     # train model
 
     traind_ds = linear_generator(batch_size, input_shape, kernel)
-    train(
+    uft.train(
         traind_ds,
         model,
         loss_fn,
@@ -223,7 +196,7 @@ def train_compute_and_verifySV(
     #     callbacks=callback_list,
     # )
 
-    for ll in get_children(model):  # .layers:
+    for ll in uft.get_children(model):  # .layers:
         SVmin, SVmax = compute_layer_sv(ll)
         # log metrics
         if SVmin is not None:
@@ -462,7 +435,7 @@ def test_verifySV(test_params):
             layer_params={
                 "in_features": 4,
                 "out_features": 6,
-                "kernel_regularizer": get_instance_framework(
+                "kernel_regularizer": uft.get_instance_framework(
                     OrthLinearRegularizer, {"lambda_orth": 1000.0}
                 ),
             },

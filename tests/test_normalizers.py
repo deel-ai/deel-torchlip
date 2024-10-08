@@ -29,22 +29,11 @@ from functools import partial
 
 import numpy as np
 
-from tests.utils_framework import (
-    generate_k_lip_model,
-    compile_model,
-    get_instance_framework,
-    save_model,
-    load_model,
-    to_tensor,
-    to_framework_channel,
-    SGD,
+from . import utils_framework as uft
+
+from .utils_framework import (
     tLinear,
     tConv2d,
-    get_layer_weights,
-    to_numpy,
-    check_parametrization,
-)
-from tests.utils_framework import (
     bjorck_normalization,
     reshaped_kernel_orthogonalization,
     spectral_normalization,
@@ -52,7 +41,7 @@ from tests.utils_framework import (
     DEFAULT_NITER_SPECTRAL_INIT,
 )
 
-from tests.utils_framework import (
+from .utils_framework import (
     bjorck_norm,
     remove_bjorck_norm,
     frobenius_norm,
@@ -61,7 +50,7 @@ from tests.utils_framework import (
     lconv_norm,
     remove_lconv_norm,
 )
-from tests.utils_framework import _padding_circular
+from .utils_framework import _padding_circular
 
 rng = np.random.default_rng(42)
 
@@ -86,9 +75,9 @@ def test_kernel_svd(kernel_shape):
 
     u = rng.normal(size=(1, kernel.shape[-1])).astype("float32")
 
-    kernel = to_tensor(kernel)
-    u = to_tensor(u)
-    W_bar, _u, sigma = get_instance_framework(
+    kernel = uft.to_tensor(kernel)
+    u = uft.to_tensor(u)
+    W_bar, _u, sigma = uft.get_instance_framework(
         spectral_normalization,
         {"kernel": kernel, "u": u, "eps": 1e-6, "niter": DEFAULT_NITER_SPECTRAL_INIT},
     )
@@ -97,12 +86,12 @@ def test_kernel_svd(kernel_shape):
         sigma, SVmax, 1, "test failed with kernel_shape " + str(kernel.shape)
     )
 
-    W_bar, _u, sigma = get_instance_framework(
+    W_bar, _u, sigma = uft.get_instance_framework(
         spectral_normalization,
         {"kernel": kernel, "u": _u, "eps": 1e-6, "niter": DEFAULT_NITER_SPECTRAL_INIT},
     )
     # spectral_normalization(kernel, u=_u, eps=1e-6)
-    W_bar, _u, sigma = get_instance_framework(
+    W_bar, _u, sigma = uft.get_instance_framework(
         spectral_normalization,
         {"kernel": kernel, "u": _u, "eps": 1e-6, "niter": DEFAULT_NITER_SPECTRAL_INIT},
     )
@@ -177,9 +166,9 @@ def test_kernel_conv_svd(kernel_shape, strides):
     _u = np.random.normal(size=(1,) + spectral_input_shape).astype("float32")
     fPad = partial(_padding_circular, circular_paddings=cPad)
 
-    kernel = to_tensor(kernel)
-    _u = to_tensor(_u)
-    res = get_instance_framework(
+    kernel = uft.to_tensor(kernel)
+    _u = uft.to_tensor(_u)
+    res = uft.get_instance_framework(
         spectral_normalization_conv,
         {
             "kernel": kernel,
@@ -201,7 +190,7 @@ def test_kernel_conv_svd(kernel_shape, strides):
     )
 
     # Run a second time power iteration conv with last _u from first run
-    W_bar, _u, sigma = get_instance_framework(
+    W_bar, _u, sigma = uft.get_instance_framework(
         spectral_normalization_conv,
         {
             "kernel": kernel,
@@ -240,8 +229,8 @@ def test_bjorck_normalization(kernel_shape):
     )
     SVmax = np.max(sigmas_svd)
 
-    kernel = to_tensor(kernel)
-    wbar = get_instance_framework(
+    kernel = uft.to_tensor(kernel)
+    wbar = uft.get_instance_framework(
         bjorck_normalization, {"w": kernel / SVmax, "eps": 1e-5}
     )
     # wbar = bjorck_normalization(kernel / SVmax, eps=1e-5)
@@ -256,7 +245,7 @@ def test_bjorck_normalization(kernel_shape):
     np.testing.assert_equal(wbar.shape, (np.prod(kernel.shape[:-1]), kernel.shape[-1]))
 
     # Test sigma is close to the one computed with svd second run @1e-5
-    wbar = get_instance_framework(bjorck_normalization, {"w": wbar, "eps": 1e-5})
+    wbar = uft.get_instance_framework(bjorck_normalization, {"w": wbar, "eps": 1e-5})
     # wbar = bjorck_normalization(wbar, eps=1e-5)
     sigmas_wbar_svd = np.linalg.svd(
         np.reshape(wbar, (np.prod(wbar.shape[:-1]), wbar.shape[-1])),
@@ -286,8 +275,8 @@ def test_reshaped_kernel_orthogonalization(kernel_shape):
     )
     SVmax = np.max(sigmas_svd)
 
-    kernel = to_tensor(kernel)
-    res = get_instance_framework(
+    kernel = uft.to_tensor(kernel)
+    res = uft.get_instance_framework(
         reshaped_kernel_orthogonalization,
         {
             "kernel": kernel,
@@ -323,35 +312,35 @@ def test_bjorck_norm():
     """
     test bjorck_norm parametrization implementation
     """
-    m = get_instance_framework(
+    m = uft.get_instance_framework(
         tLinear, {"in_features": 2, "out_features": 2}
     )  # torch.nn.Linear(2, 2)
     # torch.nn.init.orthogonal_(m.weight)
-    w1 = get_instance_framework(
-        bjorck_normalization, {"w": get_layer_weights(m), "eps": 1e-5}
+    w1 = uft.get_instance_framework(
+        bjorck_normalization, {"w": uft.get_layer_weights(m), "eps": 1e-5}
     )
     # bjorck_normalization(m.weight)
 
     # bjorck norm parametrization
-    get_instance_framework(bjorck_norm, {"module": m})  # (m)
+    uft.get_instance_framework(bjorck_norm, {"module": m})  # (m)
 
     # ensure that the original weight is the only torch parameter
-    check_parametrization(m, is_parametrized=True)
+    uft.check_parametrization(m, is_parametrized=True)
     # assert isinstance(m.parametrizations.weight.original, torch.nn.Parameter)
     # assert not isinstance(m.weight, torch.nn.Parameter)
 
     # check the orthogonality of the weight
     x = np.random.rand(2)
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     m(x)
-    np.testing.assert_equal(to_numpy(w1), to_numpy(get_layer_weights(m)))
+    np.testing.assert_equal(uft.to_numpy(w1), uft.to_numpy(uft.get_layer_weights(m)))
 
     # remove the parametrization
-    get_instance_framework(remove_bjorck_norm, {"module": m})  # (m)
-    check_parametrization(m, is_parametrized=False)
+    uft.get_instance_framework(remove_bjorck_norm, {"module": m})  # (m)
+    uft.check_parametrization(m, is_parametrized=False)
     # assert not hasattr(m, "parametrizations")
     # assert isinstance(m.weight, torch.nn.Parameter)
-    np.testing.assert_equal(to_numpy(w1), to_numpy(get_layer_weights(m)))
+    np.testing.assert_equal(uft.to_numpy(w1), uft.to_numpy(uft.get_layer_weights(m)))
 
 
 @pytest.mark.skipif(
@@ -362,31 +351,31 @@ def test_frobenius_norm():
     """
     test frobenius_norm parametrization implementation
     """
-    m = get_instance_framework(
+    m = uft.get_instance_framework(
         tLinear, {"in_features": 2, "out_features": 2}
     )  # torch.nn.Linear(2, 2)
     # torch.nn.init.uniform_(m.weight)
-    w1 = to_numpy(get_layer_weights(m))
+    w1 = uft.to_numpy(uft.get_layer_weights(m))
     w1 = w1 / np.linalg.norm(w1)  # m.weight / torch.norm(m.weight)
 
     # frobenius norm parametrization
-    get_instance_framework(frobenius_norm, {"module": m, "disjoint_neurons": False})
+    uft.get_instance_framework(frobenius_norm, {"module": m, "disjoint_neurons": False})
 
     # ensure that the original weight is the only torch parameter
-    check_parametrization(m, is_parametrized=True)
+    uft.check_parametrization(m, is_parametrized=True)
     # assert isinstance(m.parametrizations.weight.original, torch.nn.Parameter)
     # assert not isinstance(m.weight, torch.nn.Parameter)
 
     # check the orthogonality of the weight
     x = np.random.rand(2)
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     m(x)
-    np.testing.assert_equal(to_numpy(w1), to_numpy(get_layer_weights(m)))
+    np.testing.assert_equal(uft.to_numpy(w1), uft.to_numpy(uft.get_layer_weights(m)))
 
     # remove the parametrization
-    get_instance_framework(remove_frobenius_norm, {"module": m})
-    check_parametrization(m, is_parametrized=False)
-    np.testing.assert_equal(to_numpy(w1), to_numpy(get_layer_weights(m)))
+    uft.get_instance_framework(remove_frobenius_norm, {"module": m})
+    uft.check_parametrization(m, is_parametrized=False)
+    np.testing.assert_equal(uft.to_numpy(w1), uft.to_numpy(uft.get_layer_weights(m)))
 
 
 @pytest.mark.skipif(
@@ -398,17 +387,17 @@ def test_frobenius_norm_disjoint_neurons():
     Test `disjoint_neurons=True` argument in frobenius_norm parametrization
     """
     params = {"in_features": 5, "out_features": 3}
-    m = get_instance_framework(tLinear, params)
+    m = uft.get_instance_framework(tLinear, params)
 
     # Set parametrization and perform a forward pass to compute new weights
-    get_instance_framework(frobenius_norm, {"module": m, "disjoint_neurons": True})
+    uft.get_instance_framework(frobenius_norm, {"module": m, "disjoint_neurons": True})
 
     x = np.random.rand(5)
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     m(x)
 
     # Assert that all rows of matrix weight are independently normalized
-    ww = to_numpy(get_layer_weights(m))
+    ww = uft.to_numpy(uft.get_layer_weights(m))
     for i in range(params["out_features"]):
         np.testing.assert_allclose(np.linalg.norm(ww[i, :]), 1.0, rtol=2e-7)
 
@@ -427,32 +416,32 @@ def test_lconv_norm():
         "kernel_size": (3, 3),
         "stride": (1, 1),
     }
-    m = get_instance_framework(tConv2d, params)
+    m = uft.get_instance_framework(tConv2d, params)
     # torch.nn.init.orthogonal_(m.weight)
-    w1 = get_layer_weights(m) * compute_lconv_coef(
+    w1 = uft.get_layer_weights(m) * compute_lconv_coef(
         params["kernel_size"], None, params["stride"]
     )
 
     # lconv norm parametrization
-    get_instance_framework(lconv_norm, {"module": m})
+    uft.get_instance_framework(lconv_norm, {"module": m})
 
     shape = [1, 1, 5, 5]
-    shape = to_framework_channel(shape)
+    shape = uft.to_framework_channel(shape)
     x = np.random.rand(*shape)
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     y = m(x)
 
     # ensure that the original weight is the only torch parameter
-    check_parametrization(m, is_parametrized=True)
+    uft.check_parametrization(m, is_parametrized=True)
     # assert isinstance(m.parametrizations.weight.original, torch.nn.Parameter)
     # assert not isinstance(m.weight, torch.nn.Parameter)
 
     # check the normalization of the weight
-    np.testing.assert_allclose(to_numpy(w1), to_numpy(get_layer_weights(m)), atol=1e-7)
+    np.testing.assert_allclose(uft.to_numpy(w1), uft.to_numpy(uft.get_layer_weights(m)), atol=1e-7)
     # tt.assert_equal(y, torch.nn.functional.conv2d(x, w1, bias=m.bias, stride=(1, 1)))
 
     # remove the parametrization
-    get_instance_framework(remove_lconv_norm, {"module": m})
-    check_parametrization(m, is_parametrized=False)
+    uft.get_instance_framework(remove_lconv_norm, {"module": m})
+    uft.check_parametrization(m, is_parametrized=False)
     # assert isinstance(m.weight, torch.nn.Parameter)
-    np.testing.assert_equal(to_numpy(w1), to_numpy(get_layer_weights(m)))
+    np.testing.assert_equal(uft.to_numpy(w1), uft.to_numpy(uft.get_layer_weights(m)))

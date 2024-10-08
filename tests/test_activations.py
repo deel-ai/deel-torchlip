@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+# -*- coding: uft-8 -*-
 # Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
@@ -27,38 +27,30 @@
 import pytest
 import os
 import numpy as np
-from tests.utils_framework import (
-    generate_k_lip_model,
-    load_model,
-    get_instance_framework,
-    SGD,
+from . import utils_framework as uft
+from .utils_framework import (
     CategoricalCrossentropy,
     GroupSort,
     Householder,
-    compile_model,
-    build_layer,
-    to_tensor,
-    save_model,
-    initializers_Constant,
 )
 
 
 def check_serialization(layer_type, layer_params):
-    m = generate_k_lip_model(layer_type, layer_params, input_shape=(10,), k=1)
+    m = uft.generate_k_lip_model(layer_type, layer_params, input_shape=(10,), k=1)
     if m is None:
         return
-    optimizer, loss, _ = compile_model(
+    optimizer, loss, _ = uft.compile_model(
         m,
-        optimizer=get_instance_framework(SGD, inst_params={"model": m}),
+        optimizer=uft.get_instance_framework(uft.SGD, inst_params={"model": m}),
         loss=CategoricalCrossentropy(from_logits=True),
     )
     name = layer_type.__class__.__name__
     path = os.path.join("logs", "activations", name)
     xnp = np.random.uniform(-10, 10, (255, 10))
-    x = to_tensor(xnp)
+    x = uft.to_tensor(xnp)
     y1 = m(x)
-    save_model(m, path)
-    m2 = load_model(
+    uft.save_model(m, path)
+    m2 = uft.load_model(
         path,
         compile=True,
         layer_type=layer_type,
@@ -111,7 +103,7 @@ def test_group_sort_simple():
     ],
 )
 def test_GroupSort(group_size, img, expected):
-    gs = get_instance_framework(GroupSort, {"group_size": group_size})
+    gs = uft.get_instance_framework(GroupSort, {"group_size": group_size})
     if gs is None:
         return
     x = [
@@ -122,15 +114,15 @@ def test_GroupSort(group_size, img, expected):
     ]
 
     if not img:
-        x = to_tensor(x)
-        build_layer(gs, (4,))
+        x = uft.to_tensor(x)
+        uft.build_layer(gs, (4,))
     else:
         xn = np.asarray(x)
         xnp = np.repeat(
             np.expand_dims(np.repeat(np.expand_dims(xn, 1), 28, 1), 1), 28, 1
         )
-        x = to_tensor(xnp)
-        build_layer(gs, (28, 28, 4))
+        x = uft.to_tensor(xnp)
+        uft.build_layer(gs, (28, 28, 4))
     y = gs(x).numpy()
     y_t = expected
     if img:
@@ -143,12 +135,12 @@ def test_GroupSort(group_size, img, expected):
 
 @pytest.mark.parametrize("group_size", [2, 4])
 def test_GroupSort_idempotence(group_size):
-    gs = get_instance_framework(GroupSort, {"group_size": group_size})
+    gs = uft.get_instance_framework(GroupSort, {"group_size": group_size})
     if gs is None:
         return
     xnp = np.random.uniform(-10, 10, (255, 16))
-    x = to_tensor(xnp)
-    build_layer(gs, (16,))
+    x = uft.to_tensor(xnp)
+    uft.build_layer(gs, (16,))
     y1 = gs(x)
     y2 = gs(y1)
     np.testing.assert_equal(y1.numpy(), y2.numpy())
@@ -182,8 +174,8 @@ def test_GroupSort_idempotence(group_size):
     ],
 )
 def test_Householder_instantiation(params, shape, len_shape, expected):
-    hh = get_instance_framework(Householder, params)
-    build_layer(hh, shape)
+    hh = uft.get_instance_framework(Householder, params)
+    uft.build_layer(hh, shape)
     assert hh.theta.shape == len_shape
     np.testing.assert_equal(hh.theta.numpy(), expected)
 
@@ -199,7 +191,7 @@ def test_Householder_serialization():
 
     # Instantiation error because of wrong data format
     with pytest.raises(RuntimeError):
-        hh = get_instance_framework(Householder, {"data_format": "channels_first"})
+        hh = uft.get_instance_framework(Householder, {"data_format": "channels_first"})
 
 
 @pytest.mark.skipif(
@@ -210,7 +202,7 @@ def test_Householder_theta_zero(dense):
     """Householder with theta=0 on 2-D tensor (bs, n).
     Theta=0 means Id if z2 > 0, and reflection if z2 < 0.
     """
-    hh = get_instance_framework(Householder, {"theta_initializer": "zeros"})
+    hh = uft.get_instance_framework(Householder, {"theta_initializer": "zeros"})
     if dense:
         bs = np.random.randint(64, 512)
         n = np.random.randint(1, 1024) * 2
@@ -225,14 +217,14 @@ def test_Householder_theta_zero(dense):
     z1 = np.random.normal(size=size)
     z2 = np.random.uniform(size=size)
     x = np.concatenate([z1, z2], axis=-1)
-    np.testing.assert_allclose(hh(to_tensor(x)), x)
+    np.testing.assert_allclose(hh(uft.to_tensor(x)), x)
 
     # Case 2: hh(x) = [z1, -z2]   (reflection across z1 axis, z2 < 0)
     z1 = np.random.normal(size=size)
     z2 = -np.random.uniform(size=size)
     x = np.concatenate([z1, z2], axis=-1)
     expected_output = np.concatenate([z1, -z2], axis=-1)
-    np.testing.assert_allclose(hh(to_tensor(x)), expected_output)
+    np.testing.assert_allclose(hh(uft.to_tensor(x)), expected_output)
 
 
 @pytest.mark.skipif(
@@ -243,8 +235,8 @@ def test_Householder_theta_pi(dense):
     """Householder with theta=pi on 2-D tensor (bs, n).
     Theta=pi means Id if z1 < 0, and reflection if z1 > 0.
     """
-    hh = get_instance_framework(
-        Householder, {"theta_initializer": initializers_Constant(np.pi)}
+    hh = uft.get_instance_framework(
+        Householder, {"theta_initializer": uft.initializers_Constant(np.pi)}
     )
     if dense:
         bs = np.random.randint(64, 512)
@@ -260,14 +252,14 @@ def test_Householder_theta_pi(dense):
     z1 = -np.random.uniform(size=size)
     z2 = np.random.normal(size=size)
     x = np.concatenate([z1, z2], axis=-1)
-    np.testing.assert_allclose(hh(to_tensor(x)), x, atol=1e-6)
+    np.testing.assert_allclose(hh(uft.to_tensor(x)), x, atol=1e-6)
 
     # Case 2: hh(x) = [z1, -z2]   (reflection across  z2 axis, z1 > 0)
     z1 = np.random.uniform(size=size)
     z2 = np.random.normal(size=size)
     x = np.concatenate([z1, z2], axis=-1)
     expected_output = np.concatenate([-z1, z2], axis=-1)
-    np.testing.assert_allclose(hh(to_tensor(x)), expected_output, atol=1e-6)
+    np.testing.assert_allclose(hh(uft.to_tensor(x)), expected_output, atol=1e-6)
 
 
 @pytest.mark.skipif(
@@ -278,7 +270,7 @@ def test_Householder_theta_90(dense):
     """Householder with theta=pi/2 on 2-D tensor (bs, n).
     Theta=pi/2 is equivalent to GroupSort2: Id if z1 < z2, and reflection if z1 > z2
     """
-    hh = get_instance_framework(Householder, {})
+    hh = uft.get_instance_framework(Householder, {})
     if dense:
         bs = np.random.randint(64, 512)
         n = np.random.randint(1, 1024) * 2
@@ -293,14 +285,14 @@ def test_Householder_theta_90(dense):
     z1 = -np.random.normal(size=size)
     z2 = z1 + np.random.uniform(size=size)
     x = np.concatenate([z1, z2], axis=-1)
-    np.testing.assert_allclose(hh(to_tensor(x)), x)
+    np.testing.assert_allclose(hh(uft.to_tensor(x)), x)
 
     # Case 2: hh(x) = reflection(x)   (if z1 > z2)
     z1 = np.random.normal(size=size)
     z2 = z1 - np.random.uniform(size=size)
     x = np.concatenate([z1, z2], axis=-1)
     expected_output = np.concatenate([z2, z1], axis=-1)
-    np.testing.assert_allclose(hh(to_tensor(x)), expected_output, atol=1e-6)
+    np.testing.assert_allclose(hh(uft.to_tensor(x)), expected_output, atol=1e-6)
 
 
 @pytest.mark.skipif(
@@ -308,13 +300,13 @@ def test_Householder_theta_90(dense):
 )
 def test_Householder_idempotence():
     """Assert idempotence of Householder activation: hh(hh(x)) = hh(x)"""
-    hh = get_instance_framework(Householder, {"theta_initializer": "glorot_uniform"})
+    hh = uft.get_instance_framework(Householder, {"theta_initializer": "glorot_uniform"})
 
     bs = np.random.randint(32, 128)
     h, w = np.random.randint(1, 64), np.random.randint(1, 64)
     c = np.random.randint(1, 32) * 2
     x = np.random.normal(size=(bs, h, w, c))
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
 
     # Run two times the HH activation and compare both outputs
     y = hh(x)

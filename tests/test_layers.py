@@ -32,8 +32,7 @@ import tempfile
 import numpy as np
 
 
-from tests.utils_framework import (
-    LipschitzLayer,
+from .utils_framework import (
     SpectralLinear,
     SpectralConv2d,
     SpectralConv2dTranspose,
@@ -46,31 +45,12 @@ from tests.utils_framework import (
     InvertibleUpSampling,
     ScaledGlobalL2NormPool2d,
     Flatten,
-)
-from tests.utils_framework import (
     Sequential,
-    evaluate_lip_const,
-    generate_k_lip_model,
-    get_instance_framework,
-    init_session,
-    compile_model,
-    compute_output_shape,
-    train,
-    set_seed,
-    to_tensor,
-    to_numpy,
-    run_test,
-    Adam,
-    metric_mse,
-    MeanSquaredError,
-    load_model,
-    save_model,
-    to_framework_channel,
-    LIP_LAYERS,
-    MODEL_PATH,
 )
+from . import utils_framework as uft
 
-from tests.utils_framework import (
+
+from .utils_framework import (
     tLinear,
     AutoWeightClipConstraint,
     SpectralConstraint,
@@ -189,26 +169,26 @@ def train_k_lip_model(
 
     """
     # clear session to avoid side effects from previous train
-    init_session()  # K.clear_session()
+    uft.init_session()  # K.clear_session()
     np.random.seed(42)
-    input_shape = to_framework_channel(input_shape)
+    input_shape = uft.to_framework_channel(input_shape)
     # create the keras model, defin opt, and compile it
-    model = generate_k_lip_model(layer_type, layer_params, input_shape, k_lip_model)
+    model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, k_lip_model)
 
-    optimizer = get_instance_framework(Adam, inst_params={"lr": 0.001, "model": model})
+    optimizer = uft.get_instance_framework(uft.Adam, inst_params={"lr": 0.001, "model": model})
 
-    loss_fn, optimizer, metrics = compile_model(
+    loss_fn, optimizer, metrics = uft.compile_model(
         model,
         optimizer=optimizer,
-        loss=MeanSquaredError(),
-        metrics=[metric_mse()],
+        loss=uft.MeanSquaredError(),
+        metrics=[uft.metric_mse()],
     )
     # model.compile(optimizer=optimizer, loss="mean_squared_error", )
     # create the synthetic data generator
-    output_shape = compute_output_shape(input_shape, model)
+    output_shape = uft.compute_output_shape(input_shape, model)
     kernel = build_kernel(input_shape, output_shape, k_lip_data)
     # define logging features
-    logdir = os.path.join("logs", LIP_LAYERS, "%s" % layer_type.__name__)
+    logdir = os.path.join("logs", uft.LIP_LAYERS, "%s" % layer_type.__name__)
     os.makedirs(logdir, exist_ok=True)
     hparams = dict(
         layer_type=layer_type.__name__,
@@ -226,7 +206,7 @@ def train_k_lip_model(
     # train model
 
     traind_ds = linear_generator(batch_size, input_shape, kernel)
-    train(
+    uft.train(
         traind_ds,
         model,
         loss_fn,
@@ -238,20 +218,20 @@ def train_k_lip_model(
     # the seed is set to compare all models with the same data
     test_dl = linear_generator(batch_size, input_shape, kernel)
     np.random.seed(42)
-    set_seed(42)
+    uft.set_seed(42)
 
-    loss, mse = run_test(model, test_dl, loss_fn, metrics, steps=10)
+    loss, mse = uft.run_test(model, test_dl, loss_fn, metrics, steps=10)
     x, y = test_dl.send(None)
 
-    x = to_tensor(x)
-    empirical_lip_const = evaluate_lip_const(model=model, x=x, seed=42)
+    x = uft.to_tensor(x)
+    empirical_lip_const = uft.evaluate_lip_const(model=model, x=x, seed=42)
     # save the model
-    model_checkpoint_path = os.path.join(logdir, MODEL_PATH)
-    save_model(model, model_checkpoint_path, overwrite=True)
+    model_checkpoint_path = os.path.join(logdir, uft.MODEL_PATH)
+    uft.save_model(model, model_checkpoint_path, overwrite=True)
     # model.save(model_checkpoint_path, overwrite=True)
     del model
-    init_session()  # K.clear_session()
-    model = load_model(
+    uft.init_session()  # K.clear_session()
+    model = uft.load_model(
         model_checkpoint_path,
         layer_type=layer_type,
         layer_params=layer_params,
@@ -259,19 +239,19 @@ def train_k_lip_model(
         k=k_lip_model,
     )
     np.random.seed(42)
-    set_seed(42)
+    uft.set_seed(42)
     test_dl = linear_generator(batch_size, input_shape, kernel)  # .send(None)
-    from_disk_loss, from_disk_mse = run_test(model, test_dl, loss_fn, metrics, steps=10)
+    from_disk_loss, from_disk_mse = uft.run_test(model, test_dl, loss_fn, metrics, steps=10)
     x, y = test_dl.send(None)
-    x = to_tensor(x)
-    from_empirical_lip_const = evaluate_lip_const(model=model, x=x, seed=42)
+    x = uft.to_tensor(x)
+    from_empirical_lip_const = uft.evaluate_lip_const(model=model, x=x, seed=42)
 
     # log metrics
     return (
         mse,
-        to_numpy(empirical_lip_const),
+        uft.to_numpy(empirical_lip_const),
         from_disk_mse,
-        to_numpy(from_empirical_lip_const),
+        uft.to_numpy(from_empirical_lip_const),
     )
 
 
@@ -755,8 +735,8 @@ def test_ScaledAvgPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledAdaptiveAvgPool2d,
                         {"data_format": "channels_last", "output_size": (1, 1)},
                     ),
@@ -774,8 +754,8 @@ def test_ScaledAvgPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledAdaptiveAvgPool2d,
                         {"data_format": "channels_last", "output_size": (1, 1)},
                     ),
@@ -793,8 +773,8 @@ def test_ScaledAvgPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledAdaptiveAvgPool2d,
                         {"data_format": "channels_last", "output_size": (1, 1)},
                     ),
@@ -823,8 +803,8 @@ def test_ScaledAdaptiveAvgPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledL2NormPool2d,
                         {"kernel_size": (2, 3), "data_format": "channels_last"},
                     ),
@@ -842,8 +822,8 @@ def test_ScaledAdaptiveAvgPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledL2NormPool2d,
                         {"kernel_size": (2, 3), "data_format": "channels_last"},
                     ),
@@ -861,8 +841,8 @@ def test_ScaledAdaptiveAvgPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledL2NormPool2d,
                         {"kernel_size": (2, 3), "data_format": "channels_last"},
                     ),
@@ -895,8 +875,8 @@ def test_scaledl2normPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
                     ),
                 ]
@@ -913,8 +893,8 @@ def test_scaledl2normPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
                     ),
                 ]
@@ -931,8 +911,8 @@ def test_scaledl2normPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
                     ),
                 ]
@@ -959,8 +939,8 @@ def test_scaledgloball2normPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         SpectralConv2d,
                         {
                             "in_channels": 1,
@@ -970,8 +950,8 @@ def test_scaledgloball2normPool2d(test_params):
                             "bias": False,
                         },
                     ),
-                    get_instance_framework(Flatten, {}),
-                    get_instance_framework(
+                    uft.get_instance_framework(Flatten, {}),
+                    uft.get_instance_framework(
                         SpectralLinear, {"in_features": 50, "out_features": 4}
                     ),
                 ]
@@ -988,8 +968,8 @@ def test_scaledgloball2normPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         SpectralConv2d,
                         {
                             "in_channels": 1,
@@ -998,8 +978,8 @@ def test_scaledgloball2normPool2d(test_params):
                             "kernel_size": (3, 3),
                         },
                     ),
-                    get_instance_framework(Flatten, {}),
-                    get_instance_framework(
+                    uft.get_instance_framework(Flatten, {}),
+                    uft.get_instance_framework(
                         SpectralLinear, {"in_features": 50, "out_features": 4}
                     ),
                 ]
@@ -1016,8 +996,8 @@ def test_scaledgloball2normPool2d(test_params):
             layer_type=Sequential,
             layer_params={
                 "layers": [
-                    tInput(to_framework_channel((1, 5, 5))),
-                    get_instance_framework(
+                    tInput(uft.to_framework_channel((1, 5, 5))),
+                    uft.get_instance_framework(
                         SpectralConv2d,
                         {
                             "in_channels": 1,
@@ -1026,8 +1006,8 @@ def test_scaledgloball2normPool2d(test_params):
                             "kernel_size": (3, 3),
                         },
                     ),
-                    get_instance_framework(Flatten, {}),
-                    get_instance_framework(
+                    uft.get_instance_framework(Flatten, {}),
+                    uft.get_instance_framework(
                         SpectralLinear, {"in_features": 50, "out_features": 4}
                     ),
                 ]
@@ -1054,8 +1034,8 @@ def build_test_callbacks():
                 layer_type=Sequential,
                 layer_params={
                     "layers": [
-                        tInput(to_framework_channel((1, 5, 5))),
-                        get_instance_framework(
+                        tInput(uft.to_framework_channel((1, 5, 5))),
+                        uft.get_instance_framework(
                             SpectralConv2d,
                             {
                                 "in_channels": 1,
@@ -1064,11 +1044,11 @@ def build_test_callbacks():
                                 "kernel_size": (3, 3),
                             },
                         ),
-                        get_instance_framework(
+                        uft.get_instance_framework(
                             ScaledAvgPool2d, {"kernel_size": (2, 2)}
                         ),
-                        get_instance_framework(Flatten, {}),
-                        get_instance_framework(
+                        uft.get_instance_framework(Flatten, {}),
+                        uft.get_instance_framework(
                             SpectralLinear, {"in_features": 8, "out_features": 4}
                         ),
                     ]
@@ -1089,8 +1069,8 @@ def build_test_callbacks():
                 layer_type=Sequential,
                 layer_params={
                     "layers": [
-                        tInput(to_framework_channel((1, 5, 5))),
-                        get_instance_framework(
+                        tInput(uft.to_framework_channel((1, 5, 5))),
+                        uft.get_instance_framework(
                             SpectralConv2d,
                             {
                                 "in_channels": 1,
@@ -1100,11 +1080,11 @@ def build_test_callbacks():
                                 "name": "conv1",
                             },
                         ),
-                        get_instance_framework(
+                        uft.get_instance_framework(
                             ScaledAvgPool2d, {"kernel_size": (2, 2)}
                         ),
-                        get_instance_framework(Flatten, {}),
-                        get_instance_framework(
+                        uft.get_instance_framework(Flatten, {}),
+                        uft.get_instance_framework(
                             SpectralLinear,
                             {"name": "dense1", "in_features": 8, "out_features": 4},
                         ),
@@ -1120,7 +1100,7 @@ def build_test_callbacks():
                     # CondenseCallback(on_batch=False, on_epoch=True),
                     MonitorCallback(
                         monitored_layers=["conv1", "dense1"],
-                        logdir=os.path.join("logs", LIP_LAYERS, "Sequential"),
+                        logdir=os.path.join("logs", uft.LIP_LAYERS, "Sequential"),
                         target="kernel",
                         what="all",
                         on_epoch=False,
@@ -1128,7 +1108,7 @@ def build_test_callbacks():
                     ),
                     MonitorCallback(
                         monitored_layers=["conv1", "dense1"],
-                        logdir=os.path.join("logs", LIP_LAYERS, "Sequential"),
+                        logdir=os.path.join("logs", uft.LIP_LAYERS, "Sequential"),
                         target="wbar",
                         what="all",
                         on_epoch=False,
@@ -1250,10 +1230,10 @@ def test_invertibleupsampling(test_params):
 )
 def test_SpectralConv2dTranspose_instantiation(test_params, msg):
     if msg == "":
-        get_instance_framework(SpectralConv2dTranspose, test_params)
+        uft.get_instance_framework(SpectralConv2dTranspose, test_params)
     else:
         with pytest.raises(ValueError):
-            get_instance_framework(SpectralConv2dTranspose, test_params)
+            uft.get_instance_framework(SpectralConv2dTranspose, test_params)
 
 
 @pytest.mark.skipif(
@@ -1271,7 +1251,7 @@ def test_SpectralConv2dTranspose_vanilla_export():
         input_shape=(3, 28, 28),
     )
 
-    model = generate_k_lip_model(
+    model = uft.generate_k_lip_model(
         SpectralConv2dTranspose, kwargs, kwargs["input_shape"], 1.0
     )
 
@@ -1281,7 +1261,7 @@ def test_SpectralConv2dTranspose_vanilla_export():
         size=(5,) + kwargs["input_shape"]
     )  #   tf.random.normal((5,) + (kwargs["input_shape"]))
 
-    x = to_tensor(x)
+    x = uft.to_tensor(x)
     y1 = model(x)
 
     # Test vanilla export inference comparison
@@ -1291,10 +1271,10 @@ def test_SpectralConv2dTranspose_vanilla_export():
 
     # Test saving/loading model
     with tempfile.TemporaryDirectory() as tmpdir:
-        model_path = os.path.join(tmpdir, MODEL_PATH)
-        model.save(model_path)
-        load_model(
-            model_path,
+        uft.MODEL_PATH = os.path.join(tmpdir, uft.MODEL_PATH)
+        model.save(uft.MODEL_PATH)
+        uft.load_model(
+            uft.MODEL_PATH,
             layer_type=SpectralConv2dTranspose,
             layer_params=kwargs,
             input_shape=kwargs["input_shape"],
