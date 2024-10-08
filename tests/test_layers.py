@@ -1,0 +1,1302 @@
+# -*- coding: utf-8 -*-
+# Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All
+# rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
+# CRIAQ and ANITI - https://www.deel.ai/
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+# Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All
+# rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
+# CRIAQ and ANITI - https://www.deel.ai/
+# =====================================================================================
+import pytest
+import os
+import pprint
+import tempfile
+
+import numpy as np
+
+
+from tests.utils_framework import (
+    LipschitzLayer,
+    SpectralLinear,
+    SpectralConv2d,
+    SpectralConv2dTranspose,
+    FrobeniusLinear,
+    FrobeniusConv2d,
+    ScaledAvgPool2d,
+    ScaledAdaptiveAvgPool2d,
+    ScaledL2NormPool2d,
+    InvertibleDownSampling,
+    InvertibleUpSampling,
+    ScaledGlobalL2NormPool2d,
+    Flatten,
+)
+from tests.utils_framework import (
+    Sequential,
+    evaluate_lip_const,
+    generate_k_lip_model,
+    get_instance_framework,
+    init_session,
+    compile_model,
+    compute_output_shape,
+    train,
+    set_seed,
+    to_tensor,
+    to_numpy,
+    run_test,
+    Adam,
+    metric_mse,
+    MeanSquaredError,
+    load_model,
+    save_model,
+    to_framework_channel,
+    LIP_LAYERS,
+    MODEL_PATH,
+)
+
+from tests.utils_framework import (
+    tLinear,
+    AutoWeightClipConstraint,
+    SpectralConstraint,
+    FrobeniusConstraint,
+    tInput,
+    CondenseCallback,
+    MonitorCallback,
+)
+
+pp = pprint.PrettyPrinter(indent=4)
+
+"""
+About these tests:
+==================
+
+What is tested:
+---------------
+- layer instantiation
+- training
+- prediction
+- storing on disk and reloading
+- k lip_constraint is respected ( at +-0.001 )
+
+What is not tested:
+-------------------
+- layer performance ( time / accuracy )
+- layer structure ( don't check that SpectralConv2d is actually a convolution )
+
+However, all run generate log that can be manually checked with tensorboard
+"""
+
+
+def linear_generator(batch_size, input_shape: tuple, kernel):
+    """
+    Generate data according to a linear kernel
+    Args:
+        batch_size: size of each batch
+        input_shape: shape of the desired input
+        kernel: kernel used to generate data, must match the last dimensions of
+            `input_shape`
+
+    Returns:
+        a generator for the data
+
+    """
+    input_shape = tuple(input_shape)
+    while True:
+        # pick random sample in [0, 1] with the input shape
+        batch_x = np.array(
+            np.random.uniform(-10, 10, (batch_size,) + input_shape), dtype=np.float16
+        )
+        # apply the k lip linear transformation
+        batch_y = np.tensordot(
+            batch_x,
+            kernel,
+            axes=(
+                [i for i in range(1, len(input_shape) + 1)],
+                [i for i in range(0, len(input_shape))],
+            ),
+        )
+        yield batch_x, batch_y
+
+
+def build_kernel(input_shape: tuple, output_shape: tuple, k=1.0):
+    """
+    build a kernel with defined lipschitz factor
+
+    Args:
+        input_shape: input shape of the linear function
+        output_shape: output shape of the linear function
+        k: lipshitz factor of the function
+
+    Returns:
+        the kernel for use in the linear_generator
+
+    """
+    input_shape = tuple(input_shape)
+    output_shape = tuple(output_shape)
+    kernel = np.array(
+        np.random.random_sample(input_shape + output_shape), dtype=np.float16
+    )
+    kernel = (
+        kernel * k / np.linalg.norm(kernel)
+    )  # assuming lipschitz constraint is independent with respect to the chosen metric
+
+    return kernel
+
+
+def train_k_lip_model(
+    layer_type: type,
+    layer_params: dict,
+    batch_size: int,
+    steps_per_epoch: int,
+    epochs: int,
+    input_shape: tuple,
+    k_lip_model: float,
+    k_lip_data: float,
+    **kwargs
+):
+    """
+    Create a generator, create a model, train it and return the results.
+
+    Args:
+        layer_type:
+        layer_params:
+        batch_size:
+        steps_per_epoch:
+        epochs:
+        input_shape:
+        k_lip_model:
+        k_lip_data:
+        **kwargs:
+
+    Returns:
+        the generator
+
+    """
+    # clear session to avoid side effects from previous train
+    init_session()  # K.clear_session()
+    np.random.seed(42)
+    input_shape = to_framework_channel(input_shape)
+    # create the keras model, defin opt, and compile it
+    model = generate_k_lip_model(layer_type, layer_params, input_shape, k_lip_model)
+
+    optimizer = get_instance_framework(Adam, inst_params={"lr": 0.001, "model": model})
+
+    loss_fn, optimizer, metrics = compile_model(
+        model,
+        optimizer=optimizer,
+        loss=MeanSquaredError(),
+        metrics=[metric_mse()],
+    )
+    # model.compile(optimizer=optimizer, loss="mean_squared_error", )
+    # create the synthetic data generator
+    output_shape = compute_output_shape(input_shape, model)
+    kernel = build_kernel(input_shape, output_shape, k_lip_data)
+    # define logging features
+    logdir = os.path.join("logs", LIP_LAYERS, "%s" % layer_type.__name__)
+    os.makedirs(logdir, exist_ok=True)
+    hparams = dict(
+        layer_type=layer_type.__name__,
+        batch_size=batch_size,
+        steps_per_epoch=steps_per_epoch,
+        epochs=epochs,
+        k_lip_data=k_lip_data,
+        k_lip_model=k_lip_model,
+    )
+    callback_list = (
+        []
+    )  # [callbacks.TensorBoard(logdir), hp.KerasCallback(logdir, hparams)]
+    if kwargs["callbacks"] is not None:
+        callback_list = callback_list + kwargs["callbacks"]
+    # train model
+
+    traind_ds = linear_generator(batch_size, input_shape, kernel)
+    train(
+        traind_ds,
+        model,
+        loss_fn,
+        optimizer,
+        epochs,
+        batch_size,
+        steps_per_epoch=10,
+    )
+    # the seed is set to compare all models with the same data
+    test_dl = linear_generator(batch_size, input_shape, kernel)
+    np.random.seed(42)
+    set_seed(42)
+
+    loss, mse = run_test(model, test_dl, loss_fn, metrics, steps=10)
+    x, y = test_dl.send(None)
+
+    x = to_tensor(x)
+    empirical_lip_const = evaluate_lip_const(model=model, x=x, seed=42)
+    # save the model
+    model_checkpoint_path = os.path.join(logdir, MODEL_PATH)
+    save_model(model, model_checkpoint_path, overwrite=True)
+    # model.save(model_checkpoint_path, overwrite=True)
+    del model
+    init_session()  # K.clear_session()
+    model = load_model(
+        model_checkpoint_path,
+        layer_type=layer_type,
+        layer_params=layer_params,
+        input_shape=input_shape,
+        k=k_lip_model,
+    )
+    np.random.seed(42)
+    set_seed(42)
+    test_dl = linear_generator(batch_size, input_shape, kernel)  # .send(None)
+    from_disk_loss, from_disk_mse = run_test(model, test_dl, loss_fn, metrics, steps=10)
+    x, y = test_dl.send(None)
+    x = to_tensor(x)
+    from_empirical_lip_const = evaluate_lip_const(model=model, x=x, seed=42)
+
+    # log metrics
+    return (
+        mse,
+        to_numpy(empirical_lip_const),
+        from_disk_mse,
+        to_numpy(from_empirical_lip_const),
+    )
+
+
+def _check_mse_results(mse, from_disk_mse, test_params):
+    print("aaaaa", mse, from_disk_mse)
+    assert from_disk_mse == pytest.approx(
+        mse, 1e-5
+    ), "serialization must not change the performance of a layer"
+
+
+def _check_emp_lip_const(emp_lip_const, from_disk_emp_lip_const, test_params):
+    assert from_disk_emp_lip_const == pytest.approx(
+        emp_lip_const, 1e-5
+    ), "serialization must not change the Lipschitz constant of a layer"
+    assert (
+        emp_lip_const <= test_params["k_lip_model"] * 1.02
+    ), " the lip const of the network must be lower than the specified boundary"
+
+
+def _apply_tests_bank(test_params):
+    pp.pprint(test_params)
+    (
+        mse,
+        emp_lip_const,
+        from_disk_mse,
+        from_disk_emp_lip_const,
+    ) = train_k_lip_model(**test_params)
+    print("test mse: %f" % mse)
+    print(
+        "empirical lip const: %f ( expected %s )"
+        % (
+            emp_lip_const,
+            min(test_params["k_lip_model"], test_params["k_lip_data"]),
+        )
+    )
+    _check_mse_results(mse, from_disk_mse, test_params)
+    _check_emp_lip_const(emp_lip_const, from_disk_emp_lip_const, test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(AutoWeightClipConstraint, "unavailable_class"),
+    reason="AutoWeightClipConstraint not available",
+)
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=tLinear,
+            layer_params={
+                "in_features": 4,
+                "out_features": 4,
+                "kernel_constraint": AutoWeightClipConstraint(1.0),
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=tLinear,
+            layer_params={
+                "in_features": 4,
+                "out_features": 4,
+                "kernel_constraint": AutoWeightClipConstraint(1.0),
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=tLinear,
+            layer_params={
+                "in_features": 4,
+                "out_features": 4,
+                "kernel_constraint": AutoWeightClipConstraint(5.0),
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_constraints_clipping(test_params):
+    """
+    Tests for a standard Linear layer, for result comparison.
+    """
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(SpectralConstraint, "unavailable_class"),
+    reason="SpectralConstraint not available",
+)
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=tLinear,
+            layer_params={
+                "in_features": 4,
+                "out_features": 4,
+                "kernel_constraint": SpectralConstraint(1.0),
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=tLinear,
+            layer_params={
+                "in_features": 4,
+                "out_features": 4,
+                "kernel_constraint": SpectralConstraint(1.0),
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=tLinear,
+            layer_params={
+                "in_features": 4,
+                "out_features": 4,
+                "kernel_constraint": SpectralConstraint(5.0),
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_constraints_orthogonal(test_params):
+    """
+    Tests for a standard Linear layer, for result comparison.
+    """
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(FrobeniusConstraint, "unavailable_class"),
+    reason="FrobeniusConstraint not available",
+)
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=tLinear,
+            layer_params={
+                "in_features": 4,
+                "out_features": 4,
+                "kernel_constraint": FrobeniusConstraint(),
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=tLinear,
+            layer_params={
+                "in_features": 4,
+                "out_features": 4,
+                "kernel_constraint": FrobeniusConstraint(),
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_constraints_frobenius(test_params):
+    """
+    Tests for a standard Linear layer, for result comparison.
+    """
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=SpectralLinear,
+            layer_params={"bias": False, "in_features": 4, "out_features": 3},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=SpectralLinear,
+            layer_params={"in_features": 4, "out_features": 4},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=SpectralLinear,
+            layer_params={"in_features": 4, "out_features": 4},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_spectral_dense(test_params):
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=FrobeniusLinear,
+            layer_params={"in_features": 4, "out_features": 1},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=FrobeniusLinear,
+            layer_params={"in_features": 4, "out_features": 1},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=FrobeniusLinear,
+            layer_params={"in_features": 4, "out_features": 1},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(4,),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_frobenius_dense(test_params):
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=SpectralConv2d,
+            layer_params={
+                "in_channels": 1,
+                "out_channels": 2,
+                "kernel_size": (3, 3),
+                "bias": False,
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=SpectralConv2d,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=SpectralConv2d,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_spectralconv2d(test_params):
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(SpectralConv2dTranspose, "unavailable_class"),
+    reason="SpectralConv2dTranspose not available",
+)
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=SpectralConv2dTranspose,
+            layer_params={
+                "in_channels": 1,
+                "out_channels": 2,
+                "kernel_size": (3, 3),
+                "bias": False,
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=SpectralConv2dTranspose,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=SpectralConv2dTranspose,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_SpectralConv2dTranspose(test_params):
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=FrobeniusConv2d,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=FrobeniusConv2d,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=FrobeniusConv2d,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_frobeniusconv2d(test_params):
+    # tests only checks that lip cons is enforced
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=ScaledAvgPool2d,
+            layer_params={"kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 6, 6),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=ScaledAvgPool2d,
+            layer_params={"kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 6, 6),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=ScaledAvgPool2d,
+            layer_params={"kernel_size": (3, 3)},
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 6, 6),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_ScaledAvgPool2d(test_params):
+    # tests only checks that lip cons is enforced
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        # tests only checks that lip cons is enforced
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledAdaptiveAvgPool2d,
+                        {"data_format": "channels_last", "output_size": (1, 1)},
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledAdaptiveAvgPool2d,
+                        {"data_format": "channels_last", "output_size": (1, 1)},
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledAdaptiveAvgPool2d,
+                        {"data_format": "channels_last", "output_size": (1, 1)},
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_ScaledAdaptiveAvgPool2d(test_params):
+    # tests only checks that lip cons is enforced
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        # tests only checks that lip cons is enforced
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledL2NormPool2d,
+                        {"kernel_size": (2, 3), "data_format": "channels_last"},
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledL2NormPool2d,
+                        {"kernel_size": (2, 3), "data_format": "channels_last"},
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledL2NormPool2d,
+                        {"kernel_size": (2, 3), "data_format": "channels_last"},
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_scaledl2normPool2d(test_params):
+    # tests only checks that lip cons is enforced
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(ScaledGlobalL2NormPool2d, "unavailable_class"),
+    reason="compute_layer_sv not available",
+)
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        # tests only checks that lip cons is enforced
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=1,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_scaledgloball2normPool2d(test_params):
+    # tests only checks that lip cons is enforced
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        SpectralConv2d,
+                        {
+                            "in_channels": 1,
+                            "out_channels": 2,
+                            "kernel_size": (3, 3),
+                            "padding": 1,
+                            "bias": False,
+                        },
+                    ),
+                    get_instance_framework(Flatten, {}),
+                    get_instance_framework(
+                        SpectralLinear, {"in_features": 50, "out_features": 4}
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        SpectralConv2d,
+                        {
+                            "in_channels": 1,
+                            "out_channels": 2,
+                            "padding": 1,
+                            "kernel_size": (3, 3),
+                        },
+                    ),
+                    get_instance_framework(Flatten, {}),
+                    get_instance_framework(
+                        SpectralLinear, {"in_features": 50, "out_features": 4}
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=Sequential,
+            layer_params={
+                "layers": [
+                    tInput(to_framework_channel((1, 5, 5))),
+                    get_instance_framework(
+                        SpectralConv2d,
+                        {
+                            "in_channels": 1,
+                            "out_channels": 2,
+                            "padding": 1,
+                            "kernel_size": (3, 3),
+                        },
+                    ),
+                    get_instance_framework(Flatten, {}),
+                    get_instance_framework(
+                        SpectralLinear, {"in_features": 50, "out_features": 4}
+                    ),
+                ]
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5, 5),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_multilayer(test_params):
+    _apply_tests_bank(test_params)
+
+
+def build_test_callbacks():
+    list_tests = []
+    if not hasattr(CondenseCallback, "unavailable_class"):
+        list_tests.append(
+            dict(
+                layer_type=Sequential,
+                layer_params={
+                    "layers": [
+                        tInput(to_framework_channel((1, 5, 5))),
+                        get_instance_framework(
+                            SpectralConv2d,
+                            {
+                                "in_channels": 1,
+                                "out_channels": 2,
+                                "padding": 1,
+                                "kernel_size": (3, 3),
+                            },
+                        ),
+                        get_instance_framework(
+                            ScaledAvgPool2d, {"kernel_size": (2, 2)}
+                        ),
+                        get_instance_framework(Flatten, {}),
+                        get_instance_framework(
+                            SpectralLinear, {"in_features": 8, "out_features": 4}
+                        ),
+                    ]
+                },
+                batch_size=250,
+                steps_per_epoch=125,
+                epochs=5,
+                input_shape=(1, 5, 5),
+                k_lip_data=1.0,
+                k_lip_model=1.0,
+                callbacks=[CondenseCallback(on_batch=True, on_epoch=False)],
+            )
+        )
+
+    if not hasattr(MonitorCallback, "unavailable_class"):
+        list_tests.append(
+            dict(
+                layer_type=Sequential,
+                layer_params={
+                    "layers": [
+                        tInput(to_framework_channel((1, 5, 5))),
+                        get_instance_framework(
+                            SpectralConv2d,
+                            {
+                                "in_channels": 1,
+                                "out_channels": 2,
+                                "kernel_size": (3, 3),
+                                "padding": 1,
+                                "name": "conv1",
+                            },
+                        ),
+                        get_instance_framework(
+                            ScaledAvgPool2d, {"kernel_size": (2, 2)}
+                        ),
+                        get_instance_framework(Flatten, {}),
+                        get_instance_framework(
+                            SpectralLinear,
+                            {"name": "dense1", "in_features": 8, "out_features": 4},
+                        ),
+                    ]
+                },
+                batch_size=250,
+                steps_per_epoch=125,
+                epochs=5,
+                input_shape=(1, 5, 5),
+                k_lip_data=1.0,
+                k_lip_model=1.0,
+                callbacks=[
+                    # CondenseCallback(on_batch=False, on_epoch=True),
+                    MonitorCallback(
+                        monitored_layers=["conv1", "dense1"],
+                        logdir=os.path.join("logs", LIP_LAYERS, "Sequential"),
+                        target="kernel",
+                        what="all",
+                        on_epoch=False,
+                        on_batch=True,
+                    ),
+                    MonitorCallback(
+                        monitored_layers=["conv1", "dense1"],
+                        logdir=os.path.join("logs", LIP_LAYERS, "Sequential"),
+                        target="wbar",
+                        what="all",
+                        on_epoch=False,
+                        on_batch=True,
+                    ),
+                ],
+            )
+        )
+    return list_tests
+
+
+@pytest.mark.parametrize("test_params", build_test_callbacks())
+def test_callbacks(test_params):
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=InvertibleDownSampling,
+            layer_params={"kernel_size": (2, 3)},
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=5,
+            input_shape=(3, 6, 6),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_invertibledownsampling(test_params):
+    # tests only checks that lip cons is enforced
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=InvertibleUpSampling,
+            layer_params={"kernel_size": (2, 3)},
+            batch_size=250,
+            steps_per_epoch=1,
+            epochs=5,
+            input_shape=(18, 6, 6),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_invertibleupsampling(test_params):
+    # tests only checks that lip cons is enforced
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(SpectralConv2dTranspose, "unavailable_class"),
+    reason="SpectralConv2dTranspose not available",
+)
+@pytest.mark.parametrize(
+    "test_params,msg",
+    [
+        (dict(in_channels=1, out_channels=5, kernel_size=3), ""),
+        (
+            dict(in_channels=1, out_channels=12, kernel_size=5, strides=2, bias=False),
+            "",
+        ),
+        (
+            dict(
+                in_channels=1,
+                out_channels=3,
+                kernel_size=3,
+                padding="same",
+                dilation_rate=1,
+            ),
+            "",
+        ),
+        (
+            dict(
+                in_channels=1,
+                out_channels=4,
+                kernel_size=1,
+                output_padding=None,
+                activation="relu",
+            ),
+            "",
+        ),
+        (
+            dict(
+                in_channels=1,
+                out_channels=16,
+                kernel_size=3,
+                data_format="channels_first",
+            ),
+            "",
+        ),
+        (
+            dict(
+                in_channels=1,
+                out_channels=10,
+                kernel_size=3,
+                padding=0,
+                padding_mode="valid",
+            ),
+            "Wrong padding",
+        ),
+        (
+            dict(in_channels=1, out_channels=10, kernel_size=3, dilation_rate=2),
+            "Wrong dilation rate",
+        ),
+        (
+            dict(in_channels=1, out_channels=10, kernel_size=3, output_padding=5),
+            "Wrong data format",
+        ),
+    ],
+)
+def test_SpectralConv2dTranspose_instantiation(test_params, msg):
+    if msg == "":
+        get_instance_framework(SpectralConv2dTranspose, test_params)
+    else:
+        with pytest.raises(ValueError):
+            get_instance_framework(SpectralConv2dTranspose, test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(SpectralConv2dTranspose, "unavailable_class"),
+    reason="SpectralConv2dTranspose not available",
+)
+def test_SpectralConv2dTranspose_vanilla_export():
+    kwargs = dict(
+        in_channels=3,
+        out_channels=16,
+        kernel_size=5,
+        strides=2,
+        activation="relu",
+        data_format="channels_first",
+        input_shape=(3, 28, 28),
+    )
+
+    model = generate_k_lip_model(
+        SpectralConv2dTranspose, kwargs, kwargs["input_shape"], 1.0
+    )
+
+    # lay = SpectralConv2dTranspose(**kwargs)
+    # model = Sequential([lay])
+    x = np.random.normal(
+        size=(5,) + kwargs["input_shape"]
+    )  #   tf.random.normal((5,) + (kwargs["input_shape"]))
+
+    x = to_tensor(x)
+    y1 = model(x)
+
+    # Test vanilla export inference comparison
+    vanilla_model = model.vanilla_export()
+    y2 = vanilla_model(x)
+    np.testing.assert_allclose(y1, y2, atol=1e-6)
+
+    # Test saving/loading model
+    with tempfile.TemporaryDirectory() as tmpdir:
+        model_path = os.path.join(tmpdir, MODEL_PATH)
+        model.save(model_path)
+        load_model(
+            model_path,
+            layer_type=SpectralConv2dTranspose,
+            layer_params=kwargs,
+            input_shape=kwargs["input_shape"],
+            k=1.0,
+        )
