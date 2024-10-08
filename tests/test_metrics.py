@@ -54,15 +54,7 @@ def one_hot_data(x, n_class):
             {"epsilon": 1, "lip_const": 1.0, "disjoint_neurons": False},
             10,
         ),
-        (
-            10,
-            BinaryProvableRobustAccuracy,
-            {
-                "epsilon": 1,
-                "lip_const": 1.0,
-            },
-            10,
-        ),
+        (10, BinaryProvableRobustAccuracy, {"epsilon": 1, "lip_const": 1.0,}, 10,),
         (
             10,
             CategoricalProvableAvgRobustness,
@@ -93,7 +85,9 @@ def test_serialization(nb_class, loss, loss_params, nb_classes):
 
     loss_fn, optimizer, metrics = uft.compile_model(
         m,
-        optimizer=uft.get_instance_framework(SGD, inst_params={"lr": 0.001, "model": m}),
+        optimizer=uft.get_instance_framework(
+            SGD, inst_params={"lr": 0.001, "model": m}
+        ),
         loss=uft.get_instance_framework(loss, inst_params=loss_params),
     )
 
@@ -111,9 +105,7 @@ def test_serialization(nb_class, loss, loss_params, nb_classes):
     )
     l2 = m2.evaluate(x, y)
     np.testing.assert_equal(
-        l1,
-        l2,
-        err_msg=f"serialization changed loss value for {loss}",
+        l1, l2, err_msg=f"serialization changed loss value for {loss}",
     )
     return
 
@@ -190,11 +182,7 @@ def test_provable_vs_adjusted(loss, loss_params, nb_class):
     [
         (
             CategoricalProvableAvgRobustness,
-            {
-                "lip_const": 1.0,
-                "disjoint_neurons": True,
-                "negative_robustness": True,
-            },
+            {"lip_const": 1.0, "disjoint_neurons": True, "negative_robustness": True,},
             10,
         ),
         (
@@ -225,7 +213,10 @@ def test_data_format(loss, loss_params, nb_class):
         for neg_val in [0.0, -1.0]:
             y_pred_case = x
             y_true_case = np.where(y > 0, 1.0, neg_val)
-            y_pred_case, y_true_case = uft.to_tensor(y_pred_case), uft.to_tensor(y_true_case)
+            y_pred_case, y_true_case = (
+                uft.to_tensor(y_pred_case),
+                uft.to_tensor(y_true_case),
+            )
             metrics_values.append(metric(y_true_case, y_pred_case).numpy())
         assert all(
             [m == metrics_values[0] for m in metrics_values]
@@ -237,11 +228,7 @@ def test_data_format(loss, loss_params, nb_class):
     [
         (
             CategoricalProvableAvgRobustness,
-            {
-                "lip_const": 1.0,
-                "disjoint_neurons": False,
-                "negative_robustness": True,
-            },
+            {"lip_const": 1.0, "disjoint_neurons": False, "negative_robustness": True,},
             10,
         ),
         (
@@ -277,7 +264,10 @@ def test_disjoint_neurons(loss, loss_params, nb_class):
     for neg_val in [0.0, -1.0]:
         y_pred_case = x
         y_true_case = np.where(y > 0, 1.0, neg_val)
-        y_pred_case, y_true_case = uft.to_tensor(y_pred_case), uft.to_tensor(y_true_case)
+        y_pred_case, y_true_case = (
+            uft.to_tensor(y_pred_case),
+            uft.to_tensor(y_true_case),
+        )
         metrics_values.append(pr(y_true_case, y_pred_case).numpy())
         metrics_values.append(
             pdr(y_true_case, y_pred_case * (np.sqrt(2) / 2.0)).numpy()
@@ -320,41 +310,28 @@ y_true2 = [1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0, 1.0]
     [
         (
             CategoricalProvableRobustAccuracy,
-            {
-                "epsilon": 0.25,
-                "lip_const": 1.0,
-                "disjoint_neurons": False,
-            },
+            {"epsilon": 0.25, "lip_const": 1.0, "disjoint_neurons": False,},
             y_pred1,
             y_true1,
             0.25,
         ),
         (
             CategoricalProvableAvgRobustness,
-            {
-                "lip_const": 1.0,
-                "disjoint_neurons": False,
-            },
+            {"lip_const": 1.0, "disjoint_neurons": False,},
             y_pred1,
             y_true1,
             0.25 * 1.1 / np.sqrt(2),
         ),
         (
             BinaryProvableRobustAccuracy,
-            {
-                "epsilon": 0.25,
-                "lip_const": 1.0,
-            },
+            {"epsilon": 0.25, "lip_const": 1.0,},
             y_pred2,
             y_true2,
             0.25,
         ),
         (
             BinaryProvableAvgRobustness,
-            {
-                "lip_const": 1.0,
-                "negative_robustness": False,
-            },
+            {"lip_const": 1.0, "negative_robustness": False,},
             y_pred2,
             y_true2,
             0.125 * (1.1 * 2),

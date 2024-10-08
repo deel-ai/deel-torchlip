@@ -175,7 +175,9 @@ def train_k_lip_model(
     # create the keras model, defin opt, and compile it
     model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, k_lip_model)
 
-    optimizer = uft.get_instance_framework(uft.Adam, inst_params={"lr": 0.001, "model": model})
+    optimizer = uft.get_instance_framework(
+        uft.Adam, inst_params={"lr": 0.001, "model": model}
+    )
 
     loss_fn, optimizer, metrics = uft.compile_model(
         model,
@@ -207,13 +209,7 @@ def train_k_lip_model(
 
     traind_ds = linear_generator(batch_size, input_shape, kernel)
     uft.train(
-        traind_ds,
-        model,
-        loss_fn,
-        optimizer,
-        epochs,
-        batch_size,
-        steps_per_epoch=10,
+        traind_ds, model, loss_fn, optimizer, epochs, batch_size, steps_per_epoch=10,
     )
     # the seed is set to compare all models with the same data
     test_dl = linear_generator(batch_size, input_shape, kernel)
@@ -241,7 +237,9 @@ def train_k_lip_model(
     np.random.seed(42)
     uft.set_seed(42)
     test_dl = linear_generator(batch_size, input_shape, kernel)  # .send(None)
-    from_disk_loss, from_disk_mse = uft.run_test(model, test_dl, loss_fn, metrics, steps=10)
+    from_disk_loss, from_disk_mse = uft.run_test(
+        model, test_dl, loss_fn, metrics, steps=10
+    )
     x, y = test_dl.send(None)
     x = uft.to_tensor(x)
     from_empirical_lip_const = uft.evaluate_lip_const(model=model, x=x, seed=42)
@@ -273,19 +271,13 @@ def _check_emp_lip_const(emp_lip_const, from_disk_emp_lip_const, test_params):
 
 def _apply_tests_bank(test_params):
     pp.pprint(test_params)
-    (
-        mse,
-        emp_lip_const,
-        from_disk_mse,
-        from_disk_emp_lip_const,
-    ) = train_k_lip_model(**test_params)
+    (mse, emp_lip_const, from_disk_mse, from_disk_emp_lip_const,) = train_k_lip_model(
+        **test_params
+    )
     print("test mse: %f" % mse)
     print(
         "empirical lip const: %f ( expected %s )"
-        % (
-            emp_lip_const,
-            min(test_params["k_lip_model"], test_params["k_lip_data"]),
-        )
+        % (emp_lip_const, min(test_params["k_lip_model"], test_params["k_lip_data"]),)
     )
     _check_mse_results(mse, from_disk_mse, test_params)
     _check_emp_lip_const(emp_lip_const, from_disk_emp_lip_const, test_params)

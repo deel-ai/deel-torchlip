@@ -1,4 +1,4 @@
-# -*- coding: uft-8 -*-
+# -*- coding: utf-8 -*-
 # Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
@@ -300,7 +300,9 @@ def test_Householder_theta_90(dense):
 )
 def test_Householder_idempotence():
     """Assert idempotence of Householder activation: hh(hh(x)) = hh(x)"""
-    hh = uft.get_instance_framework(Householder, {"theta_initializer": "glorot_uniform"})
+    hh = uft.get_instance_framework(
+        Householder, {"theta_initializer": "glorot_uniform"}
+    )
 
     bs = np.random.randint(32, 128)
     h, w = np.random.randint(1, 64), np.random.randint(1, 64)

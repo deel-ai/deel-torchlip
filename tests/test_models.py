@@ -200,14 +200,15 @@ def test_deel_lip_Sequential():
 
 
 @pytest.mark.skipif(
-    hasattr(tModel, "unavailable_class"),
-    reason="tModel not available",
+    hasattr(tModel, "unavailable_class"), reason="tModel not available",
 )
 def test_Model():
     """Assert vanilla conversion of a tf.keras.Model model"""
     input_shape = uft.to_framework_channel((3, 8, 8))
     dict_tensors = get_functional_tensors(input_shape)
-    model = uft.get_functional_model(tModel, dict_tensors, functional_input_output_tensors)
+    model = uft.get_functional_model(
+        tModel, dict_tensors, functional_input_output_tensors
+    )
     # inputs, outputs = functional_input_output_tensors()
     #    model = tf.keras.Model(inputs, outputs)
     if uft.vanilla_require_a_copy():
@@ -223,14 +224,15 @@ def test_Model():
 
 
 @pytest.mark.skipif(
-    hasattr(Model, "unavailable_class"),
-    reason="Model not available",
+    hasattr(Model, "unavailable_class"), reason="Model not available",
 )
 def test_lip_Model():
     """Assert vanilla conversion of a deel.lip.Model model"""
     input_shape = uft.to_framework_channel((3, 8, 8))
     dict_tensors = get_functional_tensors(input_shape)
-    model = uft.get_functional_model(Model, dict_tensors, functional_input_output_tensors)
+    model = uft.get_functional_model(
+        Model, dict_tensors, functional_input_output_tensors
+    )
     # inputs, outputs = functional_input_output_tensors()
     # model = Model(inputs, outputs)
     if uft.vanilla_require_a_copy():
@@ -263,8 +265,12 @@ def test_warning_unsupported_1Lip_layers():
         uft.get_instance_framework(tSoftmax, {}),  # kl.Softmax(),
         uft.get_instance_framework(Flatten, {}),  # kl.Flatten(),
         uft.get_instance_framework(tReshape, {"target_shape": (10,)}),  # kl.Reshape(),
-        uft.get_instance_framework(tMaxPool2d, {"kernel_size": (2, 2)}),  # kl.MaxPool2d(),
-        uft.get_instance_framework(SpectralLinear, {"in_features": 3, "out_features": 3}),
+        uft.get_instance_framework(
+            tMaxPool2d, {"kernel_size": (2, 2)}
+        ),  # kl.MaxPool2d(),
+        uft.get_instance_framework(
+            SpectralLinear, {"in_features": 3, "out_features": 3}
+        ),
         uft.get_instance_framework(
             ScaledL2NormPool2d, {"kernel_size": (2, 2)}
         ),  # ScaledL2NormPool2d(),
@@ -273,10 +279,7 @@ def test_warning_unsupported_1Lip_layers():
         with warnings.catch_warnings(record=True) as w:
             if lay is not None:
                 _ = uft.generate_k_lip_model(
-                    Sequential,
-                    {"layers": [lay]},
-                    input_shape=None,
-                    k=None,
+                    Sequential, {"layers": [lay]}, input_shape=None, k=None,
                 )
                 assert len(w) == 0, f"Layer {lay} shouldn't raise warning"
 
@@ -305,10 +308,7 @@ def test_warning_unsupported_1Lip_layers():
         with pytest.warns(Warning):
             if lay is not None:
                 _ = uft.generate_k_lip_model(
-                    Sequential,
-                    {"layers": [lay]},
-                    input_shape=None,
-                    k=None,
+                    Sequential, {"layers": [lay]}, input_shape=None, k=None,
                 )
 
 
@@ -317,7 +317,9 @@ def test_vanilla_export_with_named_layers():
     feat = uft.generate_k_lip_model(
         Sequential, {"layers": sequential_layers(input_shape)}, input_shape=input_shape
     )
-    cl = uft.get_instance_framework(FrobeniusLinear, {"in_features": 10, "out_features": 1})
+    cl = uft.get_instance_framework(
+        FrobeniusLinear, {"in_features": 10, "out_features": 1}
+    )
     model = uft.build_named_sequential(
         Sequential, OrderedDict([("features", feat), ("classifier", cl)])
     )

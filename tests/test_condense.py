@@ -81,8 +81,12 @@ def sequential_layers(input_shape):
         ),
         uft.get_instance_framework(Flatten, {}),
         uft.get_instance_framework(tLinear, {"in_features": 80, "out_features": 4}),
-        uft.get_instance_framework(SpectralLinear, {"in_features": 4, "out_features": 4}),
-        uft.get_instance_framework(FrobeniusLinear, {"in_features": 4, "out_features": 2}),
+        uft.get_instance_framework(
+            SpectralLinear, {"in_features": 4, "out_features": 4}
+        ),
+        uft.get_instance_framework(
+            FrobeniusLinear, {"in_features": 4, "out_features": 2}
+        ),
     ]
 
 
@@ -200,7 +204,9 @@ def test_model(layer_type, layer_params, k_coef_lip, input_shape):
     model = get_model(layer_type, layer_params, input_shape, k_coef_lip)
 
     # create the keras model, defin opt, and compile it
-    optimizer = uft.get_instance_framework(uft.Adam, inst_params={"lr": 0.001, "model": model})
+    optimizer = uft.get_instance_framework(
+        uft.Adam, inst_params={"lr": 0.001, "model": model}
+    )
 
     loss_fn, optimizer, metrics = uft.compile_model(
         model,

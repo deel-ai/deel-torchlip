@@ -36,10 +36,10 @@ from .utils_framework import (
     KRLoss,
     HingeMarginLoss,
     HKRLoss,
-    KRMulticlassLoss,  
-    HingeMulticlassLoss,  
-    HKRMulticlassLoss,  
-    SoftHKRMulticlassLoss,  
+    KRMulticlassLoss,
+    HingeMulticlassLoss,
+    HKRMulticlassLoss,
+    SoftHKRMulticlassLoss,
     MultiMarginLoss,
     TauCategoricalCrossentropyLoss,
     TauSparseCategoricalCrossentropyLoss,
@@ -134,16 +134,7 @@ y_pred3 = np.array(
     dtype=np.float32,
 )
 results_tau_cat = np.float64(
-    [
-        0.044275,
-        0.115109,
-        1.243572,
-        0.084923,
-        0.010887,
-        2.802300,
-        0.114224,
-        0.076357,
-    ]
+    [0.044275, 0.115109, 1.243572, 0.084923, 0.010887, 2.802300, 0.114224, 0.076357,]
 )
 y_predgaussian, y_truegaussian = get_gaussian_data(20000)
 n_class = 10

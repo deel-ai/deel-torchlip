@@ -56,11 +56,7 @@ rng = np.random.default_rng(42)
 
 
 @pytest.mark.parametrize(
-    "kernel_shape",
-    [
-        (15, 32),
-        (32, 15),
-    ],
+    "kernel_shape", [(15, 32), (32, 15),],
 )
 def test_kernel_svd(kernel_shape):
     """Compare max singular value using power iteration and np.linalg.svd"""
@@ -124,7 +120,7 @@ def set_spectral_input_shape(kernel, strides):
         if stride > 1:
             N = int(0.5 + N / stride)
 
-    if c_in * stride**2 > c_out:
+    if c_in * stride ** 2 > c_out:
         spectral_input_shape = (N, N, c_out)
         RO_case = True
     else:
@@ -135,11 +131,7 @@ def set_spectral_input_shape(kernel, strides):
 
 @pytest.mark.parametrize(
     "kernel_shape, strides",
-    [
-        ((5, 5, 32, 64), (1, 1)),
-        ((3, 3, 12, 8), (1, 1)),
-        ((3, 3, 24, 24), (1, 1)),
-    ],
+    [((5, 5, 32, 64), (1, 1)), ((3, 3, 12, 8), (1, 1)), ((3, 3, 24, 24), (1, 1)),],
 )
 def test_kernel_conv_svd(kernel_shape, strides):
     """Compare power iteration conv against SVD."""
@@ -155,9 +147,7 @@ def test_kernel_conv_svd(kernel_shape, strides):
     # Compute max singular value using FFT2 and SVD
     kernel_n = kernel.astype(dtype="float32")
     transforms = np.fft.fft2(
-        kernel_n,
-        (spectral_input_shape[0], spectral_input_shape[1]),
-        axes=[0, 1],
+        kernel_n, (spectral_input_shape[0], spectral_input_shape[1]), axes=[0, 1],
     )
     svd = np.linalg.svd(transforms, compute_uv=False)
     SVmax = np.max(svd)
@@ -213,11 +203,7 @@ def test_kernel_conv_svd(kernel_shape, strides):
 
 
 @pytest.mark.parametrize(
-    "kernel_shape",
-    [
-        (15, 32),
-        (64, 32),
-    ],
+    "kernel_shape", [(15, 32), (64, 32),],
 )
 def test_bjorck_normalization(kernel_shape):
     kernel = np.random.normal(size=kernel_shape).astype("float32")
@@ -256,11 +242,7 @@ def test_bjorck_normalization(kernel_shape):
 
 
 @pytest.mark.parametrize(
-    "kernel_shape",
-    [
-        (15, 32),
-        (5, 5, 64, 32),
-    ],
+    "kernel_shape", [(15, 32), (5, 5, 64, 32),],
 )
 def test_reshaped_kernel_orthogonalization(kernel_shape):
     if hasattr(reshaped_kernel_orthogonalization, "unavailable_class"):
@@ -305,8 +287,7 @@ def test_reshaped_kernel_orthogonalization(kernel_shape):
 
 
 @pytest.mark.skipif(
-    hasattr(bjorck_norm, "unavailable_class"),
-    reason="bjorck_norm not available",
+    hasattr(bjorck_norm, "unavailable_class"), reason="bjorck_norm not available",
 )
 def test_bjorck_norm():
     """
@@ -344,8 +325,7 @@ def test_bjorck_norm():
 
 
 @pytest.mark.skipif(
-    hasattr(frobenius_norm, "unavailable_class"),
-    reason="frobenius_norm not available",
+    hasattr(frobenius_norm, "unavailable_class"), reason="frobenius_norm not available",
 )
 def test_frobenius_norm():
     """
@@ -379,8 +359,7 @@ def test_frobenius_norm():
 
 
 @pytest.mark.skipif(
-    hasattr(frobenius_norm, "unavailable_class"),
-    reason="frobenius_norm not available",
+    hasattr(frobenius_norm, "unavailable_class"), reason="frobenius_norm not available",
 )
 def test_frobenius_norm_disjoint_neurons():
     """
@@ -403,8 +382,7 @@ def test_frobenius_norm_disjoint_neurons():
 
 
 @pytest.mark.skipif(
-    hasattr(lconv_norm, "unavailable_class"),
-    reason="lconv_norm not available",
+    hasattr(lconv_norm, "unavailable_class"), reason="lconv_norm not available",
 )
 def test_lconv_norm():
     """
@@ -437,7 +415,9 @@ def test_lconv_norm():
     # assert not isinstance(m.weight, torch.nn.Parameter)
 
     # check the normalization of the weight
-    np.testing.assert_allclose(uft.to_numpy(w1), uft.to_numpy(uft.get_layer_weights(m)), atol=1e-7)
+    np.testing.assert_allclose(
+        uft.to_numpy(w1), uft.to_numpy(uft.get_layer_weights(m)), atol=1e-7
+    )
     # tt.assert_equal(y, torch.nn.functional.conv2d(x, w1, bias=m.bias, stride=(1, 1)))
 
     # remove the parametrization

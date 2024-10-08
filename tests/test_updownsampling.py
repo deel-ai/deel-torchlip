@@ -39,7 +39,9 @@ from .utils_framework import invertible_downsample, invertible_upsample
 def test_invertible_downsample():
     # 1D input
     x = uft.to_tensor([[[1, 2, 3, 4], [5, 6, 7, 8]]])
-    x = uft.get_instance_framework(invertible_downsample, {"input": x, "kernel_size": (2,)})
+    x = uft.get_instance_framework(
+        invertible_downsample, {"input": x, "kernel_size": (2,)}
+    )
     assert x.shape == (1, 4, 2)
 
     # TODO: Check this.
@@ -67,7 +69,9 @@ def test_invertible_downsample():
 def test_invertible_upsample():
     # 1D input
     x = uft.to_tensor([[[1, 2], [3, 4], [5, 6], [7, 8]]])
-    x = uft.get_instance_framework(invertible_upsample, {"input": x, "kernel_size": (2,)})
+    x = uft.get_instance_framework(
+        invertible_upsample, {"input": x, "kernel_size": (2,)}
+    )
 
     assert x.shape == (1, 2, 4)
 
@@ -77,9 +81,13 @@ def test_invertible_upsample():
     # 2D input
     x = np.random.rand(10, 16, 32, 32)
     x = uft.to_tensor(x)
-    y = uft.get_instance_framework(invertible_upsample, {"input": x, "kernel_size": (4, 4)})
+    y = uft.get_instance_framework(
+        invertible_upsample, {"input": x, "kernel_size": (4, 4)}
+    )
     assert y.shape == (10, 1, 128, 128)
-    y = uft.get_instance_framework(invertible_upsample, {"input": x, "kernel_size": (2, 2)})
+    y = uft.get_instance_framework(
+        invertible_upsample, {"input": x, "kernel_size": (2, 2)}
+    )
     assert y.shape == (10, 4, 64, 64)
 
     # 3D input

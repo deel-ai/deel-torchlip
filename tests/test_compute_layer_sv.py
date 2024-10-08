@@ -44,7 +44,7 @@ from .utils_framework import Sequential
 from .utils_framework import OrthLinearRegularizer
 
 from . import utils_framework as uft
- 
+
 
 pp = pprint.PrettyPrinter(indent=4)
 
@@ -146,7 +146,9 @@ def train_compute_and_verifySV(
     # create the keras model, defin opt, and compile it
     model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, k_lip_model)
 
-    optimizer = uft.get_instance_framework(uft.Adam, inst_params={"lr": 0.001, "model": model})
+    optimizer = uft.get_instance_framework(
+        uft.Adam, inst_params={"lr": 0.001, "model": model}
+    )
     # optimizer = uft.Adam(lr=0.001)
     loss_fn, optimizer, metrics = uft.compile_model(
         model,
@@ -293,11 +295,7 @@ def train_compute_and_verifySV(
         ),
         dict(
             layer_type=SpectralConv2d,
-            layer_params={
-                "in_channels": 1,
-                "out_channels": 2,
-                "kernel_size": (3, 3),
-            },
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3),},
             batch_size=100,
             steps_per_epoch=125,
             epochs=5,
@@ -366,11 +364,7 @@ def train_compute_and_verifySV(
         ),
         dict(
             layer_type=FrobeniusConv2d,
-            layer_params={
-                "in_channels": 1,
-                "out_channels": 2,
-                "kernel_size": (3, 3),
-            },
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3),},
             batch_size=100,
             steps_per_epoch=125,
             epochs=5,
@@ -401,11 +395,7 @@ def train_compute_and_verifySV(
         ),
         dict(
             layer_type=FrobeniusConv2d,
-            layer_params={
-                "in_channels": 3,
-                "out_channels": 2,
-                "kernel_size": (3, 3),
-            },
+            layer_params={"in_channels": 3, "out_channels": 2, "kernel_size": (3, 3),},
             batch_size=100,
             steps_per_epoch=125,
             epochs=5,
