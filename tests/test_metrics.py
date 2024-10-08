@@ -184,7 +184,7 @@ def test_provable_vs_adjusted(loss, loss_params, nb_class):
     diff = np.min(np.abs(l1 - l2))
     assert (
         diff > 1e-4
-    ), f"{loss} provable and adjusted robustness must give 
+    ), f"{loss} provable and adjusted robustness must give \
         different values when y_true!=y_pred"
 
 
