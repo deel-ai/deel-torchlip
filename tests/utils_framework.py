@@ -519,6 +519,14 @@ def get_NCHW(x):
 
 
 def scaleAlpha(alpha):
+    # from KR + apha*Hinge to (1-alpha')*KR + alpha'*Hinge
+    warnings.warn("scaleAlpha is deprecated, use alpha in [0,1] instead")
+    # return 1.0
+    return 1.0 / (alpha + 1.0)
+
+
+def scaleDivAlpha(alpha):
+    # soft HKR in TF has a factor 1/alpha*KR + Hinge
     warnings.warn("scaleAlpha is deprecated, use alpha in [0,1] instead")
     # return 1.0
     return 1.0 / (1 + 1.0 / alpha)

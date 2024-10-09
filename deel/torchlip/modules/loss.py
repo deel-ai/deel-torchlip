@@ -36,16 +36,18 @@ class KRLoss(torch.nn.Module):
     duality.
     """
 
-    def __init__(self, true_values: Tuple[int, int] = (0, 1)):
+    def __init__(self, true_values=None):
         """
         Args:
             true_values: tuple containing the two label for each predicted class.
         """
         super().__init__()
-        self.true_values = true_values
+        assert (
+            true_values is None
+        ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return F.kr_loss(input, target, self.true_values)
+        return F.kr_loss(input, target)
 
 
 class NegKRLoss(torch.nn.Module):
@@ -54,16 +56,18 @@ class NegKRLoss(torch.nn.Module):
     the Kantorovich-Rubinstein duality.
     """
 
-    def __init__(self, true_values: Tuple[int, int] = (0, 1)):
+    def __init__(self, true_values=None):
         """
         Args:
             true_values: tuple containing the two label for each predicted class.
         """
         super().__init__()
-        self.true_values = true_values
+        assert (
+            true_values is None
+        ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return F.neg_kr_loss(input, target, self.true_values)
+        return F.neg_kr_loss(input, target)
 
 
 class HingeMarginLoss(torch.nn.Module):
@@ -93,21 +97,29 @@ class HKRLoss(torch.nn.Module):
         self,
         alpha: float,
         min_margin: float = 1.0,
-        true_values: Tuple[int, int] = (-1, 1),
+        true_values=None,
     ):
         """
         Args:
-            alpha: Regularization factor between the hinge and the KR loss.
+            alpha: Regularization factor ([0,1]) between the hinge and the KR loss.
             min_margin: Minimal margin for the hinge loss.
             true_values: tuple containing the two label for each predicted class.
         """
         super().__init__()
-        self.alpha = alpha
+        if (alpha >= 0) and (alpha <= 1):
+            self.alpha = alpha
+        else:
+            warnings.warn(
+                f"Depreciated alpha should be between 0 and 1 replaced by {alpha/(alpha+1.0)}"
+            )
+            self.alpha = alpha / (alpha + 1.0)
         self.min_margin = min_margin
-        self.true_values = true_values
+        assert (
+            true_values is None
+        ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return F.hkr_loss(input, target, self.alpha, self.min_margin, self.true_values)
+        return F.hkr_loss(input, target, self.alpha, self.min_margin)
 
 
 class KRMulticlassLoss(torch.nn.Module):
@@ -151,11 +163,17 @@ class HKRMulticlassLoss(torch.nn.Module):
     ):
         """
         Args:
-            alpha: Regularization factor between the hinge and the KR loss.
+            alpha: Regularization factor ([0,1]) between the hinge and the KR loss.
             min_margin: Minimal margin for the hinge loss.
         """
         super().__init__()
-        self.alpha = alpha
+        if (alpha >= 0) and (alpha <= 1):
+            self.alpha = alpha
+        else:
+            warnings.warn(
+                f"Depreciated alpha should be between 0 and 1 replaced by {alpha/(alpha+1.0)}"
+            )
+            self.alpha = alpha / (alpha + 1.0)
         self.min_margin = min_margin
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
@@ -193,8 +211,10 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
         if (alpha >= 0) and (alpha <= 1):
             self.alpha = torch.tensor(alpha, dtype=torch.float32)
         else:
-            warnings.warn(f"Depreciated alpha should be between 0 and 1 replaced by {alpha/(alpha+1.0)}")
-            self.alpha = torch.tensor(alpha / (alpha + 1.0), dtype=torch.float32)   
+            warnings.warn(
+                f"Depreciated alpha should be between 0 and 1 replaced by {alpha/(alpha+1.0)}"
+            )
+            self.alpha = torch.tensor(alpha / (alpha + 1.0), dtype=torch.float32)
         self.min_margin_v = min_margin
         self.alpha_mean = alpha_mean
 
