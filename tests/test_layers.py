@@ -1256,8 +1256,8 @@ def test_SpectralConv2dTranspose_vanilla_export():
     # model = Sequential([lay])
     x = np.random.normal(
         size=(5,) + kwargs["input_shape"]
-    )  #   tf.random.normal((5,) + (kwargs["input_shape"]))
-
+    )  
+    
     x = uft.to_tensor(x)
     y1 = model(x)
 
