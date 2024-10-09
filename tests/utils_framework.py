@@ -231,13 +231,19 @@ getters_dict = {
         list_keys_notimplemented=["multi_gpu"],
     ),
     HingeMulticlassLoss: partial(
-        get_instance_withcheck, list_keys_notimplemented=["reduction"]
+        get_instance_withcheck,
+        dict_keys_replace={"name": None},
+        list_keys_notimplemented=["multi_gpu"],
     ),
     HKRMulticlassLoss: partial(
-        get_instance_withcheck, list_keys_notimplemented=["reduction"]
+        get_instance_withcheck,
+        dict_keys_replace={"name": None},
+        list_keys_notimplemented=["multi_gpu"],
     ),
     KRMulticlassLoss: partial(
-        get_instance_withcheck, list_keys_notimplemented=["reduction"]
+        get_instance_withcheck,
+        dict_keys_replace={"name": None},
+        list_keys_notimplemented=["multi_gpu"],
     ),
     SoftHKRMulticlassLoss: partial(
         get_instance_withcheck, list_keys_notimplemented=["reduction"]

@@ -478,7 +478,9 @@ def test_softhkrmulticlass_loss():
             {"alpha": 2.5, "min_margin": 1.0, "reduction": "none"},
             y_true3,
             y_pred3,
-            np.float64([-779, -656, 1395, -625, -1609, 4557, -1284, 825]) / 900,
+            np.float64([-779, -656, 1395, -625, -1609, 4557, -1284, 825])
+            * uft.scaleAlpha(2.5)
+            / 900,
             1e-7,
         ),  # OK (-1,1) but no more one hot
         (

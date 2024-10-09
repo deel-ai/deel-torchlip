@@ -136,8 +136,13 @@ class KRMulticlassLoss(torch.nn.Module):
     The Wasserstein multiclass loss between ``input`` and ``target``.
     """
 
+    def __init__(self, reduction: str = "mean"):
+        super().__init__()
+        self.reduction = reduction
+
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return F.kr_multiclass_loss(input, target)
+        loss_batch = F.kr_multiclass_loss(input, target)
+        return F.apply_reduction(loss_batch, self.reduction)
 
 
 class HingeMulticlassLoss(torch.nn.Module):
@@ -147,16 +152,18 @@ class HingeMulticlassLoss(torch.nn.Module):
     torch.nn.functional.hinge_embedding_loss
     """
 
-    def __init__(self, min_margin: float = 1.0):
+    def __init__(self, min_margin: float = 1.0, reduction: str = "mean"):
         """
         Args:
             min_margin: The minimal margin to enforce.
         """
         super().__init__()
         self.min_margin = min_margin
+        self.reduction = reduction
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return F.hinge_multiclass_loss(input, target, self.min_margin)
+        loss_batch = F.hinge_multiclass_loss(input, target, self.min_margin)
+        return F.apply_reduction(loss_batch, self.reduction)
 
 
 class HKRMulticlassLoss(torch.nn.Module):
@@ -169,6 +176,7 @@ class HKRMulticlassLoss(torch.nn.Module):
         self,
         alpha: float,
         min_margin: float = 1.0,
+        reduction: str = "mean",
     ):
         """
         Args:
@@ -185,9 +193,11 @@ class HKRMulticlassLoss(torch.nn.Module):
             )
             self.alpha = alpha / (alpha + 1.0)
         self.min_margin = min_margin
+        self.reduction = reduction
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        return F.hkr_multiclass_loss(input, target, self.alpha, self.min_margin)
+        loss_batch = F.hkr_multiclass_loss(input, target, self.alpha, self.min_margin)
+        return F.apply_reduction(loss_batch, self.reduction)
 
 
 class SoftHKRMulticlassLoss(torch.nn.Module):

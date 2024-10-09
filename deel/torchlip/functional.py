@@ -279,6 +279,8 @@ def lipschitz_prelu(
 
 # Losses
 def apply_reduction(val: torch.Tensor, reduction: str) -> torch.Tensor:
+    if reduction == "auto":
+        reduction = "mean"
     red = getattr(torch, reduction, None)
     if red is None:
         return val
@@ -429,13 +431,14 @@ def kr_multiclass_loss(
     Returns:
         The Wasserstein multiclass loss between ``input`` and ``target``.
     """
-    true_target = torch.where(target > 0, 1.0, 0.0).to(input.dtype)
-    esp_true_true = torch.sum(input * true_target, 0) / torch.sum(true_target, 0)
-    esp_false_true = torch.sum(input * (1 - true_target), 0) / torch.sum(
-        (1 - true_target), 0
-    )
+    return kr_loss(input, target)
+    # true_target = torch.where(target > 0, 1.0, 0.0).to(input.dtype)
+    # esp_true_true = torch.sum(input * true_target, 0) / torch.sum(true_target, 0)
+    # esp_false_true = torch.sum(input * (1 - true_target), 0) / torch.sum(
+    #     (1 - true_target), 0
+    # )
 
-    return torch.mean(esp_true_true - esp_false_true)
+    # return torch.mean(esp_true_true - esp_false_true)
 
 
 def hinge_multiclass_loss(
@@ -466,7 +469,7 @@ def hinge_multiclass_loss(
     # reweight positive elements
     factor = target.shape[-1] - 1.0
     hinge = torch.where(target > 0, hinge * factor, hinge)
-    return torch.mean(hinge)
+    return torch.mean(hinge, dim=-1)
 
 
 def hkr_multiclass_loss(
@@ -500,8 +503,6 @@ def hkr_multiclass_loss(
     elif alpha == 0.0:  # alpha = 0 => KR only
         return -kr_multiclass_loss(input, target)
     else:
-        print("aaaaaaa", hinge_multiclass_loss(input, target, min_margin))
-        print("aaaaaaa", kr_multiclass_loss(input, target))
         return alpha * hinge_multiclass_loss(input, target, min_margin) - (
             1 - alpha
         ) * kr_multiclass_loss(input, target)
