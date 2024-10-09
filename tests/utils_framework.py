@@ -9,7 +9,6 @@ from torch.nn import Sequential as tSequential
 from torch.optim import SGD as tSGD
 from torch.optim import Adam as tAdam
 from torch.nn import CrossEntropyLoss
-from torch.nn import Linear
 import torch.autograd as autograd
 from torch import Tensor
 from torch import from_numpy
