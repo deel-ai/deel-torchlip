@@ -25,7 +25,7 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 from typing import Tuple
-
+import warnings
 import torch
 from .. import functional as F
 
@@ -165,7 +165,7 @@ class HKRMulticlassLoss(torch.nn.Module):
 class SoftHKRMulticlassLoss(torch.nn.Module):
     def __init__(
         self,
-        alpha=10.0,
+        alpha=0.9,
         min_margin=1.0,
         alpha_mean=0.99,
         temperature=1.0,
@@ -190,8 +190,11 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
             name (str): passed to tf.keras.Loss constructor
 
         """
-        assert (alpha >= 0) and (alpha <= 1), "alpha must in [0,1]"
-        self.alpha = torch.tensor(alpha, dtype=torch.float32)
+        if (alpha >= 0) and (alpha <= 1):
+            self.alpha = torch.tensor(alpha, dtype=torch.float32)
+        else:
+            warnings.warn(f"Depreciated alpha should be between 0 and 1 replaced by {alpha/(alpha+1.0)}")
+            self.alpha = torch.tensor(alpha / (alpha + 1.0), dtype=torch.float32)   
         self.min_margin_v = min_margin
         self.alpha_mean = alpha_mean
 
