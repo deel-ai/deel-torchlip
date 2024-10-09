@@ -92,14 +92,14 @@ def check_serialization(nb_class, loss):
 
 
 def binary_data(x):
-    """Return a Framework float32 tensor of shape [N, 1] 
-        from a list/np.array of shape [N]"""
+    """Return a Framework float32 tensor of shape [N, 1]
+    from a list/np.array of shape [N]"""
     return np.expand_dims(np.array(x, dtype=np.float32), axis=-1)
 
 
 def one_hot_data(x, n_class):
-    """Return a Framework float32 tensor of shape [N, n_class] 
-        from a list/np.array of shape [N]"""
+    """Return a Framework float32 tensor of shape [N, n_class]
+    from a list/np.array of shape [N]"""
     return np.eye(n_class)[x]
 
 
@@ -840,8 +840,8 @@ def test_minibatches_binary_loss_generic(
 def test_multilabel_loss_generic(loss_instance, loss_params, rtol):
     """
     Assert binary losses with multilabels.
-    Three losses are tested (KRLoss, HingeMarginLoss and HKRLoss). 
-    We compare losses with three separate binary classification and 
+    Three losses are tested (KRLoss, HingeMarginLoss and HKRLoss).
+    We compare losses with three separate binary classification and
     the corresponding multilabel problem.
     """
     # Create predictions and labels for 3 binary problems and the concatenated

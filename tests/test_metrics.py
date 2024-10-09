@@ -40,8 +40,8 @@ from .utils_framework import (
 
 
 def one_hot_data(x, n_class):
-    """Return a Framework float32 tensor of shape [N, n_class] 
-        from a list/np.array of shape [N]"""
+    """Return a Framework float32 tensor of shape [N, n_class]
+    from a list/np.array of shape [N]"""
     return np.eye(n_class)[x]
 
 

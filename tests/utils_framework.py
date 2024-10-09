@@ -224,6 +224,7 @@ getters_dict = {
     ),
 }
 
+
 def get_instance_framework(instance_type, inst_params):
     if instance_type not in getters_dict:
         instance = get_instance_generic(instance_type, inst_params)

@@ -149,6 +149,8 @@ def test_kernel_conv_svd(kernel_shape, strides):
     if hasattr(_padding_circular, "unavailable_class"):
         pytest.skip("_padding_circular not implemented")
 
+    np.random.seed(42)
+
     kernel = np.random.normal(size=kernel_shape).astype("float32")
     spectral_input_shape, RO_case, cPad = set_spectral_input_shape(kernel, strides)
 
@@ -220,6 +222,8 @@ def test_kernel_conv_svd(kernel_shape, strides):
     ],
 )
 def test_bjorck_normalization(kernel_shape):
+    np.random.seed(42)
+
     kernel = np.random.normal(size=kernel_shape).astype("float32")
     """Compare max singular value using power iteration and tf.linalg.svd"""
     sigmas_svd = np.linalg.svd(
@@ -265,6 +269,7 @@ def test_bjorck_normalization(kernel_shape):
 def test_reshaped_kernel_orthogonalization(kernel_shape):
     if hasattr(reshaped_kernel_orthogonalization, "unavailable_class"):
         pytest.skip("reshaped_kernel_orthogonalization not implemented")
+    np.random.seed(42)
 
     kernel = np.random.normal(size=kernel_shape).astype("float32")
     """Compare max singular value using power iteration and tf.linalg.svd"""
@@ -312,6 +317,8 @@ def test_bjorck_norm():
     """
     test bjorck_norm parametrization implementation
     """
+    np.random.seed(42)
+
     m = uft.get_instance_framework(
         tLinear, {"in_features": 2, "out_features": 2}
     )  # torch.nn.Linear(2, 2)
@@ -351,6 +358,8 @@ def test_frobenius_norm():
     """
     test frobenius_norm parametrization implementation
     """
+    np.random.seed(42)
+
     m = uft.get_instance_framework(
         tLinear, {"in_features": 2, "out_features": 2}
     )  # torch.nn.Linear(2, 2)
@@ -386,6 +395,8 @@ def test_frobenius_norm_disjoint_neurons():
     """
     Test `disjoint_neurons=True` argument in frobenius_norm parametrization
     """
+    np.random.seed(42)
+
     params = {"in_features": 5, "out_features": 3}
     m = uft.get_instance_framework(tLinear, params)
 
@@ -410,6 +421,8 @@ def test_lconv_norm():
     """
     test lconv_norm parametrization implementation
     """
+    np.random.seed(42)
+
     params = {
         "in_channels": 1,
         "out_channels": 2,
