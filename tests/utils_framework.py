@@ -4,6 +4,7 @@ import copy
 import math
 from functools import partial
 import torch
+import pytest
 from torch.nn import Sequential as tSequential
 
 from torch.optim import SGD as tSGD
@@ -27,6 +28,7 @@ from torch.nn import Upsample as tUpSampling2d
 from torch import cat as tConcatenate
 from torch import int32 as type_int32
 from torch.nn.functional import pad
+from torch.nn import MultiMarginLoss as tMultiMarginLoss
 
 from deel.torchlip import GroupSort
 from deel.torchlip import GroupSort2
@@ -139,7 +141,6 @@ SpectralConstraint = module_Unavailable_class
 FrobeniusConstraint = module_Unavailable_class
 CondenseCallback = module_Unavailable_class
 MonitorCallback = module_Unavailable_class
-MultiMarginLoss = module_Unavailable_class
 TauCategoricalCrossentropyLoss = module_Unavailable_class
 TauSparseCategoricalCrossentropyLoss = module_Unavailable_class
 TauBinaryCrossentropyLoss = module_Unavailable_class
@@ -596,3 +597,15 @@ def pad_input(x, padding, kernel_size):
             p_vert,
         ]  # [[0, 0], [p_vert, p_vert], [p_hor, p_hor], [0, 0]]
         return pad(x, tuple(pad_sizes), padding)
+
+
+class MultiMarginLoss(tMultiMarginLoss):
+    def __init__(self, min_margin=1.0, reduction=None):
+        if reduction is not None:
+            pytest.skip("reduction is not implemented in pytorch")
+        super(MultiMarginLoss, self).__init__(margin=min_margin)
+
+    def forward(self, input, target):
+        # pytorch implementation does not support one hot encoding
+        target_cl = torch.argmax(target, dim=1)
+        return super(MultiMarginLoss, self).forward(input, target_cl)
