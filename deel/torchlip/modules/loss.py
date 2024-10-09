@@ -207,6 +207,7 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
         min_margin=1.0,
         alpha_mean=0.99,
         temperature=1.0,
+        reduction: str = "mean",
     ):
         """
         The multiclass version of HKR with softmax. This is done by computing
@@ -252,6 +253,7 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
                 self.fct = self.kr_soft
             else:
                 self.fct = self.hkr
+        self.reduction = reduction
 
         super(SoftHKRMulticlassLoss, self).__init__()
 
@@ -340,4 +342,4 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
         if not (isinstance(target, torch.Tensor)):
             target = torch.Tensor(target, dtype=input.dtype)
         loss_batch = self.fct(target, input)
-        return torch.mean(loss_batch)
+        return F.apply_reduction(loss_batch, self.reduction)

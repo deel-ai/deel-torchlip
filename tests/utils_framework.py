@@ -246,7 +246,9 @@ getters_dict = {
         list_keys_notimplemented=["multi_gpu"],
     ),
     SoftHKRMulticlassLoss: partial(
-        get_instance_withcheck, list_keys_notimplemented=["reduction"]
+        get_instance_withcheck,
+        dict_keys_replace={"name": None},
+        list_keys_notimplemented=["multi_gpu"],
     ),
     tLinear: partial(
         get_instance_withcheck,
