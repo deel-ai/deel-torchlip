@@ -2,7 +2,6 @@ import warnings
 import os
 import copy
 import math
-import numpy as np
 from functools import partial
 import torch
 from torch.nn import Sequential as tSequential
@@ -75,6 +74,40 @@ from deel.torchlip.utils.lconv_norm import (
 )
 from torch.nn import Module as Loss
 
+
+# to avoid linter F401
+__all__ = [
+    "tLinear",
+    "tSequential",
+    "set_seed",
+    "MeanSquaredError",
+    "Flatten",
+    "tSoftmax",
+    "tMaxPool2d",
+    "tConv2d",
+    "tUpSampling2d",
+    "tConcatenate",
+    "type_int32",
+    "GroupSort",
+    "GroupSort2",
+    "Sequential",
+    "FrobeniusLinear",
+    "FrobeniusConv2d",
+    "InvertibleDownSampling",
+    "InvertibleUpSampling",
+    "evaluate_lip_const",
+    "DEFAULT_NITER_SPECTRAL_INIT",
+    "invertible_downsample",
+    "invertible_upsample",
+    "bjorck_norm",
+    "remove_bjorck_norm",
+    "frobenius_norm",
+    "remove_frobenius_norm",
+    "compute_lconv_coef",
+    "lconv_norm",
+    "remove_lconv_norm",
+    "Loss",
+]
 
 # not implemented
 def module_Unavailable(**kwargs):
