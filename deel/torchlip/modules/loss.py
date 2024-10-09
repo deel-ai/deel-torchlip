@@ -24,7 +24,6 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
-from typing import Tuple
 import warnings
 import torch
 from .. import functional as F
@@ -110,7 +109,8 @@ class HKRLoss(torch.nn.Module):
             self.alpha = alpha
         else:
             warnings.warn(
-                f"Depreciated alpha should be between 0 and 1 replaced by {alpha/(alpha+1.0)}"
+                f"Depreciated alpha should be between 0 and 1 replaced by \
+                    {alpha/(alpha+1.0)}"
             )
             self.alpha = alpha / (alpha + 1.0)
         self.min_margin = min_margin
@@ -171,7 +171,8 @@ class HKRMulticlassLoss(torch.nn.Module):
             self.alpha = alpha
         else:
             warnings.warn(
-                f"Depreciated alpha should be between 0 and 1 replaced by {alpha/(alpha+1.0)}"
+                f"Depreciated alpha should be between 0 and 1 replaced by \
+                    {alpha/(alpha+1.0)}"
             )
             self.alpha = alpha / (alpha + 1.0)
         self.min_margin = min_margin
@@ -212,7 +213,8 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
             self.alpha = torch.tensor(alpha, dtype=torch.float32)
         else:
             warnings.warn(
-                f"Depreciated alpha should be between 0 and 1 replaced by {alpha/(alpha+1.0)}"
+                f"Depreciated alpha should be between 0 and 1 replaced by \
+                    {alpha/(alpha+1.0)}"
             )
             self.alpha = torch.tensor(alpha / (alpha + 1.0), dtype=torch.float32)
         self.min_margin_v = min_margin
