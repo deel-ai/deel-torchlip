@@ -437,7 +437,8 @@ def test_softhkrmulticlass_loss():
             },
             binary_data(y_true1b),
             binary_data(y_pred1b),
-            [0.25, -2.2, 2.95, -0.65, -2.6, 0.7, 3.4, -1.55],
+            np.float64([0.25, -2.2, 2.95, -0.65, -2.6, 0.7, 3.4, -1.55])
+            * uft.scaleAlpha(2.5),
             1e-7,
         ),
         (
@@ -545,7 +546,7 @@ def test_no_reduction_loss_generic(
         expected_loss,
         rtol=rtol,
         atol=5e-6,
-        err_msg=f"Loss {loss.name} failed",
+        err_msg=f"Loss {loss} failed",
     )
 
 
@@ -749,7 +750,7 @@ def test_minibatches_binary_loss_generic(
             expected_loss,
             rtol=rtol,
             atol=5e-6,
-            err_msg=f"Loss {loss.name} failed",
+            err_msg=f"Loss {loss} failed",
         )
     loss_val_minibatches = 0
     for i in range(len(segments) - 1):
@@ -764,7 +765,7 @@ def test_minibatches_binary_loss_generic(
         loss_val_minibatches,
         rtol=rtol,  # 5e-6,
         atol=5e-6,
-        err_msg=f"Loss {loss.name} failed for hardcoded mini-batches",
+        err_msg=f"Loss {loss} failed for hardcoded mini-batches",
     )
 
 
@@ -870,5 +871,5 @@ def test_multilabel_loss_generic(loss_instance, loss_params, rtol):
         mean_loss_vals,
         rtol=rtol,  # 5e-6,
         atol=1e-4,
-        err_msg=f"Loss {loss.name} failed",
+        err_msg=f"Loss {loss} failed",
     )

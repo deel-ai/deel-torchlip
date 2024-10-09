@@ -278,6 +278,11 @@ def lipschitz_prelu(
 
 
 # Losses
+def apply_reduction(val: torch.Tensor, reduction: str) -> torch.Tensor:
+    red = getattr(torch, reduction, None)
+    if red is None:
+        return val
+    return red(val)
 
 
 def kr_loss(
@@ -305,12 +310,19 @@ def kr_loss(
     """
 
     target = target.view(input.shape)
+    pos_target = (target > 0).to(input.dtype)
+    mean_pos = torch.mean(pos_target, dim=0)
+    # pos factor = batch_size/number of positive samples
+    pos_factor = torch.nan_to_num(1.0 / mean_pos)
+    # neg factor = batch_size/number of negative samples
+    neg_factor = -torch.nan_to_num(1.0 / (1.0 - mean_pos))
 
-    c1 = torch.mean(input[target > 0])
-    c1 = torch.nan_to_num(c1)
-    c2 = torch.mean(input[target <= 0])
-    c2 = torch.nan_to_num(c2)
-    return c1 - c2
+    weighted_input = torch.where(target > 0, pos_factor, neg_factor) * input
+    # Since element-wise KR terms are averaged by loss reduction later on, it is needed
+    # to multiply by batch_size here.
+    # In binary case (`y_true` of shape (batch_size, 1)), `tf.reduce_mean(axis=-1)`
+    # behaves like `tf.squeeze()` to return element-wise loss of shape (batch_size, ).
+    return torch.mean(weighted_input, dim=-1)
 
 
 def neg_kr_loss(
@@ -359,8 +371,8 @@ def hinge_margin_loss(
     """
     target = target.view(input.shape)
     sign_target = torch.where(target > 0, 1.0, -1.0).to(input.dtype)
-
-    return torch.mean(F.relu(min_margin / 2.0 - sign_target * input))
+    hinge = F.relu(min_margin / 2.0 - sign_target * input)
+    return torch.mean(hinge, dim=-1)
 
 
 def hkr_loss(
@@ -395,8 +407,9 @@ def hkr_loss(
         return -kr_loss(input, target)
     # true value: positive value should be the first to be coherent with the
     # hinge loss (positive y_pred)
-    return alpha * hinge_margin_loss(input, target, min_margin)
-    -(1 - alpha) * kr_loss(input, target)
+    return alpha * hinge_margin_loss(input, target, min_margin) - (1 - alpha) * kr_loss(
+        input, target
+    )
 
 
 def kr_multiclass_loss(

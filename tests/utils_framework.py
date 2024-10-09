@@ -219,11 +219,17 @@ getters_dict = {
     ScaledAvgPool2d: partial(
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
-    KRLoss: partial(get_instance_withcheck, list_keys_notimplemented=["reduction"]),
-    HingeMarginLoss: partial(
-        get_instance_withcheck, list_keys_notimplemented=["reduction"]
+    KRLoss: partial(
+        get_instance_withcheck,
+        dict_keys_replace={"name": None},
+        list_keys_notimplemented=["multi_gpu"],
     ),
-    HKRLoss: partial(get_instance_withcheck, list_keys_notimplemented=["reduction"]),
+    HingeMarginLoss: partial(get_instance_withcheck, dict_keys_replace={"name": None}),
+    HKRLoss: partial(
+        get_instance_withcheck,
+        dict_keys_replace={"name": None},
+        list_keys_notimplemented=["multi_gpu"],
+    ),
     HingeMulticlassLoss: partial(
         get_instance_withcheck, list_keys_notimplemented=["reduction"]
     ),
