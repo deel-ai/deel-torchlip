@@ -48,16 +48,12 @@ class KRLoss(torch.nn.Module):
         super().__init__()
         self.reduction = reduction
         self.multi_gpu = multi_gpu
-        if multi_gpu:
-            self.kr_function = F.kr_loss_multi_gpu
-        else:
-            self.kr_function = F.kr_loss
         assert (
             true_values is None
         ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss_batch = self.kr_function(input, target)
+        loss_batch = F.kr_loss(input, target, multi_gpu=self.multi_gpu)
         return F.apply_reduction(loss_batch, self.reduction)
 
 
@@ -77,16 +73,12 @@ class NegKRLoss(torch.nn.Module):
         super().__init__()
         self.reduction = reduction
         self.multi_gpu = multi_gpu
-        if multi_gpu:
-            self.kr_function = F.neg_kr_loss_multi_gpu
-        else:
-            self.kr_function = F.neg_kr_loss
         assert (
             true_values is None
         ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss_batch = self.kr_function(input, target)
+        loss_batch = F.neg_kr_loss(input, target, multi_gpu=self.multi_gpu)
         return F.apply_reduction(loss_batch, self.reduction)
 
 
@@ -134,10 +126,6 @@ class HKRLoss(torch.nn.Module):
         super().__init__()
         self.reduction = reduction
         self.multi_gpu = multi_gpu
-        if multi_gpu:
-            self.hkr_function = F.hkr_loss_multi_gpu
-        else:
-            self.hkr_function = F.hkr_loss
         if (alpha >= 0) and (alpha <= 1):
             self.alpha = alpha
         else:
@@ -152,7 +140,9 @@ class HKRLoss(torch.nn.Module):
         ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss_batch = self.hkr_function(input, target, self.alpha, self.min_margin)
+        loss_batch = F.hkr_loss(
+            input, target, self.alpha, self.min_margin, multi_gpu=self.multi_gpu
+        )
         return F.apply_reduction(loss_batch, self.reduction)
 
 
@@ -161,12 +151,13 @@ class KRMulticlassLoss(torch.nn.Module):
     The Wasserstein multiclass loss between ``input`` and ``target``.
     """
 
-    def __init__(self, reduction: str = "mean"):
+    def __init__(self, multi_gpu=False, reduction: str = "mean"):
         super().__init__()
         self.reduction = reduction
+        self.multi_gpu = multi_gpu
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss_batch = F.kr_multiclass_loss(input, target)
+        loss_batch = F.kr_loss(input, target, multi_gpu=self.multi_gpu)
         return F.apply_reduction(loss_batch, self.reduction)
 
 
@@ -201,6 +192,7 @@ class HKRMulticlassLoss(torch.nn.Module):
         self,
         alpha: float,
         min_margin: float = 1.0,
+        multi_gpu=False,
         reduction: str = "mean",
     ):
         """
@@ -219,9 +211,12 @@ class HKRMulticlassLoss(torch.nn.Module):
             self.alpha = alpha / (alpha + 1.0)
         self.min_margin = min_margin
         self.reduction = reduction
+        self.multi_gpu = multi_gpu
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss_batch = F.hkr_multiclass_loss(input, target, self.alpha, self.min_margin)
+        loss_batch = F.hkr_multiclass_loss(
+            input, target, self.alpha, self.min_margin, multi_gpu=self.multi_gpu
+        )
         return F.apply_reduction(loss_batch, self.reduction)
 
 

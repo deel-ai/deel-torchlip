@@ -685,7 +685,7 @@ segments4 = [
             y_true3,
             y_pred3,
             [0, 3, 7, None],
-            np.float32(152 / 75),
+            np.float32(152 / 75) * uft.scaleAlpha(2.5),
             1e-7,
         ),  # OK (-1,1) but no more one hot
         (

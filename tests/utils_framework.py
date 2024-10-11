@@ -237,22 +237,22 @@ getters_dict = {
     HingeMulticlassLoss: partial(
         get_instance_withcheck,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=["multi_gpu"],
+        list_keys_notimplemented=[],
     ),
     HKRMulticlassLoss: partial(
         get_instance_withcheck,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=["multi_gpu"],
+        list_keys_notimplemented=[],
     ),
     KRMulticlassLoss: partial(
         get_instance_withcheck,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=["multi_gpu"],
+        list_keys_notimplemented=[],
     ),
     SoftHKRMulticlassLoss: partial(
         get_instance_withcheck,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=["multi_gpu"],
+        list_keys_notimplemented=[],
     ),
     tLinear: partial(
         get_instance_withcheck,
@@ -609,10 +609,8 @@ def pad_input(x, padding, kernel_size):
 
 
 class MultiMarginLoss(tMultiMarginLoss):
-    def __init__(self, min_margin=1.0, reduction=None):
-        if reduction is not None:
-            pytest.skip("reduction is not implemented in pytorch")
-        super(MultiMarginLoss, self).__init__(margin=min_margin)
+    def __init__(self, min_margin=1.0, reduction="mean"):
+        super(MultiMarginLoss, self).__init__(margin=min_margin, reduction=reduction)
 
     def forward(self, input, target):
         # pytorch implementation does not support one hot encoding
