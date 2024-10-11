@@ -65,6 +65,7 @@ from deel.torchlip.normalizers import DEFAULT_NITER_SPECTRAL_INIT
 from deel.torchlip.modules import vanilla_model
 from deel.torchlip.functional import invertible_downsample
 from deel.torchlip.functional import invertible_upsample
+from deel.torchlip.functional import process_labels_for_multi_gpu
 
 from deel.torchlip.utils.bjorck_norm import bjorck_norm, remove_bjorck_norm
 from deel.torchlip.utils.frobenius_norm import (
@@ -147,7 +148,6 @@ MonitorCallback = module_Unavailable_class
 TauCategoricalCrossentropyLoss = TauCrossEntropyLoss
 TauSparseCategoricalCrossentropyLoss = TauCrossEntropyLoss
 TauBinaryCrossentropyLoss = TauBCEWithLogitsLoss
-process_labels_for_multi_gpu = module_Unavailable_class
 CategoricalProvableRobustAccuracy = module_Unavailable_class
 BinaryProvableRobustAccuracy = module_Unavailable_class
 CategoricalProvableAvgRobustness = module_Unavailable_class
@@ -224,13 +224,13 @@ getters_dict = {
     KRLoss: partial(
         get_instance_withcheck,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=["multi_gpu"],
+        list_keys_notimplemented=[],
     ),
     HingeMarginLoss: partial(get_instance_withcheck, dict_keys_replace={"name": None}),
     HKRLoss: partial(
         get_instance_withcheck,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=["multi_gpu"],
+        list_keys_notimplemented=[],
     ),
     HingeMulticlassLoss: partial(
         get_instance_withcheck,

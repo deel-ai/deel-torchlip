@@ -38,19 +38,26 @@ class KRLoss(torch.nn.Module):
     duality.
     """
 
-    def __init__(self, reduction: str = "mean", true_values=None):
+    def __init__(self, multi_gpu=False, reduction: str = "mean", true_values=None):
         """
         Args:
-            true_values: tuple containing the two label for each predicted class.
+            multi_gpu (bool): set to True when running on multi-GPU/TPU
+            reduction: passed to tf.keras.Loss constructor
+            true_values: depreciated.
         """
         super().__init__()
         self.reduction = reduction
+        self.multi_gpu = multi_gpu
+        if multi_gpu:
+            self.kr_function = F.kr_loss_multi_gpu
+        else:
+            self.kr_function = F.kr_loss
         assert (
             true_values is None
         ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss_batch = F.kr_loss(input, target)
+        loss_batch = self.kr_function(input, target)
         return F.apply_reduction(loss_batch, self.reduction)
 
 
@@ -60,19 +67,26 @@ class NegKRLoss(torch.nn.Module):
     the Kantorovich-Rubinstein duality.
     """
 
-    def __init__(self, reduction: str = "mean", true_values=None):
+    def __init__(self, multi_gpu=False, reduction: str = "mean", true_values=None):
         """
         Args:
-            true_values: tuple containing the two label for each predicted class.
+            multi_gpu (bool): set to True when running on multi-GPU/TPU
+            reduction: passed to tf.keras.Loss constructor
+            true_values: depreciated.
         """
         super().__init__()
         self.reduction = reduction
+        self.multi_gpu = multi_gpu
+        if multi_gpu:
+            self.kr_function = F.neg_kr_loss_multi_gpu
+        else:
+            self.kr_function = F.neg_kr_loss
         assert (
             true_values is None
         ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss_batch = F.neg_kr_loss(input, target)
+        loss_batch = self.kr_function(input, target)
         return F.apply_reduction(loss_batch, self.reduction)
 
 
@@ -105,6 +119,7 @@ class HKRLoss(torch.nn.Module):
         self,
         alpha: float,
         min_margin: float = 1.0,
+        multi_gpu=False,
         reduction: str = "mean",
         true_values=None,
     ):
@@ -112,10 +127,17 @@ class HKRLoss(torch.nn.Module):
         Args:
             alpha: Regularization factor ([0,1]) between the hinge and the KR loss.
             min_margin: Minimal margin for the hinge loss.
-            true_values: tuple containing the two label for each predicted class.
+            multi_gpu (bool): set to True when running on multi-GPU/TPU
+            reduction: passed to tf.keras.Loss constructor
+            true_values: depreciated.
         """
         super().__init__()
         self.reduction = reduction
+        self.multi_gpu = multi_gpu
+        if multi_gpu:
+            self.hkr_function = F.hkr_loss_multi_gpu
+        else:
+            self.hkr_function = F.hkr_loss
         if (alpha >= 0) and (alpha <= 1):
             self.alpha = alpha
         else:
@@ -130,7 +152,7 @@ class HKRLoss(torch.nn.Module):
         ), "depreciated true_values should be None (use target>0)"
 
     def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
-        loss_batch = F.hkr_loss(input, target, self.alpha, self.min_margin)
+        loss_batch = self.hkr_function(input, target, self.alpha, self.min_margin)
         return F.apply_reduction(loss_batch, self.reduction)
 
 
