@@ -31,6 +31,7 @@ for condensation and vanilla exportation.
 import abc
 import copy
 import logging
+import warnings
 import math
 from collections import OrderedDict
 from typing import Any
@@ -40,8 +41,27 @@ import torch
 import torch.nn as nn
 import torch.nn.utils.parametrize as parametrize
 from torch.nn import Sequential as TorchSequential
+from torch import reshape
 
-logger = logging.getLogger("deel.torchlip")
+
+def _is_supported_1lip_layer(layer):
+    """Return True if the Keras layer is 1-Lipschitz. Note that in some cases, the layer
+    is 1-Lipschitz for specific set of parameters.
+    """
+    supported_1lip_layers = (
+        torch.nn.Softmax,
+        torch.nn.Flatten,
+        torch.nn.Identity,
+        torch.nn.ReLU,
+        torch.nn.Sigmoid,
+        torch.nn.Tanh,
+        Reshape,
+    )
+    if isinstance(layer, supported_1lip_layers):
+        return True
+    elif isinstance(layer, torch.nn.MaxPool2d):
+        return layer.kernel_size <= layer.stride
+    return False
 
 
 def vanilla_model(model: nn.Module):
@@ -133,13 +153,13 @@ class Sequential(TorchSequential, LipschitzModule):
 
         # Force the Lipschitz coefficient:
         n_layers = np.sum(
-            (isinstance(layer, LipschitzModule) for layer in self.children())
+            [isinstance(layer, LipschitzModule) for layer in self.children()]
         )
         for module in self.children():
             if isinstance(module, LipschitzModule):
                 module._coefficient_lip = math.pow(k_coef_lip, 1 / n_layers)
-            else:
-                logger.warning(
+            elif _is_supported_1lip_layer(module) is not True:
+                warnings.warn(
                     "Sequential model contains a layer which is not a Lipschitz layer: {}".format(  # noqa: E501
                         module
                     )
@@ -163,3 +183,12 @@ class Sequential(TorchSequential, LipschitzModule):
             else:
                 layers.append((name, copy.deepcopy(layer)))
         return TorchSequential(OrderedDict(layers))
+
+
+class Reshape(torch.nn.Module):
+    def __init__(self, target_shape):
+        super(Reshape, self).__init__()
+        self.target_shape = target_shape
+
+    def forward(self, x):
+        return reshape(x, self.target_shape)
