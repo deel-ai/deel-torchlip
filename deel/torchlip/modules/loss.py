@@ -25,8 +25,11 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 import warnings
+from typing import Callable, Optional
 import torch
 from .. import functional as F
+from torch.nn import CrossEntropyLoss, BCEWithLogitsLoss
+from torch import Tensor
 
 
 class KRLoss(torch.nn.Module):
@@ -342,4 +345,87 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
         if not (isinstance(target, torch.Tensor)):
             target = torch.Tensor(target, dtype=input.dtype)
         loss_batch = self.fct(target, input)
+        return F.apply_reduction(loss_batch, self.reduction)
+
+
+class TauCrossEntropyLoss(CrossEntropyLoss):
+    def __init__(
+        self,
+        tau,
+        weight: Optional[Tensor] = None,
+        size_average=None,
+        ignore_index: int = -100,
+        reduce=None,
+        reduction: str = "mean",
+        label_smoothing: float = 0.0,
+    ) -> None:
+        super().__init__(
+            weight=weight,
+            size_average=size_average,
+            ignore_index=ignore_index,
+            reduce=reduce,
+            reduction=reduction,
+            label_smoothing=label_smoothing,
+        )
+        self.tau = tau
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        if input.shape == target.shape:
+            return super().forward(input * self.tau, target.to(torch.double)) / self.tau
+        else:
+            return super().forward(input * self.tau, target.to(torch.int64)) / self.tau
+
+
+class TauBCEWithLogitsLoss(BCEWithLogitsLoss):
+    def __init__(
+        self,
+        tau,
+        weight: Optional[Tensor] = None,
+        size_average=None,
+        reduce=None,
+        reduction: str = "mean",
+        pos_weight=None,
+    ) -> None:
+        super().__init__(
+            weight=weight,
+            size_average=size_average,
+            reduce=reduce,
+            reduction=reduction,
+            pos_weight=pos_weight,
+        )
+        self.tau = tau
+
+    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+        true_target = torch.where(target > 0, 1.0, 0.0).to(input.dtype)
+        return super().forward(input * self.tau, true_target) / self.tau
+
+
+class CategoricalHingeLoss(torch.nn.Module):
+
+    def __init__(
+        self,
+        min_margin: float = 1.0,
+        reduction: str = "mean",
+    ):
+        """
+        This implementation is sligthly different from the pytorch MultiMarginLoss.
+
+        `y_true` and `y_pred` must be of shape (batch_size, # classes).
+        Note that `y_true` should be one-hot encoded
+
+        Args:
+            min_margin (float): margin parameter.
+            reduction: reduction of the loss, passed to original loss.
+        """
+        super().__init__()
+        self.min_margin = min_margin
+        self.reduction = reduction
+
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        mask = torch.where(target > 0, 1, 0).to(input.dtype)
+        pos = torch.sum(mask * input, dim=-1)
+        neg = torch.max(
+            torch.where(target > 0, input - self.min_margin, input), dim=-1
+        ).values
+        loss_batch = torch.nn.functional.relu(self.min_margin - (pos - neg))
         return F.apply_reduction(loss_batch, self.reduction)

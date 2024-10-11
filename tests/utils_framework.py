@@ -20,12 +20,11 @@ from torch.nn import Linear as tLinear
 from torch.nn import Flatten
 from torch.nn import ReLU as tReLU
 from torch.nn import Softmax as tSoftmax
-from torch import reshape
 from torch.nn import MaxPool2d as tMaxPool2d
 from torch.nn import Conv2d as tConv2d
 from torch.nn import Conv2d as PadConv2d
 from torch.nn import Upsample as tUpSampling2d
-from torch import cat as tConcatenate
+from torch import cat
 from torch import int32 as type_int32
 from torch.nn.functional import pad
 from torch.nn import MultiMarginLoss as tMultiMarginLoss
@@ -43,6 +42,7 @@ from deel.torchlip.modules import ScaledAdaptiveAvgPool2d
 from deel.torchlip.modules import ScaledL2NormPool2d
 from deel.torchlip.modules import InvertibleDownSampling
 from deel.torchlip.modules import InvertibleUpSampling
+from deel.torchlip.modules import Reshape as tReshape
 from deel.torchlip.utils import evaluate_lip_const
 
 from deel.torchlip.modules import (
@@ -53,6 +53,9 @@ from deel.torchlip.modules import (
     HingeMulticlassLoss,
     HKRMulticlassLoss,
     SoftHKRMulticlassLoss,
+    TauCrossEntropyLoss,
+    TauBCEWithLogitsLoss,
+    CategoricalHingeLoss,
 )
 
 from deel.torchlip.init import spectral_, bjorck_
@@ -141,10 +144,9 @@ SpectralConstraint = module_Unavailable_class
 FrobeniusConstraint = module_Unavailable_class
 CondenseCallback = module_Unavailable_class
 MonitorCallback = module_Unavailable_class
-TauCategoricalCrossentropyLoss = module_Unavailable_class
-TauSparseCategoricalCrossentropyLoss = module_Unavailable_class
-TauBinaryCrossentropyLoss = module_Unavailable_class
-CategoricalHingeLoss = module_Unavailable_class
+TauCategoricalCrossentropyLoss = TauCrossEntropyLoss
+TauSparseCategoricalCrossentropyLoss = TauCrossEntropyLoss
+TauBinaryCrossentropyLoss = TauBCEWithLogitsLoss
 process_labels_for_multi_gpu = module_Unavailable_class
 CategoricalProvableRobustAccuracy = module_Unavailable_class
 BinaryProvableRobustAccuracy = module_Unavailable_class
@@ -570,15 +572,6 @@ def tActivation(activation):
         return None
 
 
-class tReshape(torch.nn.Module):
-    def __init__(self, target_shape):
-        super(tReshape, self).__init__()
-        self.target_shape = target_shape
-
-    def forward(self, x):
-        return reshape(x, self.target_shape)
-
-
 def vanilla_require_a_copy():
     return True
 
@@ -623,3 +616,12 @@ class MultiMarginLoss(tMultiMarginLoss):
         # pytorch implementation does not support one hot encoding
         target_cl = torch.argmax(target, dim=1)
         return super(MultiMarginLoss, self).forward(input, target_cl)
+
+
+class tConcatenate(torch.nn.Module):
+    def __init__(self, dim=-1):
+        super(tConcatenate, self).__init__()
+        self.dim = dim
+
+    def forward(self, x):
+        return torch.cat(x, dim=self.dim)

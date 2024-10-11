@@ -542,7 +542,8 @@ def test_no_reduction_loss_generic(
     if loss is None:
         pytest.skip(f"{loss_instance}   with params {loss_params} not implemented")
     y_true, y_pred = uft.to_tensor(y_true_np), uft.to_tensor(y_pred_np)
-    loss_val = uft.compute_loss(loss, y_pred, y_true).numpy()
+    loss_val = uft.to_numpy(uft.compute_loss(loss, y_pred, y_true))
+    loss_val = np.squeeze(loss_val)
     np.testing.assert_allclose(
         loss_val,
         expected_loss,
@@ -598,7 +599,7 @@ segments4 = [
             binary_data(y_true1b),
             binary_data(y_pred1b),
             [0, 3, 7, None],
-            0.3,
+            0.3 * uft.scaleAlpha(2.5),
             1e-7,
         ),
         (
