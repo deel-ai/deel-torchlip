@@ -4,7 +4,6 @@ import copy
 import math
 from functools import partial
 import torch
-import pytest
 from torch.nn import Sequential as tSequential
 
 from torch.optim import SGD as tSGD
