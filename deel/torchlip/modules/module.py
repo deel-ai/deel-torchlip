@@ -30,7 +30,6 @@ for condensation and vanilla exportation.
 """
 import abc
 import copy
-import logging
 import warnings
 import math
 from collections import OrderedDict

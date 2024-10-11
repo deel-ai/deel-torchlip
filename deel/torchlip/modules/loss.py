@@ -25,7 +25,7 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 import warnings
-from typing import Callable, Optional
+from typing import Optional
 import torch
 from .. import functional as F
 from torch.nn import CrossEntropyLoss, BCEWithLogitsLoss

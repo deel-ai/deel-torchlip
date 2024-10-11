@@ -347,7 +347,7 @@ def kr_loss_multi_gpu(input: torch.Tensor, target: torch.Tensor) -> torch.Tensor
     # Since the information of batch size was included in `target` by
     # `process_labels_for_multi_gpu()`, there is no need here to multiply by batch size.
     # In binary case (`target` of shape (batch_size, 1)), `torch.mean(dim=-1)`
-    # behaves like `torch.squeeze()` to return element-wise loss of shape (batch_size, ).
+    # behaves like `torch.squeeze()` to return element-wise loss of shape (batch_size,)
     return torch.mean(input * target, dim=-1)
 
 

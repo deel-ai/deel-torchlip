@@ -24,7 +24,6 @@ from torch.nn import MaxPool2d as tMaxPool2d
 from torch.nn import Conv2d as tConv2d
 from torch.nn import Conv2d as PadConv2d
 from torch.nn import Upsample as tUpSampling2d
-from torch import cat
 from torch import int32 as type_int32
 from torch.nn.functional import pad
 from torch.nn import MultiMarginLoss as tMultiMarginLoss
@@ -112,6 +111,9 @@ __all__ = [
     "lconv_norm",
     "remove_lconv_norm",
     "Loss",
+    "tReshape",
+    "CategoricalHingeLoss",
+    "process_labels_for_multi_gpu",
 ]
 
 
