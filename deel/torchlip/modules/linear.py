@@ -25,11 +25,11 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 import torch
-from torch.nn.utils import spectral_norm
+from torch.nn.utils.parametrizations import spectral_norm
 
 from ..utils import bjorck_norm
-from ..utils import DEFAULT_NITER_BJORCK
-from ..utils import DEFAULT_NITER_SPECTRAL
+from ..normalizers import DEFAULT_EPS_BJORCK
+from ..normalizers import DEFAULT_EPS_SPECTRAL
 from ..utils import frobenius_norm
 from .module import LipschitzModule
 
@@ -41,8 +41,8 @@ class SpectralLinear(torch.nn.Linear, LipschitzModule):
         out_features: int,
         bias: bool = True,
         k_coef_lip: float = 1.0,
-        niter_spectral: int = DEFAULT_NITER_SPECTRAL,
-        niter_bjorck: int = DEFAULT_NITER_BJORCK,
+        eps_spectral: int = DEFAULT_EPS_SPECTRAL,
+        eps_bjorck: int = DEFAULT_EPS_BJORCK,
     ):
         """
         This class is a Linear Layer constrained such that all singular of it's kernel
@@ -57,8 +57,8 @@ class SpectralLinear(torch.nn.Linear, LipschitzModule):
             out_features: Size of each output sample.
             bias: If ``False``, the layer will not learn an additive bias.
             k_coef_lip: Lipschitz constant to ensure.
-            niter_spectral: Number of iteration to find the maximum singular value.
-            niter_bjorck: Number of iteration with BjorckNormalizer algorithm.
+            eps_spectral: stopping criterion for the iterative power algorithm.
+            eps_bjorck: stopping criterion Bjorck algorithm.
 
         Shape:
             - Input: :math:`(N, *, H_{in})` where :math:`*` means any number of
@@ -84,10 +84,10 @@ class SpectralLinear(torch.nn.Linear, LipschitzModule):
         spectral_norm(
             self,
             name="weight",
-            n_power_iterations=niter_spectral,
+            eps=eps_spectral,
         )
-        bjorck_norm(self, name="weight", n_iterations=niter_bjorck)
-        self.register_forward_pre_hook(self._hook)
+        bjorck_norm(self, name="weight", eps=eps_bjorck)
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self) -> torch.nn.Linear:
         layer = torch.nn.Linear(
@@ -142,7 +142,7 @@ class FrobeniusLinear(torch.nn.Linear, LipschitzModule):
             self.bias.data.fill_(0.0)
 
         frobenius_norm(self, name="weight", disjoint_neurons=disjoint_neurons)
-        self.register_forward_pre_hook(self._hook)
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self):
         layer = torch.nn.Linear(

@@ -34,6 +34,9 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
+with open(path.join(this_directory, "deel/torchlip/VERSION")) as f:
+    version = f.read().strip()
+
 dev_requires = ["tox", "black", "flake8", "flake8-black", "numpy", "torch_testing"]
 
 docs_requires = [
@@ -49,7 +52,7 @@ docs_requires = [
 
 setuptools.setup(
     name="deel-torchlip",
-    version="0.1.1",
+    version=version,
     author=", ".join(
         [
             "Mathieu SERRURIER",
@@ -74,7 +77,6 @@ setuptools.setup(
     packages=setuptools.find_namespace_packages(include=["deel.*"]),
     install_requires=[
         "numpy",
-        "inflection",
         "torch",
     ],
     license="MIT",

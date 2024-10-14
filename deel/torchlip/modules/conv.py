@@ -27,11 +27,11 @@
 import numpy as np
 import torch
 from torch.nn.common_types import _size_2_t
-from torch.nn.utils import spectral_norm
+from torch.nn.utils.parametrizations import spectral_norm
 
 from ..utils import bjorck_norm
-from ..utils import DEFAULT_NITER_BJORCK
-from ..utils import DEFAULT_NITER_SPECTRAL
+from ..normalizers import DEFAULT_EPS_BJORCK
+from ..normalizers import DEFAULT_EPS_SPECTRAL
 from ..utils import frobenius_norm
 from ..utils import lconv_norm
 from .module import LipschitzModule
@@ -50,8 +50,8 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
         bias: bool = True,
         padding_mode: str = "zeros",
         k_coef_lip: float = 1.0,
-        niter_spectral: int = DEFAULT_NITER_SPECTRAL,
-        niter_bjorck: int = DEFAULT_NITER_BJORCK,
+        eps_spectral: int = DEFAULT_EPS_SPECTRAL,
+        eps_bjorck: int = DEFAULT_EPS_BJORCK,
     ):
         """
         This class is a Conv2d Layer constrained such that all singular of it's kernel
@@ -79,8 +79,8 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
             bias (bool, optional): If ``True``, adds a learnable bias to the
                 output.
             k_coef_lip: Lipschitz constant to ensure.
-            niter_spectral: Number of iteration to find the maximum singular value.
-            niter_bjorck: Number of iteration with BjorckNormalizer algorithm.
+            eps_spectral: stopping criterion for the iterative power algorithm.
+            eps_bjorck: stopping criterion Bjorck algorithm.
 
         This documentation reuse the body of the original torch.nn.Conv2D doc.
         """
@@ -108,11 +108,11 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
         spectral_norm(
             self,
             name="weight",
-            n_power_iterations=niter_spectral,
+            eps=eps_spectral,
         )
-        bjorck_norm(self, name="weight", n_iterations=niter_bjorck)
-        lconv_norm(self)
-        self.register_forward_pre_hook(self._hook)
+        bjorck_norm(self, name="weight", eps=eps_bjorck)
+        lconv_norm(self, name="weight")
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self):
         layer = torch.nn.Conv2d(
@@ -172,7 +172,7 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
 
         frobenius_norm(self, name="weight", disjoint_neurons=False)
         lconv_norm(self)
-        self.register_forward_pre_hook(self._hook)
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self):
         layer = torch.nn.Conv2d(

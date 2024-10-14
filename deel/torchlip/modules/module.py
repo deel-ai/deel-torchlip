@@ -29,16 +29,68 @@ This module contains equivalents for Model and Sequential. These classes add sup
 for condensation and vanilla exportation.
 """
 import abc
-from collections import OrderedDict
 import copy
-import logging
+import warnings
 import math
+from collections import OrderedDict
 from typing import Any
 
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.utils.parametrize as parametrize
 from torch.nn import Sequential as TorchSequential
+from torch import reshape
 
-logger = logging.getLogger("deel.torchlip")
+
+def _is_supported_1lip_layer(layer):
+    """Return True if the Keras layer is 1-Lipschitz. Note that in some cases, the layer
+    is 1-Lipschitz for specific set of parameters.
+    """
+    supported_1lip_layers = (
+        torch.nn.Softmax,
+        torch.nn.Flatten,
+        torch.nn.Identity,
+        torch.nn.ReLU,
+        torch.nn.Sigmoid,
+        torch.nn.Tanh,
+        Reshape,
+    )
+    if isinstance(layer, supported_1lip_layers):
+        return True
+    elif isinstance(layer, torch.nn.MaxPool2d):
+        return layer.kernel_size <= layer.stride
+    return False
+
+
+def vanilla_model(model: nn.Module):
+    """Convert lipschitz modules into their non-lipschitz counterpart (for
+    instance, SpectralConv2d layers become Conv2d layers).
+
+    Warning: This function modifies the model in-place.
+
+    Args:
+        model (nn.Module): Lipschitz neural network
+    """
+    for n, module in model.named_children():
+        if len(list(module.children())) > 0:
+            # compound module, go inside it
+            vanilla_model(module)
+
+        if isinstance(module, LipschitzModule):
+            # simple module
+            setattr(model, n, module.vanilla_export())
+
+
+class _LipschitzCoefMultiplication(nn.Module):
+    """Parametrization module for lipschitz global coefficient multiplication."""
+
+    def __init__(self, coef: float):
+        super().__init__()
+        self._coef = coef
+
+    def forward(self, weight: torch.Tensor) -> torch.Tensor:
+        return self._coef * weight
 
 
 class LipschitzModule(abc.ABC):
@@ -58,8 +110,13 @@ class LipschitzModule(abc.ABC):
     def __init__(self, coefficient_lip: float = 1.0):
         self._coefficient_lip = coefficient_lip
 
-    def _hook(self, module, inputs):
-        setattr(module, "weight", getattr(module, "weight") * self._coefficient_lip)
+    def apply_lipschitz_factor(self):
+        """Multiply the layer weights by a lipschitz factor."""
+        if self._coefficient_lip == 1.0:
+            return
+        parametrize.register_parametrization(
+            self, "weight", _LipschitzCoefMultiplication(self._coefficient_lip)
+        )
 
     @abc.abstractmethod
     def vanilla_export(self):
@@ -95,13 +152,13 @@ class Sequential(TorchSequential, LipschitzModule):
 
         # Force the Lipschitz coefficient:
         n_layers = np.sum(
-            (isinstance(layer, LipschitzModule) for layer in self.children())
+            [isinstance(layer, LipschitzModule) for layer in self.children()]
         )
         for module in self.children():
             if isinstance(module, LipschitzModule):
                 module._coefficient_lip = math.pow(k_coef_lip, 1 / n_layers)
-            else:
-                logger.warning(
+            elif _is_supported_1lip_layer(module) is not True:
+                warnings.warn(
                     "Sequential model contains a layer which is not a Lipschitz layer: {}".format(  # noqa: E501
                         module
                     )
@@ -125,3 +182,12 @@ class Sequential(TorchSequential, LipschitzModule):
             else:
                 layers.append((name, copy.deepcopy(layer)))
         return TorchSequential(OrderedDict(layers))
+
+
+class Reshape(torch.nn.Module):
+    def __init__(self, target_shape):
+        super(Reshape, self).__init__()
+        self.target_shape = target_shape
+
+    def forward(self, x):
+        return reshape(x, self.target_shape)
