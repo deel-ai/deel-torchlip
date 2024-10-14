@@ -29,16 +29,49 @@ This module contains equivalents for Model and Sequential. These classes add sup
 for condensation and vanilla exportation.
 """
 import abc
-from collections import OrderedDict
 import copy
 import logging
 import math
+from collections import OrderedDict
 from typing import Any
 
 import numpy as np
+import torch
+import torch.nn as nn
+import torch.nn.utils.parametrize as parametrize
 from torch.nn import Sequential as TorchSequential
 
 logger = logging.getLogger("deel.torchlip")
+
+
+def vanilla_model(model: nn.Module):
+    """Convert lipschitz modules into their non-lipschitz counterpart (for
+    instance, SpectralConv2d layers become Conv2d layers).
+
+    Warning: This function modifies the model in-place.
+
+    Args:
+        model (nn.Module): Lipschitz neural network
+    """
+    for n, module in model.named_children():
+        if len(list(module.children())) > 0:
+            # compound module, go inside it
+            vanilla_model(module)
+
+        if isinstance(module, LipschitzModule):
+            # simple module
+            setattr(model, n, module.vanilla_export())
+
+
+class _LipschitzCoefMultiplication(nn.Module):
+    """Parametrization module for lipschitz global coefficient multiplication."""
+
+    def __init__(self, coef: float):
+        super().__init__()
+        self._coef = coef
+
+    def forward(self, weight: torch.Tensor) -> torch.Tensor:
+        return self._coef * weight
 
 
 class LipschitzModule(abc.ABC):
@@ -58,8 +91,13 @@ class LipschitzModule(abc.ABC):
     def __init__(self, coefficient_lip: float = 1.0):
         self._coefficient_lip = coefficient_lip
 
-    def _hook(self, module, inputs):
-        setattr(module, "weight", getattr(module, "weight") * self._coefficient_lip)
+    def apply_lipschitz_factor(self):
+        """Multiply the layer weights by a lipschitz factor."""
+        if self._coefficient_lip == 1.0:
+            return
+        parametrize.register_parametrization(
+            self, "weight", _LipschitzCoefMultiplication(self._coefficient_lip)
+        )
 
     @abc.abstractmethod
     def vanilla_export(self):

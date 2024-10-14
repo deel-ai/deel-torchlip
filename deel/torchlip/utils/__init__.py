@@ -39,6 +39,7 @@ from .lconv_norm import lconv_norm
 from .lconv_norm import remove_lconv_norm
 from .sqrt_eps import sqrt_with_gradeps  # noqa: F401
 
+
 DEFAULT_NITER_BJORCK = 15
 DEFAULT_NITER_SPECTRAL = 3
 DEFAULT_NITER_SPECTRAL_INIT = 10
