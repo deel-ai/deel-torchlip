@@ -264,6 +264,7 @@ def test_bjorck_normalization(kernel_shape):
         sigmas_wbar_svd, np.ones(sigmas_wbar_svd.shape), atol=1e-4
     )
 
+
 @pytest.mark.parametrize(
     "kernel_shape",
     [

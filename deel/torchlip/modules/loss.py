@@ -418,7 +418,6 @@ class TauBCEWithLogitsLoss(BCEWithLogitsLoss):
 
 
 class CategoricalHingeLoss(torch.nn.Module):
-
     def __init__(
         self,
         min_margin: float = 1.0,

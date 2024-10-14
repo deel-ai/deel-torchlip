@@ -129,7 +129,7 @@ def _power_iteration(
 
     Returns:
          A Tensor containing the maximum singular vector
-         
+
     """
 
     # Loop stopping condition

@@ -81,7 +81,7 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
             k_coef_lip: Lipschitz constant to ensure.
             eps_spectral: stopping criterion for the iterative power algorithm.
             eps_bjorck: stopping criterion Bjorck algorithm.
-            
+
         This documentation reuse the body of the original torch.nn.Conv2D doc.
         """
         # if not ((dilation == (1, 1)) or (dilation == [1, 1]) or (dilation == 1)):

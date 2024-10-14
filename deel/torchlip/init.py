@@ -93,8 +93,8 @@ def bjorck_(
     """
     with torch.no_grad():
         spectral_tensor = spectral_normalization(
-                tensor, None, eps=eps_spectral, maxiter=maxiter_spectral
-            )[0]
+            tensor, None, eps=eps_spectral, maxiter=maxiter_spectral
+        )[0]
         tensor.copy_(
             bjorck_normalization(
                 spectral_tensor, eps=eps_bjorck, beta=beta, maxiter=maxiter_bjorck
