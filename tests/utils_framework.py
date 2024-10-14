@@ -99,7 +99,7 @@ __all__ = [
     "InvertibleDownSampling",
     "InvertibleUpSampling",
     "evaluate_lip_const",
-    "DEFAULT_NITER_SPECTRAL_INIT",
+    "DEFAULT_EPS_SPECTRAL",
     "invertible_downsample",
     "invertible_upsample",
     "bjorck_norm",

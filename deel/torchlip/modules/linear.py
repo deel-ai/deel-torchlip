@@ -30,7 +30,6 @@ from torch.nn.utils.parametrizations import spectral_norm
 from ..utils import bjorck_norm
 from ..normalizers import DEFAULT_EPS_BJORCK
 from ..normalizers import DEFAULT_EPS_SPECTRAL
-from ..normalizers import DEFAULT_MAXITER_SPECTRAL
 from ..utils import frobenius_norm
 from .module import LipschitzModule
 
