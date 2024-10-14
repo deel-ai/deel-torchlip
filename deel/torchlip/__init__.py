@@ -26,7 +26,10 @@
 # =====================================================================================
 # flake8: noqa
 
-__version__ = "0.1.1"
+from os import path
+
+with open(path.join(path.dirname(__file__), "VERSION")) as f:
+    __version__ = f.read().strip()
 
 from . import functional, init, normalizers, utils
 from .modules import *

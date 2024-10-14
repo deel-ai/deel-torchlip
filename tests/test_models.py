@@ -305,8 +305,6 @@ def test_warning_unsupported_1Lip_layers():
             tActivation, {"activation": "gelu"}
         ),  # kl.Activation("relu"),
     ]
-    # if version.parse(tf.__version__) >= version.parse("2.4.0"):
-    #         unsupported_layers.append(kl.Activation("gelu"))
 
     for lay in unsupported_layers:
         if lay is not None:

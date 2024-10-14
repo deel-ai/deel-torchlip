@@ -404,33 +404,6 @@ def neg_kr_loss(
     return -kr_loss(input, target, multi_gpu=multi_gpu)
 
 
-# def neg_kr_loss_multi_gpu(
-#     input: torch.Tensor,
-#     target: torch.Tensor,
-# ) -> torch.Tensor:
-#     """
-#     Loss to estimate the negative wasserstein-1 distance using Kantorovich-Rubinstein
-#     duality.
-
-#     `target` and `input` can be either of shape (batch_size, 1) or
-#     (batch_size, # classes).
-
-#     When using this loss function, the labels `target` must be pre-processed with the
-#     `process_labels_for_multi_gpu()` function.
-
-#     Args:
-#         input: Tensor of arbitrary shape.
-#         target: pre-processed Tensor of the same shape as input.
-
-#     Returns:
-#         The negative Wasserstein-1 loss between ``input`` and ``target``.
-
-#     See Also:
-#         :py:func:`kr_loss`
-#     """
-#     return -kr_loss_multi_gpu(input, target)
-
-
 def hinge_margin_loss(
     input: torch.Tensor,
     target: torch.Tensor,
@@ -495,69 +468,6 @@ def hkr_loss(
     return alpha * hinge_margin_loss(input, target, min_margin) - (
         1 - alpha
     ) * kr_loss_fct(input, target)
-
-
-# def hkr_loss_multi_gpu(
-#     input: torch.Tensor,
-#     target: torch.Tensor,
-#     alpha: float,
-#     min_margin: float = 1.0,
-# ) -> torch.Tensor:
-#     """
-#     Loss to estimate the wasserstein-1 distance with a hinge regularization using
-#     Kantorovich-Rubinstein duality.
-
-#     Args:
-#         input: Tensor of arbitrary shape.
-#         target: Tensor of the same shape as input.
-#         alpha: Regularization factor between the hinge and the KR loss.
-#         min_margin: Minimal margin for the hinge loss.
-#         true_values: tuple containing the two label for each predicted class.
-
-#     Returns:
-#         The regularized Wasserstein-1 loss.
-
-#     See Also:
-#         :py:func:`hinge_margin_loss`
-#         :py:func:`kr_loss`
-#     """
-#     assert alpha <= 1.0
-#     if alpha == 1.0:  # alpha for  hinge only
-#         return hinge_margin_loss(input, target, min_margin)
-#     if alpha == 0:
-#         return -kr_loss_multi_gpu(input, target)
-#     # true value: positive value should be the first to be coherent with the
-#     # hinge loss (positive y_pred)
-#     return alpha * hinge_margin_loss(input, target, min_margin) - (
-#         1 - alpha
-#     ) * kr_loss_multi_gpu(input, target)
-
-
-# def kr_multiclass_loss(
-#     input: torch.Tensor,
-#     target: torch.Tensor,
-# ) -> torch.Tensor:
-#     r"""
-#     Loss to estimate average of W1 distance using Kantorovich-Rubinstein
-#     duality over outputs. In this multiclass setup thr KR term is computed
-#     for each class and then averaged.
-
-#     Args:
-#         input: Tensor of arbitrary shape.
-#         target: Tensor of the same shape as input.
-#                 target has to be one hot encoded (labels being 1s and 0s ).
-
-#     Returns:
-#         The Wasserstein multiclass loss between ``input`` and ``target``.
-#     """
-#     return kr_loss(input, target)
-#     # true_target = torch.where(target > 0, 1.0, 0.0).to(input.dtype)
-#     # esp_true_true = torch.sum(input * true_target, 0) / torch.sum(true_target, 0)
-#     # esp_false_true = torch.sum(input * (1 - true_target), 0) / torch.sum(
-#     #     (1 - true_target), 0
-#     # )
-
-#     # return torch.mean(esp_true_true - esp_false_true)
 
 
 def hinge_multiclass_loss(
@@ -627,42 +537,6 @@ def hkr_multiclass_loss(
         return alpha * hinge_multiclass_loss(input, target, min_margin) - (
             1 - alpha
         ) * kr_loss_fct(input, target)
-
-
-# def hkr_multiclass_loss_multi_gpu(
-#     input: torch.Tensor,
-#     target: torch.Tensor,
-#     alpha: float = 0.0,
-#     min_margin: float = 1.0,
-# ) -> torch.Tensor:
-#     """
-#     Loss to estimate the wasserstein-1 distance with a hinge regularization using
-#     Kantorovich-Rubinstein duality.
-
-#     Args:
-#         input: Tensor of arbitrary shape.
-#         target: Tensor of the same shape as input.
-#         alpha: Regularization factor between the hinge and the KR loss.
-#         min_margin: Minimal margin for the hinge loss.
-#         true_values: tuple containing the two label for each predicted class.
-
-#     Returns:
-#         The regularized Wasserstein-1 loss.
-
-#     See Also:
-#         :py:func:`hinge_margin_loss`
-#         :py:func:`kr_loss`
-#     """
-
-#     assert alpha <= 1.0
-#     if alpha == 1.0:  # alpha  hinge only
-#         return hinge_multiclass_loss(input, target, min_margin)
-#     elif alpha == 0.0:  # alpha = 0 => KR only
-#         return -kr_loss_multi_gpu(input, target)
-#     else:
-#         return alpha * hinge_multiclass_loss(input, target, min_margin) - (
-#             1 - alpha
-#         ) * kr_loss_multi_gpu(input, target)
 
 
 def process_labels_for_multi_gpu(labels: torch.Tensor) -> torch.Tensor:
