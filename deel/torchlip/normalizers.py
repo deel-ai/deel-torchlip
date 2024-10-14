@@ -62,7 +62,7 @@ def bjorck_normalization(
 
     Args:
         w: Weights to normalize. For the normalization to work properly, the greatest
-            eigen value of ``w`` must be approximately 1.   
+            eigen value of ``w`` must be approximately 1.
         eps (float): epsilon stopping criterion: norm(wt - wt-1) must be less than eps
         beta (float): beta used in each iteration, must be in the interval ]0, 0.5]
         maxiter (int): maximum number of iterations for the algorithm
