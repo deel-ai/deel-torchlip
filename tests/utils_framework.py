@@ -59,7 +59,7 @@ from deel.torchlip.modules import (
 from deel.torchlip.init import spectral_, bjorck_
 from deel.torchlip.normalizers import spectral_normalization
 from deel.torchlip.normalizers import bjorck_normalization
-from deel.torchlip.normalizers import DEFAULT_NITER_SPECTRAL_INIT
+from deel.torchlip.normalizers import DEFAULT_EPS_SPECTRAL
 from deel.torchlip.modules import vanilla_model
 from deel.torchlip.functional import invertible_downsample
 from deel.torchlip.functional import invertible_upsample
@@ -258,12 +258,8 @@ getters_dict = {
         dict_keys_replace={"kernel_initializer": None},
         list_keys_notimplemented=["kernel_regularizer"],
     ),
-    spectral_normalization: partial(
-        get_instance_withreplacement, dict_keys_replace={"eps": None}
-    ),
-    bjorck_normalization: partial(
-        get_instance_withreplacement, dict_keys_replace={"eps": None}
-    ),
+    spectral_normalization: partial(get_instance_withreplacement, dict_keys_replace={}),
+    bjorck_normalization: partial(get_instance_withreplacement, dict_keys_replace={}),
     PadConv2d: partial(
         get_instance_withreplacement,
         dict_keys_replace={
@@ -553,9 +549,9 @@ def scaleDivAlpha(alpha):
 def SpectralInitializer(eps_spectral, eps_bjorck):
     warnings.warn("spectral_ and bjorck_ require n_iterations in pytorch")
     if eps_bjorck is None:
-        return spectral_
+        return partial(spectral_, eps_spectral=eps_spectral)
     else:
-        return bjorck_
+        return partial(bjorck_, eps_spectral=eps_spectral, eps_bjorck=eps_bjorck)
 
 
 class tAdd(torch.nn.Module):
