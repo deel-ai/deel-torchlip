@@ -100,6 +100,16 @@ def test_group_sort_simple():
                 [1.0, 2.0, 1.0, 2.0],
             ],
         ),
+        (
+            4,
+            True,
+            [
+                [1.0, 2.0, 3.0, 4.0],
+                [1.0, 2.0, 3.0, 4.0],
+                [1.0, 1.0, 2.0, 2.0],
+                [1.0, 1.0, 2.0, 2.0],
+            ],
+        ),
     ],
 )
 def test_GroupSort(group_size, img, expected):
@@ -119,8 +129,9 @@ def test_GroupSort(group_size, img, expected):
     else:
         xn = np.asarray(x)
         xnp = np.repeat(
-            np.expand_dims(np.repeat(np.expand_dims(xn, 1), 28, 1), 1), 28, 1
+            np.expand_dims(np.repeat(np.expand_dims(xn, -1), 28, -1), -1), 28, -1
         )
+        xnp = uft.to_NCHW_inv(xnp) # move channel if needed (TF)
         x = uft.to_tensor(xnp)
         uft.build_layer(gs, (28, 28, 4))
     y = gs(x).numpy()
@@ -128,10 +139,12 @@ def test_GroupSort(group_size, img, expected):
     if img:
         y_tnp = np.asarray(y_t)
         y_t = np.repeat(
-            np.expand_dims(np.repeat(np.expand_dims(y_tnp, 1), 28, 1), 1), 28, 1
+            np.expand_dims(np.repeat(np.expand_dims(y_tnp, -1), 28, -1), -1), 28, -1
         )
+        y_t = uft.to_NCHW_inv(y_t) # move channel if needed (TF)
+    # print("aaa",y_t.shape, y_t)
+    # print("aaab",y.shape, y)
     np.testing.assert_equal(y, y_t)
-
 
 @pytest.mark.parametrize("group_size", [2, 4])
 def test_GroupSort_idempotence(group_size):
