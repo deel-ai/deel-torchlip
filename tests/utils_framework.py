@@ -527,8 +527,10 @@ def to_framework_channel(x):
 def to_NCHW(x):
     return x
 
+
 def to_NCHW_inv(x):
     return x
+
 
 def get_NCHW(x):
     return (x.shape[0], x.shape[1], x.shape[2], x.shape[3])

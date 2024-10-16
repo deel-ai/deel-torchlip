@@ -212,7 +212,9 @@ def max_min(input: torch.Tensor, dim: Optional[int] = None) -> torch.Tensor:
     return torch.cat((F.relu(input), F.relu(-input)), dim=dim)
 
 
-def group_sort(input: torch.Tensor, group_size: Optional[int] = None, dim : int = 1) -> torch.Tensor:
+def group_sort(
+    input: torch.Tensor, group_size: Optional[int] = None, dim: int = 1
+) -> torch.Tensor:
     r"""
     Applies GroupSort activation on the given tensor.
 
@@ -220,21 +222,28 @@ def group_sort(input: torch.Tensor, group_size: Optional[int] = None, dim : int 
         :py:func:`group_sort_2`
         :py:func:`full_sort`
     """
-    
+
     if group_size is None or group_size > input.shape[dim]:
         group_size = input.shape[dim]
 
     if input.shape[dim] % group_size != 0:
         raise ValueError("The input size must be a multiple of the group size.")
 
-    new_shape = input.shape[:dim]+(input.shape[dim]//group_size,group_size)+input.shape[dim+1:]
+    new_shape = (
+        input.shape[:dim]
+        + (input.shape[dim] // group_size, group_size)
+        + input.shape[dim + 1 :]
+    )
     if group_size == 2:
         resh_input = input.view(new_shape)
-        a, b = torch.min(resh_input, dim+1,keepdim=True)[0], torch.max(resh_input, dim+1,keepdim=True)[0]
-        return torch.cat([a, b], dim=dim+1).view(input.shape)
+        a, b = (
+            torch.min(resh_input, dim + 1, keepdim=True)[0],
+            torch.max(resh_input, dim + 1, keepdim=True)[0],
+        )
+        return torch.cat([a, b], dim=dim + 1).view(input.shape)
     fv = input.reshape(new_shape)
 
-    return torch.sort(fv,dim=dim+1)[0].reshape(input.shape)
+    return torch.sort(fv, dim=dim + 1)[0].reshape(input.shape)
 
 
 def group_sort_2(input: torch.Tensor) -> torch.Tensor:
