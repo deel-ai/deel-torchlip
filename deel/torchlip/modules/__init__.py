@@ -48,6 +48,7 @@ be done by setting the param `niter_bjorck=0`.
 from .activation import FullSort
 from .activation import GroupSort
 from .activation import GroupSort2
+from .activation import HouseHolder
 from .activation import LPReLU
 from .activation import MaxMin
 from .conv import FrobeniusConv2d

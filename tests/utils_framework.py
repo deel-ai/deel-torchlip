@@ -30,6 +30,8 @@ from torch.nn import MultiMarginLoss as tMultiMarginLoss
 
 from deel.torchlip import GroupSort
 from deel.torchlip import GroupSort2
+from deel.torchlip import HouseHolder
+
 from deel.torchlip import Sequential
 from deel.torchlip.modules import LipschitzModule as LipschitzLayer
 from deel.torchlip.modules import SpectralLinear
@@ -77,6 +79,7 @@ from deel.torchlip.utils.lconv_norm import (
 )
 from torch.nn import Module as Loss
 
+framework = "torch"
 
 # to avoid linter F401
 __all__ = [
@@ -93,6 +96,7 @@ __all__ = [
     "type_int32",
     "GroupSort",
     "GroupSort2",
+    "HouseHolder",
     "Sequential",
     "FrobeniusLinear",
     "FrobeniusConv2d",
@@ -138,7 +142,6 @@ class module_Unavailable_class:
 
 
 tInput = module_Unavailable_foo
-Householder = module_Unavailable_class
 SpectralConv2dTranspose = module_Unavailable_class
 ScaledGlobalL2NormPool2d = module_Unavailable_class
 AutoWeightClipConstraint = module_Unavailable_class
@@ -176,9 +179,7 @@ def replace_key_params(inst_params, dict_keys_replace):
         if k in layp:
             val = layp.pop(k)
             if v is None:
-                warnings.warn(
-                    UserWarning("Warning key is not used", k, " in tensorflow")
-                )
+                warnings.warn(UserWarning("Warning key is not used", k, " in pytorch"))
             else:
                 if isinstance(v, tuple):
                     layp[v[0]] = v[1](val)
@@ -268,6 +269,9 @@ getters_dict = {
                 lambda x: "zeros" if x.lower() in ["same", "valid"] else x,
             ),
         },
+    ),
+    HouseHolder: partial(
+        get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
 }
 
@@ -484,7 +488,7 @@ def initialize_kernel(model, layer_idx, kernel_initializer):
 
 
 def initializers_Constant(value):
-    return None
+    return value
 
 
 def check_parametrization(m, is_parametrized):
