@@ -235,7 +235,7 @@ def test_HouseHolder_theta_zero(dense):
         bs = np.random.randint(32, 128)
         h, w = np.random.randint(1, 64), np.random.randint(1, 64)
         c = np.random.randint(1, 64) * 2
-        size = uft.to_framework_channel(bs, c // 2, h, w)
+        size = (bs,) + uft.to_framework_channel((c // 2, h, w))
         ch = c
 
     hh = uft.get_instance_framework(
@@ -275,7 +275,7 @@ def test_HouseHolder_theta_pi(dense):
         bs = np.random.randint(32, 128)
         h, w = np.random.randint(1, 64), np.random.randint(1, 64)
         c = np.random.randint(1, 64) * 2
-        size = uft.to_framework_channel(bs, c // 2, h, w)
+        size = (bs,) + uft.to_framework_channel((c // 2, h, w))
         ch = c
 
     hh = uft.get_instance_framework(
@@ -315,7 +315,7 @@ def test_HouseHolder_theta_90(dense):
         bs = np.random.randint(32, 128)
         h, w = np.random.randint(1, 64), np.random.randint(1, 64)
         c = np.random.randint(1, 64) * 2
-        size = uft.to_framework_channel(bs, c // 2, h, w)
+        size = (bs,) + uft.to_framework_channel((c // 2, h, w))
         ch = c
 
     hh = uft.get_instance_framework(HouseHolder, {"channels": ch})
@@ -347,7 +347,7 @@ def test_HouseHolder_idempotence():
     hh = uft.get_instance_framework(
         HouseHolder, {"channels": c, "theta_initializer": "normal"}
     )
-    x = np.random.normal(size=uft.to_framework_channel((bs, c, h, w)))
+    x = np.random.normal(size=(bs,) + uft.to_framework_channel((c, h, w)))
     x = uft.to_tensor(x)
 
     # Run two times the HH activation and compare both outputs
