@@ -41,6 +41,7 @@ from deel.torchlip.modules import FrobeniusConv2d
 from deel.torchlip.modules import ScaledAvgPool2d
 from deel.torchlip.modules import ScaledAdaptiveAvgPool2d
 from deel.torchlip.modules import ScaledL2NormPool2d
+from deel.torchlip.modules import ScaledGlobalL2NormPool2d
 from deel.torchlip.modules import InvertibleDownSampling
 from deel.torchlip.modules import InvertibleUpSampling
 from deel.torchlip.utils import evaluate_lip_const
@@ -143,7 +144,6 @@ class module_Unavailable_class:
 
 tInput = module_Unavailable_foo
 SpectralConv2dTranspose = module_Unavailable_class
-ScaledGlobalL2NormPool2d = module_Unavailable_class
 AutoWeightClipConstraint = module_Unavailable_class
 SpectralConstraint = module_Unavailable_class
 FrobeniusConstraint = module_Unavailable_class
@@ -212,6 +212,9 @@ getters_dict = {
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
     ScaledL2NormPool2d: partial(
+        get_instance_withreplacement, dict_keys_replace={"data_format": None}
+    ),
+    ScaledGlobalL2NormPool2d: partial(
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
     SpectralConv2d: partial(
