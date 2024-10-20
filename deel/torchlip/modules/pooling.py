@@ -204,3 +204,56 @@ class ScaledL2NormPool2d(torch.nn.AvgPool2d, LipschitzModule):
 
     def vanilla_export(self):
         return self
+
+
+class ScaledGlobalL2NormPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
+    def __init__(
+        self,
+        output_size: _size_2_t = (1, 1),
+        k_coef_lip: float = 1.0,
+        eps_grad_sqrt: float = 1e-6,
+    ):
+        """
+        Average pooling operation for spatial data, with a lipschitz bound. This
+        pooling operation is norm preserving (aka gradient=1 almost everywhere).
+
+        [1]Y.-L.Boureau, J.Ponce, et Y.LeCun, « A Theoretical Analysis of Feature
+        Pooling in Visual Recognition »,p.8.
+
+        Arguments:
+            output_size: the target output size has to be (1,1)
+            k_coef_lip: the lipschitz factor to ensure
+            eps_grad_sqrt: Epsilon value to avoid numerical instability
+                due to non-defined gradient at 0 in the sqrt function
+
+        Input shape:
+            4D tensor with shape `(batch_size, channels, rows, cols)`.
+
+        Output shape:
+            4D tensor with shape `(batch_size, channels, 1, 1)`.
+        """
+        if eps_grad_sqrt < 0.0:
+            raise RuntimeError("eps_grad_sqrt must be positive")
+        if not isinstance(output_size, tuple) or len(output_size) != 2:
+            raise RuntimeError("output_size must be a tuple of 2 integers")
+        else:
+            if output_size[0] != 1 or output_size[1] != 1:
+                raise RuntimeError("output_size must be (1, 1)")
+        torch.nn.AdaptiveAvgPool2d.__init__(self, output_size)
+        LipschitzModule.__init__(self, k_coef_lip)
+        self.eps_grad_sqrt = eps_grad_sqrt
+
+    def forward(self, input: torch.Tensor) -> torch.Tensor:
+        # coeff = computePoolScalingFactor(input.shape[-2:]) * self._coefficient_lip
+        # avg = torch.nn.AdaptiveAvgPool2d.forward(self, torch.square(input))
+        # return  sqrt_with_gradeps(avg,self.eps_grad_sqrt)* coeff
+        return (  # type: ignore
+            sqrt_with_gradeps(
+                torch.square(input).sum(axis=(2, 3), keepdim=True),
+                self.eps_grad_sqrt,
+            )
+            * self._coefficient_lip
+        )
+
+    def vanilla_export(self):
+        return self
