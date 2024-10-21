@@ -215,7 +215,7 @@ class SpectralConvTranspose2d(torch.nn.ConvTranspose2d, LipschitzModule):
     ) -> None:
         if dilation != 1:
             raise ValueError("SpectralConvTranspose2d does not support dilation rate")
-        if not output_padding in [0, None]:
+        if output_padding not in [0, None]:
             raise ValueError("SpectralConvTranspose2d only supports output_padding=0")
         torch.nn.ConvTranspose2d.__init__(
             self,

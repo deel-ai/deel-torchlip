@@ -143,15 +143,16 @@ class module_Unavailable_class:
         return None
 
 
+TauCategoricalCrossentropyLoss = TauCrossEntropyLoss
+TauSparseCategoricalCrossentropyLoss = TauCrossEntropyLoss
+TauBinaryCrossentropyLoss = TauBCEWithLogitsLoss
+
 tInput = module_Unavailable_foo
 AutoWeightClipConstraint = module_Unavailable_class
 SpectralConstraint = module_Unavailable_class
 FrobeniusConstraint = module_Unavailable_class
 CondenseCallback = module_Unavailable_class
 MonitorCallback = module_Unavailable_class
-TauCategoricalCrossentropyLoss = TauCrossEntropyLoss
-TauSparseCategoricalCrossentropyLoss = TauCrossEntropyLoss
-TauBinaryCrossentropyLoss = TauBCEWithLogitsLoss
 CategoricalProvableRobustAccuracy = module_Unavailable_class
 BinaryProvableRobustAccuracy = module_Unavailable_class
 CategoricalProvableAvgRobustness = module_Unavailable_class
@@ -236,35 +237,31 @@ getters_dict = {
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
     KRLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
-    HingeMarginLoss: partial(get_instance_withcheck, dict_keys_replace={"name": None}),
+    HingeMarginLoss: partial(
+        get_instance_withreplacement, dict_keys_replace={"name": None}
+    ),
     HKRLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     HingeMulticlassLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     HKRMulticlassLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     KRMulticlassLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     SoftHKRMulticlassLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     tLinear: partial(
         get_instance_withcheck,

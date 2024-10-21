@@ -254,7 +254,6 @@ class HouseHolder(nn.Module, LipschitzModule):
         for _ in range(len(z.shape) - len(theta.shape)):
             theta = theta.unsqueeze(-1)
         x, y = z.split(z.shape[axis] // 2, axis)
-        print("aaaa", x.shape, y.shape, theta.shape)
         selector = (x * torch.sin(0.5 * theta)) - (y * torch.cos(0.5 * theta))
 
         a_2 = x * torch.cos(theta) + y * torch.sin(theta)
