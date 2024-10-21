@@ -35,7 +35,7 @@ import numpy as np
 from .utils_framework import (
     SpectralLinear,
     SpectralConv2d,
-    SpectralConv2dTranspose,
+    SpectralConvTranspose2d,
     FrobeniusLinear,
     FrobeniusConv2d,
     ScaledAvgPool2d,
@@ -251,7 +251,6 @@ def train_k_lip_model(
 
 
 def _check_mse_results(mse, from_disk_mse, test_params):
-    print("aaaaa", mse, from_disk_mse)
     assert from_disk_mse == pytest.approx(
         mse, 1e-5
     ), "serialization must not change the performance of a layer"
@@ -586,14 +585,14 @@ def test_spectralconv2d(test_params):
 
 
 @pytest.mark.skipif(
-    hasattr(SpectralConv2dTranspose, "unavailable_class"),
-    reason="SpectralConv2dTranspose not available",
+    hasattr(SpectralConvTranspose2d, "unavailable_class"),
+    reason="SpectralConvTranspose2d not available",
 )
 @pytest.mark.parametrize(
     "test_params",
     [
         dict(
-            layer_type=SpectralConv2dTranspose,
+            layer_type=SpectralConvTranspose2d,
             layer_params={
                 "in_channels": 1,
                 "out_channels": 2,
@@ -609,7 +608,7 @@ def test_spectralconv2d(test_params):
             callbacks=[],
         ),
         dict(
-            layer_type=SpectralConv2dTranspose,
+            layer_type=SpectralConvTranspose2d,
             layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
             batch_size=250,
             steps_per_epoch=125,
@@ -620,7 +619,7 @@ def test_spectralconv2d(test_params):
             callbacks=[],
         ),
         dict(
-            layer_type=SpectralConv2dTranspose,
+            layer_type=SpectralConvTranspose2d,
             layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
             batch_size=250,
             steps_per_epoch=125,
@@ -632,7 +631,7 @@ def test_spectralconv2d(test_params):
         ),
     ],
 )
-def test_SpectralConv2dTranspose(test_params):
+def test_SpectralConvTranspose2d(test_params):
     _apply_tests_bank(test_params)
 
 
@@ -1163,15 +1162,15 @@ def test_invertibleupsampling(test_params):
 
 
 @pytest.mark.skipif(
-    hasattr(SpectralConv2dTranspose, "unavailable_class"),
-    reason="SpectralConv2dTranspose not available",
+    hasattr(SpectralConvTranspose2d, "unavailable_class"),
+    reason="SpectralConvTranspose2d not available",
 )
 @pytest.mark.parametrize(
     "test_params,msg",
     [
         (dict(in_channels=1, out_channels=5, kernel_size=3), ""),
         (
-            dict(in_channels=1, out_channels=12, kernel_size=5, strides=2, bias=False),
+            dict(in_channels=1, out_channels=12, kernel_size=5, stride=2, bias=False),
             "",
         ),
         (
@@ -1180,7 +1179,7 @@ def test_invertibleupsampling(test_params):
                 out_channels=3,
                 kernel_size=3,
                 padding="same",
-                dilation_rate=1,
+                dilation=1,
             ),
             "",
         ),
@@ -1214,7 +1213,7 @@ def test_invertibleupsampling(test_params):
             "Wrong padding",
         ),
         (
-            dict(in_channels=1, out_channels=10, kernel_size=3, dilation_rate=2),
+            dict(in_channels=1, out_channels=10, kernel_size=3, dilation=2),
             "Wrong dilation rate",
         ),
         (
@@ -1223,34 +1222,34 @@ def test_invertibleupsampling(test_params):
         ),
     ],
 )
-def test_SpectralConv2dTranspose_instantiation(test_params, msg):
+def test_SpectralConvTranspose2d_instantiation(test_params, msg):
     if msg == "":
-        uft.get_instance_framework(SpectralConv2dTranspose, test_params)
+        uft.get_instance_framework(SpectralConvTranspose2d, test_params)
     else:
         with pytest.raises(ValueError):
-            uft.get_instance_framework(SpectralConv2dTranspose, test_params)
+            uft.get_instance_framework(SpectralConvTranspose2d, test_params)
 
 
 @pytest.mark.skipif(
-    hasattr(SpectralConv2dTranspose, "unavailable_class"),
-    reason="SpectralConv2dTranspose not available",
+    hasattr(SpectralConvTranspose2d, "unavailable_class"),
+    reason="SpectralConvTranspose2d not available",
 )
-def test_SpectralConv2dTranspose_vanilla_export():
+def test_SpectralConvTranspose2d_vanilla_export():
     kwargs = dict(
         in_channels=3,
         out_channels=16,
         kernel_size=5,
-        strides=2,
+        stride=2,
         activation="relu",
         data_format="channels_first",
         input_shape=(3, 28, 28),
     )
 
     model = uft.generate_k_lip_model(
-        SpectralConv2dTranspose, kwargs, kwargs["input_shape"], 1.0
+        SpectralConvTranspose2d, kwargs, kwargs["input_shape"], 1.0
     )
 
-    # lay = SpectralConv2dTranspose(**kwargs)
+    # lay = SpectralConvTranspose2d(**kwargs)
     # model = Sequential([lay])
     x = np.random.normal(size=(5,) + kwargs["input_shape"])
 
@@ -1258,17 +1257,24 @@ def test_SpectralConv2dTranspose_vanilla_export():
     y1 = model(x)
 
     # Test vanilla export inference comparison
-    vanilla_model = model.vanilla_export()
+    if uft.vanilla_require_a_copy():
+        model2 = uft.generate_k_lip_model(
+            SpectralConvTranspose2d, kwargs, kwargs["input_shape"], 1.0
+        )
+        uft.copy_model_parameters(model, model2)
+        vanilla_model = uft.vanillaModel(model2)
+    else:
+        vanilla_model = uft.vanillaModel(model)  # .vanilla_export()
     y2 = vanilla_model(x)
-    np.testing.assert_allclose(y1, y2, atol=1e-6)
+    np.testing.assert_allclose(uft.to_numpy(y1), uft.to_numpy(y2), atol=1e-6)
 
     # Test saving/loading model
     with tempfile.TemporaryDirectory() as tmpdir:
         uft.MODEL_PATH = os.path.join(tmpdir, uft.MODEL_PATH)
-        model.save(uft.MODEL_PATH)
+        uft.save_model(model, uft.MODEL_PATH, overwrite=True)
         uft.load_model(
             uft.MODEL_PATH,
-            layer_type=SpectralConv2dTranspose,
+            layer_type=SpectralConvTranspose2d,
             layer_params=kwargs,
             input_shape=kwargs["input_shape"],
             k=1.0,

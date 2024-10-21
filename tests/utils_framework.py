@@ -36,6 +36,7 @@ from deel.torchlip import Sequential
 from deel.torchlip.modules import LipschitzModule as LipschitzLayer
 from deel.torchlip.modules import SpectralLinear
 from deel.torchlip.modules import SpectralConv2d
+from deel.torchlip.modules import SpectralConvTranspose2d
 from deel.torchlip.modules import FrobeniusLinear
 from deel.torchlip.modules import FrobeniusConv2d
 from deel.torchlip.modules import ScaledAvgPool2d
@@ -143,7 +144,6 @@ class module_Unavailable_class:
 
 
 tInput = module_Unavailable_foo
-SpectralConv2dTranspose = module_Unavailable_class
 AutoWeightClipConstraint = module_Unavailable_class
 SpectralConstraint = module_Unavailable_class
 FrobeniusConstraint = module_Unavailable_class
@@ -219,6 +219,15 @@ getters_dict = {
     ),
     SpectralConv2d: partial(
         get_instance_withreplacement, dict_keys_replace={"name": None}
+    ),
+    SpectralConvTranspose2d: partial(
+        get_instance_withreplacement,
+        dict_keys_replace={
+            "name": None,
+            "data_format": None,
+            "activation": None,
+            "input_shape": None,
+        },
     ),
     SpectralLinear: partial(
         get_instance_withreplacement, dict_keys_replace={"name": None}
