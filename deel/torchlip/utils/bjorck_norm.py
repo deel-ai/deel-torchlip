@@ -29,18 +29,18 @@ import torch.nn as nn
 import torch.nn.utils.parametrize as parametrize
 
 from ..normalizers import bjorck_normalization
-from ..normalizers import DEFAULT_NITER_BJORCK
+from ..normalizers import DEFAULT_EPS_BJORCK
 
 
 class _BjorckNorm(nn.Module):
-    def __init__(self, weight: torch.Tensor, n_iterations: int) -> None:
+    def __init__(self, weight: torch.Tensor, eps: float) -> None:
         super().__init__()
-        self.n_iterations = n_iterations
+        self.eps = eps
         self.register_buffer("_w_bjorck", weight.data)
 
     def forward(self, weight: torch.Tensor) -> torch.Tensor:
         if self.training:
-            w_bjorck = bjorck_normalization(weight, self.n_iterations)
+            w_bjorck = bjorck_normalization(weight, self.eps)
             self._w_bjorck = w_bjorck.data
         else:
             w_bjorck = self._w_bjorck
@@ -48,7 +48,7 @@ class _BjorckNorm(nn.Module):
 
 
 def bjorck_norm(
-    module: nn.Module, name: str = "weight", n_iterations: int = DEFAULT_NITER_BJORCK
+    module: nn.Module, name: str = "weight", eps: float = DEFAULT_EPS_BJORCK
 ) -> nn.Module:
     r"""
     Applies Bjorck normalization to a parameter in the given module.
@@ -83,9 +83,7 @@ def bjorck_norm(
         :py:func:`deel.torchlip.normalizers.bjorck_normalization`
     """
     weight = getattr(module, name, None)
-    parametrize.register_parametrization(
-        module, name, _BjorckNorm(weight, n_iterations)
-    )
+    parametrize.register_parametrization(module, name, _BjorckNorm(weight, eps))
     return module
 
 
