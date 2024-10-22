@@ -45,6 +45,8 @@ from deel.torchlip.modules import ScaledL2NormPool2d
 from deel.torchlip.modules import ScaledGlobalL2NormPool2d
 from deel.torchlip.modules import InvertibleDownSampling
 from deel.torchlip.modules import InvertibleUpSampling
+from deel.torchlip.modules import LayerCentering
+from deel.torchlip.modules import BatchCentering
 from deel.torchlip.utils import evaluate_lip_const
 
 from deel.torchlip.modules import (
@@ -104,6 +106,8 @@ __all__ = [
     "FrobeniusConv2d",
     "InvertibleDownSampling",
     "InvertibleUpSampling",
+    "LayerCentering",
+    "BatchCentering",
     "evaluate_lip_const",
     "DEFAULT_EPS_SPECTRAL",
     "invertible_downsample",
@@ -474,6 +478,10 @@ def load_model(
 
 def get_layer_weights_by_index(model, layer_idx):
     return get_layer_weights(model[layer_idx])
+
+
+def get_layer_by_index(model, layer_idx):
+    return model[layer_idx]
 
 
 # .weight.detach().cpu().numpy()

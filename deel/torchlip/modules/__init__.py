@@ -76,3 +76,5 @@ from .pooling import ScaledAvgPool2d
 from .pooling import ScaledL2NormPool2d
 from .pooling import ScaledGlobalL2NormPool2d
 from .upsampling import InvertibleUpSampling
+from .normalization import LayerCentering
+from .normalization import BatchCentering

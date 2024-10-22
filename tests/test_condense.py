@@ -269,13 +269,6 @@ def test_model(
     vanilla_loss, vanilla_mse = uft.run_test(
         vanilla_model, test_dl, loss_fn, metrics, steps=10
     )
-    # vanilla_loss, vanilla_mse = vanilla_model.__getattribute__(EVALUATE)(
-    #     linear_generator(batch_size, input_shape, kernel),
-    #     steps=10,
-    #     verbose=0,
-    # )
-    # model.summary()
-    # vanilla_model.summary()
 
     np.testing.assert_almost_equal(
         mse,
