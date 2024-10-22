@@ -23,9 +23,6 @@ class LayerCentering(nn.Module):
 
 
 LayerCentering2d = LayerCentering
-# class LayerCentering2D(LayerCentering):
-#     def __init__(self, size = 1, dim=[-2,-1]):
-#         super(LayerCentering2D, self).__init__(size = size,dim=[-2,-1])
 
 
 class BatchCentering(nn.Module):
@@ -72,25 +69,4 @@ class BatchCentering(nn.Module):
             return x - mean.view(mean_shape)
 
 
-# class BatchCenteringBiases(BatchCentering):
-#     def __init__(self, size =1, dim=[0,-2,-1], momentum=0.05):
-#         super(BatchCenteringBiases, self).__init__(size  = size, dim = dim, momentum = momentum)
-#         if isinstance(size, tuple):
-#             self.alpha = nn.Parameter(torch.zeros(size), requires_grad=True)
-#         else:
-#             self.alpha = nn.Parameter(torch.zeros(1,size,1,1), requires_grad=True)
-
-#     def forward(self, x):
-#         #print(x.mean(dim=self.dim, keepdim=True).abs().mean().cpu().numpy(), self.running_mean.abs().cpu().mean().numpy(), self.alpha.abs().mean().cpu().numpy())
-#         #print(x.mean(dim=self.dim, keepdim=True).abs().mean().cpu().numpy(),(x.mean(dim=self.dim, keepdim=True)-self.running_mean).abs().mean().cpu().numpy())
-#         return super().forward(x) + self.alpha
-
 BatchCentering2d = BatchCentering
-
-# class BatchCenteringBiases2D(BatchCenteringBiases):
-#     def __init__(self, size =1, momentum=0.05):
-#         super(BatchCenteringBiases2D, self).__init__(size = size, dim=[0,-2,-1],momentum=momentum)
-
-# class BatchCentering2D(BatchCentering):
-#     def __init__(self, size =1, momentum=0.05):
-#         super(BatchCentering2D, self).__init__(size = size, dim=[0,-2,-1],momentum=momentum)
