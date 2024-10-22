@@ -73,9 +73,10 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
                 the input.
             padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
                 ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
-            dilation (int or tuple, optional): Spacing between kernel elements.
+            dilation (int or tuple, optional): Spacing between kernel elements. 
+                Has to be one
             groups (int, optional): Number of blocked connections from input
-                channels to output channels.
+                channels to output channels. Has to be one
             bias (bool, optional): If ``True``, adds a learnable bias to the
                 output.
             k_coef_lip: Lipschitz constant to ensure.
@@ -193,7 +194,33 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
 
 
 class SpectralConvTranspose2d(torch.nn.ConvTranspose2d, LipschitzModule):
-    r"""Applies a 2D transposed convolution operator over an input image."""
+    r"""Applies a 2D transposed convolution operator over an input image
+        such that all singular of it's kernel are 1. 
+        The computation are the same as for SpectralConv2d layer 
+
+        Args:
+            in_channels (int): Number of channels in the input image
+            out_channels (int): Number of channels produced by the convolution
+            kernel_size (int or tuple): Size of the convolving kernel
+            stride (int or tuple, optional): Stride of the convolution.
+            padding (int or tuple, optional): Zero-padding added to both sides of
+                the input.
+            output_padding: only 0 or none are supported
+            padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
+                ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
+            dilation (int or tuple, optional): Spacing between kernel elements.
+                Has to be one.
+            groups (int, optional): Number of blocked connections from input
+                channels to output channels. Has to be one.
+            bias (bool, optional): If ``True``, adds a learnable bias to the
+                output.
+            k_coef_lip: Lipschitz constant to ensure.
+            eps_spectral: stopping criterion for the iterative power algorithm.
+            eps_bjorck: stopping criterion Bjorck algorithm.
+
+        This documentation reuse the body of the original torch.nn.ConvTranspose2d 
+        doc.
+    """
 
     def __init__(
         self,
