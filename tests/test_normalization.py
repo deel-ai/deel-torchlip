@@ -26,7 +26,6 @@
 # =====================================================================================
 import os
 import pytest
-from functools import partial
 
 import numpy as np
 
@@ -249,6 +248,6 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
         mean_x = np.mean(x, axis=(0, 2, 3))
     x = uft.to_tensor(x)
     for _ in range(1000):
-        y = bn(x)
+        y = bn(x)  # noqa: F841
 
     np.testing.assert_allclose(bn.running_mean, mean_x, atol=1e-5)
