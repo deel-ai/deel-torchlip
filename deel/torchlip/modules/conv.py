@@ -34,10 +34,11 @@ from ..normalizers import DEFAULT_EPS_BJORCK
 from ..normalizers import DEFAULT_EPS_SPECTRAL
 from ..utils import frobenius_norm
 from ..utils import lconv_norm
+from .unconstrained import PadConv1d, PadConv2d
 from .module import LipschitzModule
 
 
-class SpectralConv1d(torch.nn.Conv1d, LipschitzModule):
+class SpectralConv1d(PadConv1d, LipschitzModule):
     def __init__(
         self,
         in_channels: int,
@@ -89,7 +90,7 @@ class SpectralConv1d(torch.nn.Conv1d, LipschitzModule):
         # if padding_mode != "same":
         #     raise RuntimeError("NormalizedConv only support padding='same'")
 
-        torch.nn.Conv1d.__init__(
+        PadConv1d.__init__(
             self,
             in_channels=in_channels,
             out_channels=out_channels,
@@ -97,6 +98,8 @@ class SpectralConv1d(torch.nn.Conv1d, LipschitzModule):
             stride=stride,
             padding=padding,
             bias=bias,
+            dilation=dilation,
+            groups=groups,
             padding_mode=padding_mode,
         )
         LipschitzModule.__init__(self, k_coef_lip)
@@ -115,24 +118,10 @@ class SpectralConv1d(torch.nn.Conv1d, LipschitzModule):
         self.apply_lipschitz_factor()
 
     def vanilla_export(self):
-        layer = torch.nn.Conv1d(
-            in_channels=self.in_channels,
-            out_channels=self.out_channels,
-            kernel_size=self.kernel_size,
-            stride=self.stride,
-            padding=self.padding,
-            dilation=self.dilation,
-            groups=self.groups,
-            bias=self.bias is not None,
-            padding_mode=self.padding_mode,
-        )
-        layer.weight.data = self.weight.detach()
-        if self.bias is not None:
-            layer.bias.data = self.bias.detach()
-        return layer
+        return PadConv1d.vanilla_export(self)
 
 
-class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
+class SpectralConv2d(PadConv2d, LipschitzModule):
     def __init__(
         self,
         in_channels: int,
@@ -185,7 +174,7 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
         # if padding_mode != "same":
         #     raise RuntimeError("NormalizedConv only support padding='same'")
 
-        torch.nn.Conv2d.__init__(
+        PadConv2d.__init__(
             self,
             in_channels=in_channels,
             out_channels=out_channels,
@@ -193,6 +182,8 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
             stride=stride,
             padding=padding,
             bias=bias,
+            dilation=dilation,
+            groups=groups,
             padding_mode=padding_mode,
         )
         LipschitzModule.__init__(self, k_coef_lip)
@@ -211,24 +202,10 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
         self.apply_lipschitz_factor()
 
     def vanilla_export(self):
-        layer = torch.nn.Conv2d(
-            in_channels=self.in_channels,
-            out_channels=self.out_channels,
-            kernel_size=self.kernel_size,
-            stride=self.stride,
-            padding=self.padding,
-            dilation=self.dilation,
-            groups=self.groups,
-            bias=self.bias is not None,
-            padding_mode=self.padding_mode,
-        )
-        layer.weight.data = self.weight.detach()
-        if self.bias is not None:
-            layer.bias.data = self.bias.detach()
-        return layer
+        return PadConv2d.vanilla_export(self)
 
 
-class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
+class FrobeniusConv2d(PadConv2d, LipschitzModule):
     """
     Same as SpectralConv2d but in the case of a single output.
     """
@@ -251,14 +228,17 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
         # if padding_mode != "same":
         #     raise RuntimeError("NormalizedConv only support padding='same'")
 
-        torch.nn.Conv2d.__init__(
+        PadConv2d.__init__(
             self,
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
             stride=stride,
             padding=padding,
+            padding_mode=padding_mode,
             bias=bias,
+            dilation=dilation,
+            groups=groups,
         )
         LipschitzModule.__init__(self, k_coef_lip)
 
@@ -271,21 +251,7 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
         self.apply_lipschitz_factor()
 
     def vanilla_export(self):
-        layer = torch.nn.Conv2d(
-            in_channels=self.in_channels,
-            out_channels=self.out_channels,
-            kernel_size=self.kernel_size,
-            stride=self.stride,
-            padding=self.padding,
-            dilation=self.dilation,
-            groups=self.groups,
-            bias=self.bias is not None,
-            padding_mode=self.padding_mode,
-        )
-        layer.weight.data = self.weight.detach()
-        if self.bias is not None:
-            layer.bias.data = self.bias.detach()
-        return layer
+        return PadConv2d.vanilla_export(self)
 
 
 class SpectralConvTranspose2d(torch.nn.ConvTranspose2d, LipschitzModule):

@@ -455,133 +455,192 @@ def test_constraints_frobenius(test_params):
 
 
 @pytest.mark.parametrize(
-    "test_params",
+    "layer_type",
     [
-        dict(
-            layer_type=SpectralLinear,
-            layer_params={"bias": False, "in_features": 4, "out_features": 3},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(4,),
-            k_lip_data=1.0,
-            k_lip_model=1.0,
-            callbacks=[],
+        SpectralLinear,
+    ],
+)
+@pytest.mark.parametrize(
+    "layer_params,k_lip_data,k_lip_model",
+    [
+        (
+            {"bias": False, "in_features": 4, "out_features": 3},
+            1.0,
+            1.0,
         ),
-        dict(
-            layer_type=SpectralLinear,
-            layer_params={"in_features": 4, "out_features": 4},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(4,),
-            k_lip_data=5.0,
-            k_lip_model=1.0,
-            callbacks=[],
+        (
+            {"in_features": 4, "out_features": 4},
+            5.0,
+            1.0,
         ),
-        dict(
-            layer_type=SpectralLinear,
-            layer_params={"in_features": 4, "out_features": 4},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(4,),
-            k_lip_data=1.0,
-            k_lip_model=5.0,
-            callbacks=[],
+        (
+            {"in_features": 4, "out_features": 4},
+            1.0,
+            5.0,
         ),
     ],
 )
-def test_spectral_dense(test_params):
+def test_spectral_linear(layer_type, layer_params, k_lip_data, k_lip_model):
+    test_params = dict(
+        layer_type=layer_type,
+        layer_params=layer_params,
+        batch_size=250,
+        steps_per_epoch=125,
+        epochs=5,
+        input_shape=(4,),
+        k_lip_data=k_lip_data,
+        k_lip_model=k_lip_model,
+        callbacks=[],
+    )
     _apply_tests_bank(test_params)
 
 
 @pytest.mark.parametrize(
-    "test_params",
+    "layer_type",
     [
-        dict(
-            layer_type=FrobeniusLinear,
-            layer_params={"in_features": 4, "out_features": 1},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(4,),
-            k_lip_data=1.0,
-            k_lip_model=1.0,
-            callbacks=[],
+        FrobeniusLinear,
+    ],
+)
+@pytest.mark.parametrize(
+    "layer_params,k_lip_data,k_lip_model",
+    [
+        (
+            {"bias": False, "in_features": 4, "out_features": 1},
+            1.0,
+            1.0,
         ),
-        dict(
-            layer_type=FrobeniusLinear,
-            layer_params={"in_features": 4, "out_features": 1},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(4,),
-            k_lip_data=5.0,
-            k_lip_model=1.0,
-            callbacks=[],
+        (
+            {"in_features": 4, "out_features": 1},
+            5.0,
+            1.0,
         ),
-        dict(
-            layer_type=FrobeniusLinear,
-            layer_params={"in_features": 4, "out_features": 1},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(4,),
-            k_lip_data=1.0,
-            k_lip_model=5.0,
-            callbacks=[],
+        (
+            {"in_features": 4, "out_features": 1},
+            1.0,
+            5.0,
         ),
     ],
 )
-def test_frobenius_dense(test_params):
+def test_frobenius_linear(layer_type, layer_params, k_lip_data, k_lip_model):
+    test_params = dict(
+        layer_type=layer_type,
+        layer_params=layer_params,
+        batch_size=250,
+        steps_per_epoch=125,
+        epochs=5,
+        input_shape=(4,),
+        k_lip_data=k_lip_data,
+        k_lip_model=k_lip_model,
+        callbacks=[],
+    )
     _apply_tests_bank(test_params)
 
 
 @pytest.mark.parametrize(
-    "test_params",
+    "layer_type",
+    [SpectralConv2d, FrobeniusConv2d, SpectralConvTranspose2d],
+)
+@pytest.mark.parametrize(
+    "layer_params,k_lip_data,k_lip_model",
     [
-        dict(
-            layer_type=SpectralConv2d,
-            layer_params={
+        (
+            {
                 "in_channels": 1,
                 "out_channels": 2,
                 "kernel_size": (3, 3),
                 "bias": False,
             },
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=1.0,
-            k_lip_model=1.0,
-            callbacks=[],
+            1.0,
+            1.0,
         ),
-        dict(
-            layer_type=SpectralConv2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=5.0,
-            k_lip_model=1.0,
-            callbacks=[],
+        (
+            {"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            5.0,
+            1.0,
         ),
-        dict(
-            layer_type=SpectralConv2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=1.0,
-            k_lip_model=5.0,
-            callbacks=[],
+        (
+            {"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
+            1.0,
+            5.0,
         ),
     ],
 )
-def test_spectralconv2d(test_params):
+def test_conv2d(layer_type, layer_params, k_lip_data, k_lip_model):
+    if hasattr(layer_type, "unavailable_class"):
+        pytest.skip("layer not available")
+    test_params = dict(
+        layer_type=layer_type,
+        layer_params=layer_params,
+        batch_size=250,
+        steps_per_epoch=125,
+        epochs=5,
+        input_shape=(1, 5, 5),
+        k_lip_data=k_lip_data,
+        k_lip_model=k_lip_model,
+        callbacks=[],
+    )
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.parametrize(
+    "pad_mode",
+    [
+        "zeros",
+        "reflect",
+        "circular",
+        "symmetric",
+    ],
+)
+@pytest.mark.parametrize(
+    "pad, kernel_size",
+    [
+        (1, (3, 3)),
+        ((1, 1), (3, 3)),
+        (2, (5, 5)),
+        ((2, 2), (5, 5)),
+    ],
+)
+@pytest.mark.parametrize(
+    "layer_params,k_lip_data,k_lip_model",
+    [
+        (
+            {
+                "in_channels": 1,
+                "out_channels": 2,
+                "bias": False,
+            },
+            1.0,
+            1.0,
+        ),
+        (
+            {"in_channels": 1, "out_channels": 2},
+            1.0,
+            1.0,
+        ),
+        (
+            {"in_channels": 1, "out_channels": 2},
+            1.0,
+            5.0,
+        ),
+    ],
+)
+def test_spectralconv2d_pad(
+    pad, pad_mode, kernel_size, layer_params, k_lip_data, k_lip_model
+):
+    layer_params["padding"] = pad
+    layer_params["padding_mode"] = pad_mode
+    layer_params["kernel_size"] = kernel_size
+    test_params = dict(
+        layer_type=SpectralConv2d,
+        layer_params=layer_params,
+        batch_size=250,
+        steps_per_epoch=125,
+        epochs=5,
+        input_shape=(1, 5, 5),
+        k_lip_data=k_lip_data,
+        k_lip_model=k_lip_model,
+        callbacks=[],
+    )
     _apply_tests_bank(test_params)
 
 
@@ -633,100 +692,6 @@ def test_spectralconv2d(test_params):
     ],
 )
 def test_spectralconv1d(test_params):
-    _apply_tests_bank(test_params)
-
-
-@pytest.mark.skipif(
-    hasattr(SpectralConvTranspose2d, "unavailable_class"),
-    reason="SpectralConvTranspose2d not available",
-)
-@pytest.mark.parametrize(
-    "test_params",
-    [
-        dict(
-            layer_type=SpectralConvTranspose2d,
-            layer_params={
-                "in_channels": 1,
-                "out_channels": 2,
-                "kernel_size": (3, 3),
-                "bias": False,
-            },
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=1.0,
-            k_lip_model=1.0,
-            callbacks=[],
-        ),
-        dict(
-            layer_type=SpectralConvTranspose2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=5.0,
-            k_lip_model=1.0,
-            callbacks=[],
-        ),
-        dict(
-            layer_type=SpectralConvTranspose2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=1.0,
-            k_lip_model=5.0,
-            callbacks=[],
-        ),
-    ],
-)
-def test_SpectralConvTranspose2d(test_params):
-    _apply_tests_bank(test_params)
-
-
-@pytest.mark.parametrize(
-    "test_params",
-    [
-        dict(
-            layer_type=FrobeniusConv2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=1.0,
-            k_lip_model=1.0,
-            callbacks=[],
-        ),
-        dict(
-            layer_type=FrobeniusConv2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=5.0,
-            k_lip_model=1.0,
-            callbacks=[],
-        ),
-        dict(
-            layer_type=FrobeniusConv2d,
-            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": (3, 3)},
-            batch_size=250,
-            steps_per_epoch=125,
-            epochs=5,
-            input_shape=(1, 5, 5),
-            k_lip_data=1.0,
-            k_lip_model=5.0,
-            callbacks=[],
-        ),
-    ],
-)
-def test_frobeniusconv2d(test_params):
-    # tests only checks that lip cons is enforced
     _apply_tests_bank(test_params)
 
 
@@ -1280,6 +1245,163 @@ def test_SpectralConvTranspose2d_instantiation(test_params, msg):
     else:
         with pytest.raises(ValueError):
             uft.get_instance_framework(SpectralConvTranspose2d, test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(SpectralConv1d, "unavailable_class"),
+    reason="SpectralConv1d not available",
+)
+@pytest.mark.parametrize(
+    "pad_mode",
+    [
+        "zeros",
+        "reflect",
+        "circular",
+        "symmetric",
+    ],
+)
+@pytest.mark.parametrize(
+    "pad, kernel_size",
+    [
+        (1, (3,)),
+        (2, (5,)),
+    ],
+)
+@pytest.mark.parametrize(
+    "layer_type",
+    [
+        SpectralConv1d,
+    ],
+)
+@pytest.mark.parametrize(
+    "layer_params",
+    [
+        {
+            "in_channels": 1,
+            "out_channels": 2,
+            "bias": False,
+        },
+        {"in_channels": 1, "out_channels": 2},
+    ],
+)
+def test_SpectralConv1d_vanilla_export(
+    pad, pad_mode, kernel_size, layer_params, layer_type
+):
+    layer_params["padding"] = pad
+    layer_params["padding_mode"] = pad_mode
+    layer_params["kernel_size"] = kernel_size
+    layer_type = layer_type
+    input_shape = (1, 5)
+
+    model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, 1.0)
+
+    # lay = SpectralConvTranspose2d(**kwargs)
+    # model = Sequential([lay])
+    x = np.random.normal(size=(5,) + input_shape)
+
+    x = uft.to_tensor(x)
+    y1 = model(x)
+
+    # Test vanilla export inference comparison
+    if uft.vanilla_require_a_copy():
+        model2 = uft.generate_k_lip_model(layer_type, layer_params, input_shape, 1.0)
+        uft.copy_model_parameters(model, model2)
+        vanilla_model = uft.vanillaModel(model2)
+    else:
+        vanilla_model = uft.vanillaModel(model)  # .vanilla_export()
+    y2 = vanilla_model(x)
+    np.testing.assert_allclose(uft.to_numpy(y1), uft.to_numpy(y2), atol=1e-6)
+
+    # Test saving/loading model
+    with tempfile.TemporaryDirectory() as tmpdir:
+        uft.MODEL_PATH = os.path.join(tmpdir, uft.MODEL_PATH)
+        uft.save_model(model, uft.MODEL_PATH, overwrite=True)
+        uft.load_model(
+            uft.MODEL_PATH,
+            layer_type=layer_type,
+            layer_params=layer_params,
+            input_shape=input_shape,
+            k=1.0,
+        )
+
+
+@pytest.mark.skipif(
+    hasattr(SpectralConv2d, "unavailable_class"),
+    reason="SpectralConv2d not available",
+)
+@pytest.mark.parametrize(
+    "pad_mode",
+    [
+        "zeros",
+        "reflect",
+        "circular",
+        "symmetric",
+    ],
+)
+@pytest.mark.parametrize(
+    "pad, kernel_size",
+    [
+        (1, (3, 3)),
+        ((1, 1), (3, 3)),
+        (2, (5, 5)),
+        ((2, 2), (5, 5)),
+    ],
+)
+@pytest.mark.parametrize(
+    "layer_type",
+    [
+        SpectralConv2d,
+        FrobeniusConv2d,
+    ],
+)
+@pytest.mark.parametrize(
+    "layer_params",
+    [
+        {
+            "in_channels": 1,
+            "out_channels": 2,
+            "bias": False,
+        },
+        {"in_channels": 1, "out_channels": 2},
+    ],
+)
+def test_Conv2d_vanilla_export(pad, pad_mode, kernel_size, layer_params, layer_type):
+    layer_params["padding"] = pad
+    layer_params["padding_mode"] = pad_mode
+    layer_params["kernel_size"] = kernel_size
+    layer_type = layer_type
+    input_shape = (1, 5, 5)
+
+    model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, 1.0)
+
+    # lay = SpectralConvTranspose2d(**kwargs)
+    # model = Sequential([lay])
+    x = np.random.normal(size=(5,) + input_shape)
+
+    x = uft.to_tensor(x)
+    y1 = model(x)
+
+    # Test vanilla export inference comparison
+    if uft.vanilla_require_a_copy():
+        model2 = uft.generate_k_lip_model(layer_type, layer_params, input_shape, 1.0)
+        uft.copy_model_parameters(model, model2)
+        vanilla_model = uft.vanillaModel(model2)
+    else:
+        vanilla_model = uft.vanillaModel(model)  # .vanilla_export()
+    y2 = vanilla_model(x)
+    np.testing.assert_allclose(uft.to_numpy(y1), uft.to_numpy(y2), atol=1e-6)
+
+    # Test saving/loading model
+    with tempfile.TemporaryDirectory() as tmpdir:
+        uft.MODEL_PATH = os.path.join(tmpdir, uft.MODEL_PATH)
+        uft.save_model(model, uft.MODEL_PATH, overwrite=True)
+        uft.load_model(
+            uft.MODEL_PATH,
+            layer_type=layer_type,
+            layer_params=layer_params,
+            input_shape=input_shape,
+            k=1.0,
+        )
 
 
 @pytest.mark.skipif(

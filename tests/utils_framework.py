@@ -21,7 +21,6 @@ from torch.nn import ReLU as tReLU
 from torch.nn import Softmax as tSoftmax
 from torch.nn import MaxPool2d as tMaxPool2d
 from torch.nn import Conv2d as tConv2d
-from torch.nn import Conv2d as PadConv2d
 from torch.nn import Upsample as tUpSampling2d
 from torch.nn import Unflatten as tReshape
 from torch import int32 as type_int32
@@ -49,6 +48,7 @@ from deel.torchlip.modules import InvertibleUpSampling
 from deel.torchlip.modules import LayerCentering
 from deel.torchlip.modules import BatchCentering
 from deel.torchlip.utils import evaluate_lip_const
+from deel.torchlip.modules import PadConv2d
 
 from deel.torchlip.modules import (
     KRLoss,
@@ -71,6 +71,7 @@ from deel.torchlip.modules import vanilla_model
 from deel.torchlip.functional import invertible_downsample
 from deel.torchlip.functional import invertible_upsample
 from deel.torchlip.functional import process_labels_for_multi_gpu
+from deel.torchlip.functional import SymmetricPad
 
 from deel.torchlip.utils.bjorck_norm import bjorck_norm, remove_bjorck_norm
 from deel.torchlip.utils.frobenius_norm import (
@@ -609,7 +610,13 @@ def vanillaModel(model):
 
 
 def is_supported_padding(padding):
-    return padding.lower() in ["same", "valid", "reflect", "circular"]  # "constant",
+    return padding.lower() in [
+        "same",
+        "valid",
+        "reflect",
+        "circular",
+        "symmetric",
+    ]  # "constant",
 
 
 def pad_input(x, padding, kernel_size):
@@ -627,6 +634,10 @@ def pad_input(x, padding, kernel_size):
             p_vert,
         ]  # [[0, 0], [p_vert, p_vert], [p_hor, p_hor], [0, 0]]
         return pad(x, tuple(pad_sizes), padding)
+    elif padding.lower() == "symmetric":
+        p_vert, p_hor = kernel_size[0] // 2, kernel_size[1] // 2
+        sym_pad = SymmetricPad([p_hor, p_vert])
+        return sym_pad(x)
 
 
 class MultiMarginLoss(tMultiMarginLoss):

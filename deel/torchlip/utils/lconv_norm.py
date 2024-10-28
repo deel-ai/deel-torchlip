@@ -47,9 +47,9 @@ def compute_lconv_coef_1d(
         and (input_shape is not None)
     ):
         # See https://arxiv.org/abs/2006.06520
-        l = input_shape[-1]
+        in_l = input_shape[-1]
         k1_div2 = (k1 - 1) / 2
-        coefLip = l / (k1 * l - k1_div2 * (k1_div2 + 1))
+        coefLip = in_l / (k1 * in_l - k1_div2 * (k1_div2 + 1))
     else:
         sn1 = strides[0]
         coefLip = 1.0 / np.ceil(k1 / sn1)
@@ -113,7 +113,6 @@ def lconv_norm(module: ConvType, name: str = "weight") -> ConvType:
     Args:
         module: Containing module.
         name: Name of weight parameter.
-        onedim: False for conv2d, True for conv1d.
 
     Returns:
         The original module with the Lipschitz normalization hook.
