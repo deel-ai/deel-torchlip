@@ -35,6 +35,7 @@ import numpy as np
 from .utils_framework import (
     SpectralLinear,
     SpectralConv2d,
+    SpectralConv1d,
     SpectralConvTranspose2d,
     FrobeniusLinear,
     FrobeniusConv2d,
@@ -275,7 +276,7 @@ def _apply_tests_bank(test_params):
     ) = train_k_lip_model(**test_params)
     print("test mse: %f" % mse)
     print(
-        "empirical lip const: %f ( expected %s )"
+        "empirical lip const: %f ( expected min data and model %s )"
         % (
             emp_lip_const,
             min(test_params["k_lip_model"], test_params["k_lip_data"]),
@@ -581,6 +582,57 @@ def test_frobenius_dense(test_params):
     ],
 )
 def test_spectralconv2d(test_params):
+    _apply_tests_bank(test_params)
+
+
+@pytest.mark.skipif(
+    hasattr(SpectralConv1d, "unavailable_class"),
+    reason="SpectralConv1d not available",
+)
+@pytest.mark.parametrize(
+    "test_params",
+    [
+        dict(
+            layer_type=SpectralConv1d,
+            layer_params={
+                "in_channels": 1,
+                "out_channels": 2,
+                "kernel_size": 3,
+                "bias": False,
+            },
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5),
+            k_lip_data=1.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=SpectralConv1d,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": 3},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5),
+            k_lip_data=5.0,
+            k_lip_model=1.0,
+            callbacks=[],
+        ),
+        dict(
+            layer_type=SpectralConv1d,
+            layer_params={"in_channels": 1, "out_channels": 2, "kernel_size": 3},
+            batch_size=250,
+            steps_per_epoch=125,
+            epochs=5,
+            input_shape=(1, 5),
+            k_lip_data=1.0,
+            k_lip_model=5.0,
+            callbacks=[],
+        ),
+    ],
+)
+def test_spectralconv1d(test_params):
     _apply_tests_bank(test_params)
 
 

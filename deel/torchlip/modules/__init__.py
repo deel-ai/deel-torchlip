@@ -53,6 +53,7 @@ from .activation import LPReLU
 from .activation import MaxMin
 from .conv import FrobeniusConv2d
 from .conv import SpectralConv2d
+from .conv import SpectralConv1d
 from .conv import SpectralConvTranspose2d
 from .downsampling import InvertibleDownSampling
 from .linear import FrobeniusLinear

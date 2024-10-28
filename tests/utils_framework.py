@@ -36,6 +36,7 @@ from deel.torchlip import Sequential
 from deel.torchlip.modules import LipschitzModule as LipschitzLayer
 from deel.torchlip.modules import SpectralLinear
 from deel.torchlip.modules import SpectralConv2d
+from deel.torchlip.modules import SpectralConv1d
 from deel.torchlip.modules import SpectralConvTranspose2d
 from deel.torchlip.modules import FrobeniusLinear
 from deel.torchlip.modules import FrobeniusConv2d
@@ -123,6 +124,7 @@ __all__ = [
     "tReshape",
     "CategoricalHingeLoss",
     "process_labels_for_multi_gpu",
+    "SpectralConv1d",
 ]
 
 

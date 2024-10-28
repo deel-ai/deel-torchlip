@@ -50,11 +50,11 @@ class SpectralConv1d(torch.nn.Conv1d, LipschitzModule):
         bias: bool = True,
         padding_mode: str = "zeros",
         k_coef_lip: float = 1.0,
-        niter_spectral: int = DEFAULT_NITER_SPECTRAL,
-        niter_bjorck: int = DEFAULT_NITER_BJORCK,
+        eps_spectral: int = DEFAULT_EPS_SPECTRAL,
+        eps_bjorck: int = DEFAULT_EPS_BJORCK,
     ):
         """
-        This class is a Conv2d Layer constrained such that all singular of it's kernel
+        This class is a Conv1d Layer constrained such that all singular of it's kernel
         are 1. The computation based on BjorckNormalizer algorithm. As this is not
         enough to ensure 1-Lipschitz a coercive coefficient is applied on the
         output.
@@ -79,10 +79,10 @@ class SpectralConv1d(torch.nn.Conv1d, LipschitzModule):
             bias (bool, optional): If ``True``, adds a learnable bias to the
                 output.
             k_coef_lip: Lipschitz constant to ensure.
-            niter_spectral: Number of iteration to find the maximum singular value.
-            niter_bjorck: Number of iteration with BjorckNormalizer algorithm.
+            eps_spectral: stopping criterion for the iterative power algorithm.
+            eps_bjorck: stopping criterion Bjorck algorithm.
 
-        This documentation reuse the body of the original torch.nn.Conv2D doc.
+        This documentation reuse the body of the original torch.nn.Conv1D doc.
         """
         # if not ((dilation == (1, 1)) or (dilation == [1, 1]) or (dilation == 1)):
         #     raise RuntimeError("NormalizedConv does not support dilation rate")
@@ -108,11 +108,11 @@ class SpectralConv1d(torch.nn.Conv1d, LipschitzModule):
         spectral_norm(
             self,
             name="weight",
-            n_power_iterations=niter_spectral,
+            eps=eps_spectral,
         )
-        bjorck_norm(self, name="weight", n_iterations=niter_bjorck)
+        bjorck_norm(self, name="weight", eps=eps_bjorck)
         lconv_norm(self)
-        self.register_forward_pre_hook(self._hook)
+        self.apply_lipschitz_factor()
 
     def vanilla_export(self):
         layer = torch.nn.Conv1d(
@@ -168,7 +168,7 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
                 the input.
             padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
                 ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
-            dilation (int or tuple, optional): Spacing between kernel elements. 
+            dilation (int or tuple, optional): Spacing between kernel elements.
                 Has to be one
             groups (int, optional): Number of blocked connections from input
                 channels to output channels. Has to be one
@@ -290,31 +290,31 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
 
 class SpectralConvTranspose2d(torch.nn.ConvTranspose2d, LipschitzModule):
     r"""Applies a 2D transposed convolution operator over an input image
-        such that all singular of it's kernel are 1. 
-        The computation are the same as for SpectralConv2d layer 
+    such that all singular of it's kernel are 1.
+    The computation are the same as for SpectralConv2d layer
 
-        Args:
-            in_channels (int): Number of channels in the input image
-            out_channels (int): Number of channels produced by the convolution
-            kernel_size (int or tuple): Size of the convolving kernel
-            stride (int or tuple, optional): Stride of the convolution.
-            padding (int or tuple, optional): Zero-padding added to both sides of
-                the input.
-            output_padding: only 0 or none are supported
-            padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
-                ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
-            dilation (int or tuple, optional): Spacing between kernel elements.
-                Has to be one.
-            groups (int, optional): Number of blocked connections from input
-                channels to output channels. Has to be one.
-            bias (bool, optional): If ``True``, adds a learnable bias to the
-                output.
-            k_coef_lip: Lipschitz constant to ensure.
-            eps_spectral: stopping criterion for the iterative power algorithm.
-            eps_bjorck: stopping criterion Bjorck algorithm.
+    Args:
+        in_channels (int): Number of channels in the input image
+        out_channels (int): Number of channels produced by the convolution
+        kernel_size (int or tuple): Size of the convolving kernel
+        stride (int or tuple, optional): Stride of the convolution.
+        padding (int or tuple, optional): Zero-padding added to both sides of
+            the input.
+        output_padding: only 0 or none are supported
+        padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
+            ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
+        dilation (int or tuple, optional): Spacing between kernel elements.
+            Has to be one.
+        groups (int, optional): Number of blocked connections from input
+            channels to output channels. Has to be one.
+        bias (bool, optional): If ``True``, adds a learnable bias to the
+            output.
+        k_coef_lip: Lipschitz constant to ensure.
+        eps_spectral: stopping criterion for the iterative power algorithm.
+        eps_bjorck: stopping criterion Bjorck algorithm.
 
-        This documentation reuse the body of the original torch.nn.ConvTranspose2d 
-        doc.
+    This documentation reuse the body of the original torch.nn.ConvTranspose2d
+    doc.
     """
 
     def __init__(
