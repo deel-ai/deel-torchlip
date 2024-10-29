@@ -557,7 +557,7 @@ def to_NCHW_inv(x):
 
 
 def get_NCHW(x):
-    return (x.shape[0], x.shape[1], x.shape[2], x.shape[3])
+    return (x.shape[-4], x.shape[-3], x.shape[-2], x.shape[-1])
 
 
 def scaleAlpha(alpha):

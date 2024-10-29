@@ -1141,7 +1141,7 @@ def test_callbacks(test_params):
     [
         dict(
             layer_type=InvertibleDownSampling,
-            layer_params={"kernel_size": (2, 3)},
+            layer_params={"kernel_size": 3},
             batch_size=250,
             steps_per_epoch=1,
             epochs=5,
@@ -1162,7 +1162,7 @@ def test_invertibledownsampling(test_params):
     [
         dict(
             layer_type=InvertibleUpSampling,
-            layer_params={"kernel_size": (2, 3)},
+            layer_params={"kernel_size": 3},
             batch_size=250,
             steps_per_epoch=1,
             epochs=5,

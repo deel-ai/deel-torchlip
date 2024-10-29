@@ -32,14 +32,26 @@ from .. import functional as F
 from .module import LipschitzModule
 
 
-class InvertibleDownSampling(torch.nn.Module, LipschitzModule):
-    def __init__(self, kernel_size: Tuple[int, int], k_coef_lip: float = 1.0):
-        torch.nn.Module.__init__(self)
+class InvertibleDownSampling(torch.nn.PixelUnshuffle, LipschitzModule):
+    def __init__(self, kernel_size: int, k_coef_lip: float = 1.0):
+        torch.nn.PixelUnshuffle.__init__(self, kernel_size)
         LipschitzModule.__init__(self, k_coef_lip)
-        self.kernel_size = kernel_size
-
-    def forward(self, input: torch.Tensor) -> torch.Tensor:
-        return F.invertible_downsample(input, self.kernel_size) * self._coefficient_lip
 
     def vanilla_export(self):
-        return self
+        if self._coefficient_lip == 1.0:
+            return torch.nn.PixelUnshuffle(self.kernel_size)
+        else:
+            return self
+
+
+# class InvertibleDownSampling(torch.nn.Module, LipschitzModule):
+#     def __init__(self, kernel_size: Tuple[int, int], k_coef_lip: float = 1.0):
+#         torch.nn.Module.__init__(self)
+#         LipschitzModule.__init__(self, k_coef_lip)
+#         self.kernel_size = kernel_size
+
+#     def forward(self, input: torch.Tensor) -> torch.Tensor:
+#         return F.invertible_downsample(input, self.kernel_size) * self._coefficient_lip
+
+#     def vanilla_export(self):
+#         return self
