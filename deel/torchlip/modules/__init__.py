@@ -81,3 +81,4 @@ from .normalization import LayerCentering
 from .normalization import BatchCentering
 from .unconstrained import PadConv2d
 from .unconstrained import PadConv1d
+from .residual import LipResidual

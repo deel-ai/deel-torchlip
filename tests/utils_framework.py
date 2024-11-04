@@ -49,6 +49,7 @@ from deel.torchlip.modules import LayerCentering
 from deel.torchlip.modules import BatchCentering
 from deel.torchlip.utils import evaluate_lip_const
 from deel.torchlip.modules import PadConv2d
+from deel.torchlip.modules import LipResidual
 
 from deel.torchlip.modules import (
     KRLoss,
@@ -340,6 +341,9 @@ class tModel(torch.nn.Module):
         self.functional_input_output_tensors = functional_input_output_tensors
         self.modList = torch.nn.ModuleList([dict_tensors[key] for key in dict_tensors])
 
+    def get_module_by_name(self, name):
+        return self.dict_tensors[name]
+
     def forward(self, x):
         x = self.functional_input_output_tensors(self.dict_tensors, x)
         return x
@@ -475,6 +479,11 @@ def load_model(
     path, compile=False, layer_type=None, layer_params=True, input_shape=None, k=None
 ):
     model = generate_k_lip_model(layer_type, layer_params, input_shape, k)
+    model.load_state_dict(torch.load(path))
+    return model
+
+
+def load_state_dict(path, model):
     model.load_state_dict(torch.load(path))
     return model
 
@@ -657,3 +666,13 @@ class tConcatenate(torch.nn.Module):
 
     def forward(self, x):
         return torch.cat(x, dim=self.dim)
+
+
+class tSplit(torch.nn.Module):
+    def __init__(self, chunks, dim=-1):
+        super(tSplit, self).__init__()
+        self.chunks = chunks
+        self.dim = dim
+
+    def forward(self, x):
+        return torch.chunk(x, self.chunks, dim=self.dim)
