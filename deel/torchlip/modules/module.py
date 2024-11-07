@@ -44,7 +44,7 @@ from torch import reshape
 
 
 def _is_supported_1lip_layer(layer):
-    """Return True if the Keras layer is 1-Lipschitz. Note that in some cases, the layer
+    """Return True if the layer is 1-Lipschitz. Note that in some cases, the layer
     is 1-Lipschitz for specific set of parameters.
     """
     supported_1lip_layers = (

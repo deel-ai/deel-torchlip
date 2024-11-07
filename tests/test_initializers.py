@@ -71,7 +71,7 @@ def test_initializer(layer_type, layer_params, input_shape, orthogonal_test):
     # clear session to avoid side effects from previous train
     uft.init_session()  # K.clear_session()
     input_shape = uft.to_framework_channel(input_shape)
-    # create the keras model, defin opt, and compile it
+    # create the model, defin opt, and compile it
     model = uft.generate_k_lip_model(layer_type, layer_params, input_shape)
     uft.initialize_kernel(model, 0, layer_params["kernel_initializer"])
 

@@ -172,7 +172,7 @@ def train_k_lip_model(
     uft.init_session()  # K.clear_session()
     np.random.seed(42)
     input_shape = uft.to_framework_channel(input_shape)
-    # create the keras model, defin opt, and compile it
+    # create the model, defin opt, and compile it
     model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, k_lip_model)
 
     optimizer = uft.get_instance_framework(
@@ -195,7 +195,7 @@ def train_k_lip_model(
 
     callback_list = (
         []
-    )  # [callbacks.TensorBoard(logdir), hp.KerasCallback(logdir, hparams)]
+    ) 
     if kwargs["callbacks"] is not None:
         callback_list = callback_list + kwargs["callbacks"]
     # train model
