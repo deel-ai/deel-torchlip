@@ -547,7 +547,6 @@ def scaleDivAlpha(alpha):
 
 
 def SpectralInitializer(eps_spectral, eps_bjorck):
-    warnings.warn("spectral_ and bjorck_ require n_iterations in pytorch")
     if eps_bjorck is None:
         return partial(spectral_, eps_spectral=eps_spectral)
     else:
