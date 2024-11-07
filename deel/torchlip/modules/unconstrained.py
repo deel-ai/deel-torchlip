@@ -155,8 +155,13 @@ class PadConv2d(torch.nn.Conv2d):
         self.old_padding = padding
         self.old_padding_mode = padding_mode
         if padding_mode.lower() == "symmetric":
-            padding_mode = "zeros"
-            padding = "valid"
+            # symmetric padding of one pixel can be replaced by replicate
+            if (isinstance(padding, int) and padding <= 1) or \
+                (isinstance(padding, tuple) and padding[0] <= 1 and padding[1] <= 1): 
+                    self.old_padding_mode = padding_mode = "replicate"
+            else:
+                padding_mode = "zeros"
+                padding = "valid"
 
         super(PadConv2d, self).__init__(
             in_channels=in_channels,
