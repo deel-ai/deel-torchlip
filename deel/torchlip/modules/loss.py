@@ -33,16 +33,35 @@ from torch import Tensor
 
 
 class KRLoss(torch.nn.Module):
-    """
-    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
-    duality.
-    """
-
     def __init__(self, multi_gpu=False, reduction: str = "mean", true_values=None):
-        """
+        r"""
+        Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
+        duality.
+        The Kantorovich-Rubinstein duality is formulated as following:
+
+        $$
+        W_1(\mu, \nu) =
+        \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}}
+        \left[f(\textbf{x} )\right] -
+        \underset{\textbf{x}  \sim \nu}{\mathbb{E}} \left[f(\textbf{x} )\right]
+        $$
+
+        Where mu and nu stands for the two distributions, the distribution where the
+        label is 1 and the rest.
+
+        Note that `input` and `target` must be of rank 2: (batch_size, 1) or
+        (batch_size, C) for multilabel classification (with C categories).
+        `target` accepts label values in (0, 1), (-1, 1), or pre-processed with the
+        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
+        Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to
+        pre-process the labels `target` with the
+        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
         Args:
             multi_gpu (bool): set to True when running on multi-GPU/TPU
-            reduction: passed to tf.keras.Loss constructor
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
             true_values: depreciated.
         """
         super().__init__()
@@ -58,16 +77,16 @@ class KRLoss(torch.nn.Module):
 
 
 class NegKRLoss(torch.nn.Module):
-    """
-    Loss that estimates the negative of the Wasserstein-1 distance using
-    the Kantorovich-Rubinstein duality.
-    """
 
     def __init__(self, multi_gpu=False, reduction: str = "mean", true_values=None):
         """
+        Loss that estimates the negative of the Wasserstein-1 distance using
+        the Kantorovich-Rubinstein duality. See `KRLoss` for more details.
+
         Args:
             multi_gpu (bool): set to True when running on multi-GPU/TPU
-            reduction: passed to tf.keras.Loss constructor
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
             true_values: depreciated.
         """
         super().__init__()
@@ -83,14 +102,14 @@ class NegKRLoss(torch.nn.Module):
 
 
 class HingeMarginLoss(torch.nn.Module):
-    """
-    Hinge margin loss.
-    """
-
     def __init__(self, min_margin: float = 1.0, reduction: str = "mean"):
         """
+        Hinge margin loss.
+
         Args:
             min_margin: The minimal margin to enforce.
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
         """
         super().__init__()
         self.reduction = reduction
@@ -102,11 +121,6 @@ class HingeMarginLoss(torch.nn.Module):
 
 
 class HKRLoss(torch.nn.Module):
-    """
-    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
-    duality with a hinge regularization.
-    """
-
     def __init__(
         self,
         alpha: float,
@@ -116,11 +130,32 @@ class HKRLoss(torch.nn.Module):
         true_values=None,
     ):
         """
+        Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
+        duality with a hinge regularization.
+
+        [1] M. Serrurier, F. Mamalet, et al. «Achieving robustness in classification
+        using optimal transport with hinge regularization», 2021.
+
+        Note that `input` and `target` must be of rank 2: (batch_size, 1) or
+        (batch_size, C) for multilabel classification (with C categories).
+        `target` accepts label values in (0, 1), (-1, 1), or pre-processed with the
+        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
+        Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to
+        pre-process the labels `target` with the
+        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
+        the regularization factor `alpha` is a value between 0 and 1. It controls the
+        trade-off between the hinge and the KR loss. When `alpha` is 0, the loss is
+        equivalent to the KR loss, and when `alpha` is 1, the loss is equivalent to the
+        hinge loss.
+
         Args:
             alpha: Regularization factor ([0,1]) between the hinge and the KR loss.
             min_margin: Minimal margin for the hinge loss.
             multi_gpu (bool): set to True when running on multi-GPU/TPU
-            reduction: passed to tf.keras.Loss constructor
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
             true_values: depreciated.
         """
         super().__init__()
@@ -147,11 +182,24 @@ class HKRLoss(torch.nn.Module):
 
 
 class KRMulticlassLoss(torch.nn.Module):
-    """
-    The Wasserstein multiclass loss between ``input`` and ``target``.
-    """
-
     def __init__(self, multi_gpu=False, reduction: str = "mean"):
+        r"""
+        Loss to estimate average of Wasserstein-1 distance using Kantorovich-Rubinstein
+        duality over outputs. In this multiclass setup, the KR term is computed for each
+        class and then averaged.
+
+        Note that`target` should be one-hot encoded or pre-processed with the
+        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
+        Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to
+        pre-process the labels `target` with the
+        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
+        Args:
+            multi_gpu (bool): set to True when running on multi-GPU/TPU
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
+        """
         super().__init__()
         self.reduction = reduction
         self.multi_gpu = multi_gpu
@@ -162,16 +210,18 @@ class KRMulticlassLoss(torch.nn.Module):
 
 
 class HingeMulticlassLoss(torch.nn.Module):
-    """
-    Loss to estimate the Hinge loss in a multiclass setup. It computes the
-    element-wise hinge term. This class use pytorch implementation:
-    torch.nn.functional.hinge_embedding_loss
-    """
-
     def __init__(self, min_margin: float = 1.0, reduction: str = "mean"):
-        """
+        r"""
+        Loss to estimate the Hinge loss in a multiclass setup. It computes the
+        element-wise hinge term. Note that this formulation differs from the
+        one commonly found in tensorflow/pytorch (with maximise the difference
+        between the two largest logits). This formulation is consistent with the
+        binary classification loss used in a multiclass fashion.
+
         Args:
             min_margin: The minimal margin to enforce.
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
         """
         super().__init__()
         self.min_margin = min_margin
@@ -183,11 +233,6 @@ class HingeMulticlassLoss(torch.nn.Module):
 
 
 class HKRMulticlassLoss(torch.nn.Module):
-    """
-    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
-    duality with a hinge regularization.
-    """
-
     def __init__(
         self,
         alpha: float,
@@ -196,9 +241,30 @@ class HKRMulticlassLoss(torch.nn.Module):
         reduction: str = "mean",
     ):
         """
+        Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
+        duality with a hinge regularization.
+
+        [1] M. Serrurier, F. Mamalet, et al. «Achieving robustness in classification
+        using optimal transport with hinge regularization», 2021.
+
+        Note that`target` should be one-hot encoded or pre-processed with the
+        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
+        Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to
+        pre-process the labels `target` with the
+        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
+        the regularization factor `alpha` is a value between 0 and 1. It controls the
+        trade-off between the hinge and the KR loss. When `alpha` is 0, the loss is
+        equivalent to the KR loss, and when `alpha` is 1, the loss is equivalent to the
+        hinge loss.
+
         Args:
             alpha: Regularization factor ([0,1]) between the hinge and the KR loss.
             min_margin: Minimal margin for the hinge loss.
+            multi_gpu (bool): set to True when running on multi-GPU/TPU
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
         """
         super().__init__()
         if (alpha >= 0) and (alpha <= 1):
@@ -233,21 +299,24 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
         The multiclass version of HKR with softmax. This is done by computing
         the HKR term over each class and averaging the results.
 
-        Note that `y_true` could be either one-hot encoded, +/-1 values.
+        [2] M. Serrurier, F. Mamalet, T. Fel et al. "On the explainable properties
+        of 1-Lipschitz Neural Networks: An Optimal Transport Perspective.", 2024
 
+        Note that`target` should be one-hot encoded, +/-1 values.
+
+        the regularization factor `alpha` is a value between 0 and 1. It controls the
+        trade-off between the hinge and the KR loss. When `alpha` is 0, the loss is
+        equivalent to the KR loss, and when `alpha` is 1, the loss is equivalent to the
+        hinge loss.
 
         Args:
             alpha (float): regularization factor (0 <= alpha <= 1),
-                0 for KR only, 1 for hinge only
             min_margin (float): margin to enforce.
+            alpha_mean (float): geometric mean factor
             temperature (float): factor for softmax  temperature
                 (higher value increases the weight of the highest non y_true logits)
-            alpha_mean (float): geometric mean factor
-            one_hot_ytrue (bool): set to True when y_true are one hot encoded (0 or 1),
-                and False when y_true already signed bases (for instance +/-1)
-            reduction: passed to tf.keras.Loss constructor
-            name (str): passed to tf.keras.Loss constructor
-
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
         """
         if (alpha >= 0) and (alpha <= 1):
             self.alpha = torch.tensor(alpha, dtype=torch.float32)
@@ -368,7 +437,7 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
 class TauCrossEntropyLoss(CrossEntropyLoss):
     def __init__(
         self,
-        tau,
+        tau: float,
         weight: Optional[Tensor] = None,
         size_average=None,
         ignore_index: int = -100,
@@ -376,6 +445,15 @@ class TauCrossEntropyLoss(CrossEntropyLoss):
         reduction: str = "mean",
         label_smoothing: float = 0.0,
     ) -> None:
+        """
+        The loss add a temperature (tau) factor to the CrossEntropyLoss
+        CrossEntropyLoss(tau * input, target)
+        See `CrossEntropyLoss` for more details on arguments.
+
+        Args:
+            tau (float): factor for  temperature
+        """
+
         super().__init__(
             weight=weight,
             size_average=size_average,
@@ -396,13 +474,21 @@ class TauCrossEntropyLoss(CrossEntropyLoss):
 class TauBCEWithLogitsLoss(BCEWithLogitsLoss):
     def __init__(
         self,
-        tau,
+        tau: float,
         weight: Optional[Tensor] = None,
         size_average=None,
         reduce=None,
         reduction: str = "mean",
         pos_weight=None,
     ) -> None:
+        """
+        The loss add a temperature (tau) factor to the BCEWithLogitsLoss
+        BCEWithLogitsLoss(tau * input, target)
+        See `BCEWithLogitsLoss` for more details on arguments.
+
+        Args:
+            tau (float): factor for  temperature
+        """
         super().__init__(
             weight=weight,
             size_average=size_average,
@@ -426,12 +512,15 @@ class CategoricalHingeLoss(torch.nn.Module):
         """
         This implementation is sligthly different from the pytorch MultiMarginLoss.
 
-        `y_true` and `y_pred` must be of shape (batch_size, # classes).
-        Note that `y_true` should be one-hot encoded
+        `target` and `input` must be of shape (batch_size, # classes).
+        Note that `target` should be one-hot encoded, +/-1 values.
+        ReLU(min_margin - (input[target>0] - max(input[target<=0])))
+        is computed element-wise and averaged over the batch.
 
         Args:
             min_margin (float): margin parameter.
-            reduction: reduction of the loss, passed to original loss.
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
         """
         super().__init__()
         self.min_margin = min_margin
