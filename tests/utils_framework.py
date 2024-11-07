@@ -127,6 +127,7 @@ __all__ = [
     "CategoricalHingeLoss",
     "process_labels_for_multi_gpu",
     "SpectralConv1d",
+    "LipResidual",
 ]
 
 
@@ -625,7 +626,7 @@ def is_supported_padding(padding):
         "reflect",
         "circular",
         "symmetric",
-        'replicate'
+        "replicate",
     ]  # "constant",
 
 
@@ -635,7 +636,7 @@ def pad_input(x, padding, kernel_size):
         kernel_size = [kernel_size, kernel_size]
     if padding.lower() in ["same", "valid"]:
         return x
-    elif padding.lower() in ["constant", "reflect", "circular",'replicate']:
+    elif padding.lower() in ["constant", "reflect", "circular", "replicate"]:
         p_vert, p_hor = kernel_size[0] // 2, kernel_size[1] // 2
         pad_sizes = [
             p_hor,

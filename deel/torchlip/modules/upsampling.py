@@ -24,12 +24,9 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
-from typing import Tuple
-from typing import Union
 
 import torch
 
-from .. import functional as F
 from .module import LipschitzModule
 
 

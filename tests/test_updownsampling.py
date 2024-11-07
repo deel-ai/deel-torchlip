@@ -33,7 +33,6 @@ from .utils_framework import InvertibleDownSampling, InvertibleUpSampling
 
 
 def check_downsample(x, y, kernel_size):
-    shape = uft.get_NCHW(x)
     index = 0
     for dx in range(kernel_size):
         for dy in range(kernel_size):

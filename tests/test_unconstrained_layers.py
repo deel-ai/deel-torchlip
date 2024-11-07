@@ -46,26 +46,18 @@ def compare(x, x_ref, index_x=[], index_x_ref=[]):
         np.testing.assert_allclose(x_cropped, np.zeros(x_cropped.shape), 1e-2, 0)
     else:
         np.testing.assert_allclose(
-            x_cropped-
-            x_ref[
+            x_cropped
+            - x_ref[
                 :, :, index_x_ref[0] : index_x_ref[1], index_x_ref[3] : index_x_ref[4]
             ][:, :, :: index_x_ref[2], :: index_x_ref[5]],
             np.zeros(x_cropped.shape),
             1e-2,
             0,
         )
-        # np.testing.assert_allclose(
-        #     x_cropped,
-        #     x_ref[
-        #         :, :, index_x_ref[0] : index_x_ref[1], index_x_ref[3] : index_x_ref[4]
-        #     ][:, :, :: index_x_ref[2], :: index_x_ref[5]],
-        #     1e-2,
-        #     0,
-        # )
 
 
 @pytest.mark.parametrize(
-    "padding_tested", ["circular", "constant", "symmetric", "reflect","replicate"]
+    "padding_tested", ["circular", "constant", "symmetric", "reflect", "replicate"]
 )
 @pytest.mark.parametrize(
     "input_shape, batch_size, kernel_size, filters",
@@ -167,7 +159,8 @@ def test_padding(padding_tested, input_shape, batch_size, kernel_size, filters):
     reason="PadConv2d not available",
 )
 @pytest.mark.parametrize(
-    "padding_tested", ["circular", "constant", "symmetric", "reflect", "replicate", "same", "valid"]
+    "padding_tested",
+    ["circular", "constant", "symmetric", "reflect", "replicate", "same", "valid"],
 )
 @pytest.mark.parametrize(
     "input_shape, batch_size, kernel_size, filters",
@@ -240,7 +233,8 @@ def test_predict(padding_tested, input_shape, batch_size, kernel_size, filters):
     reason="PadConv2d not available",
 )
 @pytest.mark.parametrize(
-    "padding_tested", ["circular", "constant", "symmetric", "reflect", "replicate", "same", "valid"]
+    "padding_tested",
+    ["circular", "constant", "symmetric", "reflect", "replicate", "same", "valid"],
 )
 @pytest.mark.parametrize(
     "input_shape, batch_size, kernel_size, filters",
