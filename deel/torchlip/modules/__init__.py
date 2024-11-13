@@ -69,7 +69,6 @@ from .loss import CategoricalHingeLoss
 from .module import LipschitzModule
 from .module import Sequential
 from .module import vanilla_model
-from .module import Reshape
 from .pooling import ScaledAdaptiveAvgPool2d
 from .pooling import ScaledAvgPool2d
 from .pooling import ScaledL2NormPool2d

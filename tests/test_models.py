@@ -263,7 +263,9 @@ def test_warning_unsupported_1Lip_layers():
         ),  # kl.Activation("relu"),
         uft.get_instance_framework(tSoftmax, {}),  # kl.Softmax(),
         uft.get_instance_framework(Flatten, {}),  # kl.Flatten(),
-        uft.get_instance_framework(tReshape, {"target_shape": (10,)}),  # kl.Reshape(),
+        uft.get_instance_framework(
+            tReshape, {"dim": -1, "unflattened_size": (10,)}
+        ),  # kl.Reshape(),
         uft.get_instance_framework(
             tMaxPool2d, {"kernel_size": (2, 2)}
         ),  # kl.MaxPool2d(),

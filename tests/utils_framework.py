@@ -23,6 +23,7 @@ from torch.nn import MaxPool2d as tMaxPool2d
 from torch.nn import Conv2d as tConv2d
 from torch.nn import Conv2d as PadConv2d
 from torch.nn import Upsample as tUpSampling2d
+from torch.nn import Unflatten as tReshape
 from torch import int32 as type_int32
 from torch.nn.functional import pad
 from torch.nn import MultiMarginLoss as tMultiMarginLoss
@@ -40,7 +41,6 @@ from deel.torchlip.modules import ScaledAdaptiveAvgPool2d
 from deel.torchlip.modules import ScaledL2NormPool2d
 from deel.torchlip.modules import InvertibleDownSampling
 from deel.torchlip.modules import InvertibleUpSampling
-from deel.torchlip.modules import Reshape as tReshape
 from deel.torchlip.utils import evaluate_lip_const
 
 from deel.torchlip.modules import (

@@ -166,7 +166,7 @@ def train_compute_and_verifySV(
     logdir = os.path.join("logs", uft.LIP_LAYERS, "%s" % layer_type.__name__)
     os.makedirs(logdir, exist_ok=True)
 
-    callback_list = []  
+    callback_list = []
     if "callbacks" in kwargs and (kwargs["callbacks"] is not None):
         callback_list = callback_list + kwargs["callbacks"]
     # train model

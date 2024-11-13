@@ -40,7 +40,6 @@ import torch
 import torch.nn as nn
 import torch.nn.utils.parametrize as parametrize
 from torch.nn import Sequential as TorchSequential
-from torch import reshape
 
 
 def _is_supported_1lip_layer(layer):
@@ -54,7 +53,7 @@ def _is_supported_1lip_layer(layer):
         torch.nn.ReLU,
         torch.nn.Sigmoid,
         torch.nn.Tanh,
-        Reshape,
+        torch.nn.Unflatten,
     )
     if isinstance(layer, supported_1lip_layers):
         return True
@@ -182,12 +181,3 @@ class Sequential(TorchSequential, LipschitzModule):
             else:
                 layers.append((name, copy.deepcopy(layer)))
         return TorchSequential(OrderedDict(layers))
-
-
-class Reshape(torch.nn.Module):
-    def __init__(self, target_shape):
-        super(Reshape, self).__init__()
-        self.target_shape = target_shape
-
-    def forward(self, x):
-        return reshape(x, self.target_shape)
