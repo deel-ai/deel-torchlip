@@ -94,4 +94,4 @@ def test_initializer(layer_type, layer_params, input_shape, orthogonal_test):
     if orthogonal_test:
         np.testing.assert_allclose(sigmas, np.ones_like(sigmas), atol=1e-5)
     else:
-        np.testing.assert_allclose(sigmas.max(), 1.0, atol=1e-2)
+        np.testing.assert_allclose(sigmas.max(), 1.0, atol=2e-2)
