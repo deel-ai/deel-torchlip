@@ -24,28 +24,74 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
-import torch
-import torch_testing as tt
 
-from deel.torchlip.functional import invertible_downsample
+import pytest
+import numpy as np
+
+from . import utils_framework as uft
+from .utils_framework import invertible_downsample, invertible_upsample
 
 
+@pytest.mark.skipif(
+    hasattr(invertible_downsample, "unavailable_class"),
+    reason="invertible_downsample not available",
+)
 def test_invertible_downsample():
     # 1D input
-    x = torch.tensor([[[1, 2, 3, 4], [5, 6, 7, 8]]])
-    x = invertible_downsample(x, (2,))
+    x = uft.to_tensor([[[1, 2, 3, 4], [5, 6, 7, 8]]])
+    x = uft.get_instance_framework(
+        invertible_downsample, {"input": x, "kernel_size": (2,)}
+    )
     assert x.shape == (1, 4, 2)
 
     # TODO: Check this.
-    tt.assert_equal(x, torch.tensor([[[1, 2], [3, 4], [5, 6], [7, 8]]]))
+    np.testing.assert_equal(uft.to_numpy(x), [[[1, 2], [3, 4], [5, 6], [7, 8]]])
 
     # 2D input
-    x = torch.rand(10, 1, 128, 128)
+    x = np.random.rand(10, 1, 128, 128)  # torch.rand(10, 1, 128, 128)
+    x = uft.to_tensor(x)
     assert invertible_downsample(x, (4, 4)).shape == (10, 16, 32, 32)
 
-    x = torch.rand(10, 4, 64, 64)
+    x = np.random.rand(10, 4, 64, 64)
+    x = uft.to_tensor(x)
     assert invertible_downsample(x, (2, 2)).shape == (10, 16, 32, 32)
 
     # 3D input
-    x = torch.rand(10, 2, 128, 64, 64)
+    x = np.random.rand(10, 2, 128, 64, 64)
+    x = uft.to_tensor(x)
     assert invertible_downsample(x, 2).shape == (10, 16, 64, 32, 32)
+
+
+@pytest.mark.skipif(
+    hasattr(invertible_upsample, "unavailable_class"),
+    reason="invertible_upsample not available",
+)
+def test_invertible_upsample():
+    # 1D input
+    x = uft.to_tensor([[[1, 2], [3, 4], [5, 6], [7, 8]]])
+    x = uft.get_instance_framework(
+        invertible_upsample, {"input": x, "kernel_size": (2,)}
+    )
+
+    assert x.shape == (1, 2, 4)
+
+    # Check output.
+    np.testing.assert_equal(uft.to_numpy(x), [[[1, 2, 3, 4], [5, 6, 7, 8]]])
+
+    # 2D input
+    x = np.random.rand(10, 16, 32, 32)
+    x = uft.to_tensor(x)
+    y = uft.get_instance_framework(
+        invertible_upsample, {"input": x, "kernel_size": (4, 4)}
+    )
+    assert y.shape == (10, 1, 128, 128)
+    y = uft.get_instance_framework(
+        invertible_upsample, {"input": x, "kernel_size": (2, 2)}
+    )
+    assert y.shape == (10, 4, 64, 64)
+
+    # 3D input
+    x = np.random.rand(10, 16, 64, 32, 32)
+    x = uft.to_tensor(x)
+    y = uft.get_instance_framework(invertible_upsample, {"input": x, "kernel_size": 2})
+    assert y.shape == (10, 2, 128, 64, 64)

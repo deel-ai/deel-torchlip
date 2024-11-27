@@ -34,14 +34,18 @@ from typing import Tuple
 import torch
 import torch.nn.functional as F
 
-DEFAULT_NITER_BJORCK = 15
-DEFAULT_NITER_SPECTRAL = 3
-DEFAULT_NITER_SPECTRAL_INIT = 10
+DEFAULT_EPS_SPECTRAL = 1e-3
+DEFAULT_EPS_BJORCK = 1e-3
+DEFAULT_MAXITER_BJORCK = 15
+DEFAULT_MAXITER_SPECTRAL = 10
 DEFAULT_BETA = 0.5
 
 
 def bjorck_normalization(
-    w: torch.Tensor, niter: int = DEFAULT_NITER_BJORCK, beta: float = DEFAULT_BETA
+    w: torch.Tensor,
+    eps: float = DEFAULT_EPS_BJORCK,
+    beta: float = DEFAULT_BETA,
+    maxiter: int = DEFAULT_MAXITER_BJORCK,
 ) -> torch.Tensor:
     r"""
     Apply Bjorck normalization on the kernel as per
@@ -59,50 +63,105 @@ def bjorck_normalization(
     Args:
         w: Weights to normalize. For the normalization to work properly, the greatest
             eigen value of ``w`` must be approximately 1.
-        niter: Number of iterations.
-        beta: Value of :math:`\beta` to use.
+        eps (float): epsilon stopping criterion: norm(wt - wt-1) must be less than eps
+        beta (float): beta used in each iteration, must be in the interval ]0, 0.5]
+        maxiter (int): maximum number of iterations for the algorithm
 
     Returns:
         The weights :math:`\overline{W}` after Bjorck normalization.
     """
-    if niter == 0:
+
+    def cond(w, old_w):
+        return torch.linalg.norm(w - old_w) >= eps
+
+    # define the loop body
+    def body_cols(w):
+        return torch.mm(w, torch.mm(w.t(), w))
+
+    def body_rows(w):
+        return torch.mm(torch.mm(w, w.t()), w)
+
+    def body(w, fct):
+        w = (1.0 + beta) * w - beta * fct(w)
         return w
+
     shape = w.shape
     cout = w.size(0)
     w_mat = w.reshape(cout, -1)
-    for i in range(niter):
-        w_mat = (1.0 + beta) * w_mat - beta * torch.mm(
-            w_mat, torch.mm(w_mat.t(), w_mat)
-        )
+
+    if w_mat.shape[0] > w_mat.shape[1]:
+        body_fct = body_cols
+    else:
+        body_fct = body_rows
+
+    done = False
+    iter = maxiter
+
+    while not done:
+        old_w = w_mat
+        w_mat = body(w_mat, body_fct)
+        iter -= 1
+        done = (not cond(w_mat, old_w)) or (iter <= 0)
+
     w = w_mat.reshape(shape)
     return w
 
 
 def _power_iteration(
-    w: torch.Tensor, u: torch.Tensor, niter: int = DEFAULT_NITER_SPECTRAL
+    linear_operator,
+    adjoint_operator,
+    u: torch.Tensor,
+    eps=DEFAULT_EPS_SPECTRAL,
+    maxiter=DEFAULT_MAXITER_SPECTRAL,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Internal function that performs the power iteration algorithm.
 
     Args:
-        w: Weights matrix that we want to find eigen vector.
-        u: Initial singular vector.
-        niter: Number of iteration, must be greater than 0.
+        linear_operator (Callable): a callable object that maps a linear operation.
+        adjoint_operator (Callable): a callable object that maps the adjoint of the
+            linear operator.
+        u (tf.Tensor): initialization of the singular vector.
+        eps (float, optional): stopping criterion of the algorithm, when
+            norm(u[t] - u[t-1]) is less than eps. Defaults to DEFAULT_EPS_SPECTRAL.
+        maxiter (int, optional): maximum number of iterations for the algorithm.
+            Defaults to DEFAULT_MAXITER_SPECTRAL.
 
     Returns:
-         A tuple (u, v) containing the last singular vectors.
+         A Tensor containing the maximum singular vector
 
     """
-    for i in range(niter):
-        v = F.normalize(torch.mm(u, w.t()), p=2, dim=1)
-        u = F.normalize(torch.mm(v, w), p=2, dim=1)
-    return u, v
+
+    # Loop stopping condition
+    def cond(u, old_u):
+        return torch.linalg.norm(u - old_u) >= eps
+
+    # Loop body
+    def body(u):
+        v = linear_operator(u)
+        u = adjoint_operator(v)
+
+        u = F.normalize(u, dim=-1)
+
+        return u
+
+    done = False
+    iter = maxiter
+
+    while not done:
+        old_u = u
+        u = body(u)
+        iter -= 1
+        done = (not cond(u, old_u)) or (iter <= 0)
+
+    return u
 
 
 def spectral_normalization(
     kernel: torch.Tensor,
     u: Optional[torch.Tensor] = None,
-    niter: int = DEFAULT_NITER_SPECTRAL,
+    eps: float = DEFAULT_EPS_SPECTRAL,
+    maxiter: int = DEFAULT_MAXITER_SPECTRAL,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     r"""
     Apply spectral normalization on the given kernel :math:`W` to set its greatest
@@ -117,8 +176,10 @@ def spectral_normalization(
         u: Initialization for the initial singular vector. If ``None``, it will
             be randomly initialized from a normal distribution and twice
             as much iterations will be performed.
-        niter: Number of iteration. If u is not specified, we perform
-            twice as much iterations.
+        eps (float, optional): stopping criterion of the algorithm, when
+            norm(u[t] - u[t-1]) is less than eps. Defaults to DEFAULT_EPS_SPECTRAL.
+        maxiter (int, optional): maximum number of iterations for the algorithm.
+            Defaults to DEFAULT_MAXITER_SPECTRAL.
 
     Returns:
         The normalized kernel :math:`\overline{W}`, the right singular vector
@@ -126,21 +187,29 @@ def spectral_normalization(
         before normalization.
     """
 
+    def linear_op(u):
+        return u @ kernel.t()
+
+    def adjoint_op(v):
+        return v @ kernel
+
     # Flatten the Tensor
     W_flat = kernel.flatten(start_dim=1)
 
     if u is None:
-        niter *= 2  # if u was not double number of iterations for the first run
+        maxiter *= 2  # if u was not double number of iterations for the first run
         u = torch.ones(tuple([1, W_flat.shape[-1]]), device=kernel.device)
         torch.nn.init.normal_(u)
 
     # do power iteration
-    u, v = _power_iteration(W_flat, u, niter)
+    u = _power_iteration(linear_op, adjoint_op, u, eps, maxiter)
 
-    # Calculate sigma (largest singular value).
-    sigma = v.mm(W_flat).mm(u.t())
-
-    # Normalize W_bar
-    W_bar = kernel.div(sigma)
-
-    return W_bar, u, sigma
+    # Compute the largest singular value and the normalized kernel.
+    # We assume that in the worst case we converged to sigma + eps (as u and v are
+    # normalized after each iteration)
+    # In order to be sure that operator norm of normalized kernel is strictly less than
+    # one we use sigma + eps, which ensures stability of Björck algorithm even when
+    # beta=0.5
+    sigma = torch.linalg.norm(linear_op(u))
+    normalized_kernel = kernel.div(sigma + eps)
+    return normalized_kernel, u, sigma
