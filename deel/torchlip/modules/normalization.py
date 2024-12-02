@@ -54,7 +54,7 @@ LayerCentering2d = LayerCentering
 
 class BatchCentering(nn.Module):
     r"""
-    Applies Batch Normalization over a 2D, 3D, 4D input.
+    Applies Batch Centering  over a 2D, 3D, 4D input.
 
     .. math::
 

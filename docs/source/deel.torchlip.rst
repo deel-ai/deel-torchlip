@@ -31,6 +31,7 @@ Convolution Layers
 
 .. autoclass:: SpectralConv2d
 .. autoclass:: FrobeniusConv2d
+.. autoclass:: SpectralConvTranspose2d
 
 Pooling Layers
 --------------
@@ -38,12 +39,13 @@ Pooling Layers
 .. autoclass:: ScaledAdaptiveAvgPool2d
 .. autoclass:: ScaledAvgPool2d
 .. autoclass:: ScaledL2NormPool2d
+.. autoclass:: ScaledGlobalL2NormPool2d
+.. autoclass:: InvertibleDownSampling
+.. autoclass:: InvertibleUpSampling
 
 Non-linear Activations
 ----------------------
 
-.. autoclass:: InvertibleDownSampling
-.. autoclass:: InvertibleUpSampling
 .. autoclass:: MaxMin
 .. autoclass:: GroupSort
 .. autoclass:: GroupSort2
@@ -63,3 +65,8 @@ Loss Functions
 .. autoclass:: NegKRLoss
 .. autoclass:: HingeMarginLoss
 .. autoclass:: HKRLoss
+.. autoclass:: HKRMulticlassLoss
+.. autoclass:: SoftHKRMulticlassLoss
+.. autoclass:: TauCrossEntropyLoss
+.. autoclass:: TauBCEWithLogitsLoss
+.. autoclass:: CategoricalHingeLoss
