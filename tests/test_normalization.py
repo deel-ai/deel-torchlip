@@ -61,6 +61,10 @@ def check_serialization(layer_type, layer_params, input_shape=(10,)):
     np.testing.assert_allclose(uft.to_numpy(y1), uft.to_numpy(y2))
 
 
+@pytest.mark.skipif(
+    hasattr(LayerCentering, "unavailable_class"),
+    reason="LayerCentering not available",
+)
 @pytest.mark.parametrize(
     "size, input_shape, bias",
     [
@@ -92,6 +96,10 @@ def test_LayerCentering(size, input_shape, bias):
     )  # eval mode use running_mean
 
 
+@pytest.mark.skipif(
+    hasattr(BatchCentering, "unavailable_class"),
+    reason="BatchCentering not available",
+)
 @pytest.mark.parametrize(
     "size, input_shape, bias",
     [
@@ -150,6 +158,8 @@ def test_BatchCentering(size, input_shape, bias):
 )
 def test_Normalization_serialization(norm_type, size, input_shape, bias):
     # Check serialization
+    if hasattr(norm_type, "unavailable_class"):
+        pytest.skip(f"{norm_type} not available")
     check_serialization(
         norm_type, layer_params={"size": size, "bias": bias}, input_shape=input_shape
     )
@@ -189,6 +199,8 @@ def linear_generator(batch_size, input_shape: tuple):
     ],
 )
 def test_Normalization_bias(norm_type, size, input_shape, bias):
+    if hasattr(norm_type, "unavailable_class"):
+        pytest.skip(f"{norm_type} not available")
     m = uft.generate_k_lip_model(
         norm_type,
         layer_params={"size": size, "bias": bias},
@@ -221,6 +233,10 @@ def test_Normalization_bias(norm_type, size, input_shape, bias):
     assert np.linalg.norm(bb) != 0.0
 
 
+@pytest.mark.skipif(
+    hasattr(BatchCentering, "unavailable_class"),
+    reason="BatchCentering not available",
+)
 @pytest.mark.parametrize(
     "size, input_shape, bias",
     [

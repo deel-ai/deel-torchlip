@@ -208,11 +208,18 @@ def get_instance_withcheck(
     instance_type, inst_params, dict_keys_replace={}, list_keys_notimplemented=[]
 ):
     for k in list_keys_notimplemented:
-        if k in inst_params:
-            warnings.warn(
-                UserWarning("Warning key is not implemented", k, " in pytorch")
-            )
-            return None
+        if isinstance(k, tuple):
+            kk = k[0]
+            kv = k[1]
+        else:
+            kk = k
+            kv = None
+        if kk in inst_params:
+            if (kv is None) or inst_params[kk] in kv:
+                warnings.warn(
+                    UserWarning("Warning key is not implemented", kk, " in tensorflow")
+                )
+                return None
     layp = replace_key_params(inst_params, dict_keys_replace)
     return instance_type(**layp)
 
@@ -619,15 +626,42 @@ def vanillaModel(model):
     return model
 
 
-def is_supported_padding(padding):
-    return padding.lower() in [
-        "same",
-        "valid",
-        "reflect",
-        "circular",
-        "symmetric",
-        "replicate",
-    ]  # "constant",
+def is_supported_padding(padding, layer_type):
+    layertype2padding = {
+        SpectralConv2d: [
+            "same",
+            "zeros",
+            "valid",
+            "reflect",
+            "circular",
+            "symmetric",
+            "replicate",
+        ],
+        FrobeniusConv2d: [
+            "same",
+            "zeros",
+            "valid",
+            "reflect",
+            "circular",
+            "symmetric",
+            "replicate",
+        ],
+        PadConv2d: [
+            "same",
+            "zeros",
+            "valid",
+            "reflect",
+            "circular",
+            "symmetric",
+            "replicate",
+        ],
+    }
+    if layer_type in layertype2padding:
+        return padding.lower() in layertype2padding[layer_type]
+    else:
+        assert False
+        warnings.warn(f"layer {layer_type} type not supported for padding")
+        return False
 
 
 def pad_input(x, padding, kernel_size):

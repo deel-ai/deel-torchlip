@@ -149,7 +149,7 @@ def train_k_lip_model(
     input_shape: tuple,
     k_lip_model: float,
     k_lip_data: float,
-    **kwargs
+    **kwargs,
 ):
     """
     Create a generator, create a model, train it and return the results.
@@ -630,6 +630,8 @@ def test_spectralconv2d_pad(
     layer_params["padding"] = pad
     layer_params["padding_mode"] = pad_mode
     layer_params["kernel_size"] = kernel_size
+    if not uft.is_supported_padding(pad_mode, SpectralConv2d):
+        pytest.skip(f"SpectralConv2d: Padding {pad_mode} not supported")
     test_params = dict(
         layer_type=SpectralConv2d,
         layer_params=layer_params,
@@ -1372,6 +1374,8 @@ def test_Conv2d_vanilla_export(pad, pad_mode, kernel_size, layer_params, layer_t
     layer_type = layer_type
     input_shape = (1, 5, 5)
 
+    if not uft.is_supported_padding(pad_mode, layer_type):
+        pytest.skip(f"{layer_type}: Padding {pad_mode} not supported")
     model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, 1.0)
 
     # lay = SpectralConvTranspose2d(**kwargs)

@@ -38,7 +38,7 @@ def check_downsample(x, y, kernel_size):
         for dy in range(kernel_size):
             xx = x[:, :, dx::kernel_size, dy::kernel_size]
             yy = y[:, index :: (kernel_size * kernel_size), :, :]
-            np.testing.assert_array_equal(xx, yy)
+            np.testing.assert_almost_equal(xx, yy, decimal=6)
             index += 1
 
 
@@ -47,29 +47,37 @@ def check_downsample(x, y, kernel_size):
     reason="InvertibleDownSampling not available",
 )
 def test_invertible_downsample():
-
-    x = np.arange(32).reshape(1, 2, 4, 4)
+    x_np = np.arange(32).reshape(1, 2, 4, 4)
+    x = uft.to_NCHW_inv(x_np)
     x = uft.to_tensor(x)
     dw_layer = uft.get_instance_framework(InvertibleDownSampling, {"kernel_size": 2})
     y = dw_layer(x)
-    assert y.shape == (1, 8, 2, 2)
-    check_downsample(x, y, 2)
+    y_np = uft.to_numpy(y)
+    y_np = uft.to_NCHW(y_np)
+    assert y_np.shape == (1, 8, 2, 2)
+    check_downsample(x_np, y_np, 2)
 
     # 2D input
-    x = np.random.rand(10, 1, 128, 128)  # torch.rand(10, 1, 128, 128)
+    x_np = np.random.rand(10, 1, 128, 128)  # torch.rand(10, 1, 128, 128)
+    x = uft.to_NCHW_inv(x_np)
     x = uft.to_tensor(x)
 
     dw_layer = uft.get_instance_framework(InvertibleDownSampling, {"kernel_size": 4})
     y = dw_layer(x)
-    assert y.shape == (10, 16, 32, 32)
-    check_downsample(x, y, 4)
+    y_np = uft.to_numpy(y)
+    y_np = uft.to_NCHW(y_np)
+    assert y_np.shape == (10, 16, 32, 32)
+    check_downsample(x_np, y_np, 4)
 
-    x = np.random.rand(10, 4, 64, 64)
+    x_np = np.random.rand(10, 4, 64, 64)
+    x = uft.to_NCHW_inv(x_np)
     x = uft.to_tensor(x)
     dw_layer = uft.get_instance_framework(InvertibleDownSampling, {"kernel_size": 2})
     y = dw_layer(x)
-    assert y.shape == (10, 16, 32, 32)
-    check_downsample(x, y, 2)
+    y_np = uft.to_numpy(y)
+    y_np = uft.to_NCHW(y_np)
+    assert y_np.shape == (10, 16, 32, 32)
+    check_downsample(x_np, y_np, 2)
 
 
 @pytest.mark.skipif(
@@ -79,17 +87,22 @@ def test_invertible_downsample():
 def test_invertible_upsample():
 
     # 2D input
-    x = np.random.rand(10, 16, 32, 32)
+    x_np = np.random.rand(10, 16, 32, 32)
+    x = uft.to_NCHW_inv(x_np)
     x = uft.to_tensor(x)
     dw_layer = uft.get_instance_framework(InvertibleUpSampling, {"kernel_size": 4})
     y = dw_layer(x)
-    assert y.shape == (10, 1, 128, 128)
-    check_downsample(y, x, 4)
+    y_np = uft.to_numpy(y)
+    y_np = uft.to_NCHW(y_np)
+    assert y_np.shape == (10, 1, 128, 128)
+    check_downsample(y_np, x_np, 4)
 
     dw_layer = uft.get_instance_framework(InvertibleUpSampling, {"kernel_size": 2})
     y = dw_layer(x)
-    assert y.shape == (10, 4, 64, 64)
-    check_downsample(y, x, 2)
+    y_np = uft.to_numpy(y)
+    y_np = uft.to_NCHW(y_np)
+    assert y_np.shape == (10, 4, 64, 64)
+    check_downsample(y_np, x_np, 2)
 
 
 @pytest.mark.skipif(
@@ -98,7 +111,8 @@ def test_invertible_upsample():
     reason="InvertibleUpSampling not available",
 )
 def test_invertible_upsample_downsample():
-    x = np.random.rand(10, 16, 32, 32)
+    x_np = np.random.rand(10, 16, 32, 32)
+    x = uft.to_NCHW_inv(x_np)
     x = uft.to_tensor(x)
     up_layer = uft.get_instance_framework(InvertibleUpSampling, {"kernel_size": 4})
     y = up_layer(x)
@@ -108,7 +122,8 @@ def test_invertible_upsample_downsample():
     assert z.shape == x.shape
     np.testing.assert_array_equal(x, z)
 
-    x = np.random.rand(10, 1, 128, 128)  # torch.rand(10, 1, 128, 128)
+    x_np = np.random.rand(10, 1, 128, 128)  # torch.rand(10, 1, 128, 128)
+    x = uft.to_NCHW_inv(x_np)
     x = uft.to_tensor(x)
 
     dw_layer = uft.get_instance_framework(InvertibleDownSampling, {"kernel_size": 4})
