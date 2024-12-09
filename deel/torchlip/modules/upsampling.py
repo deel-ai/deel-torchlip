@@ -32,7 +32,7 @@ from .module import LipschitzModule
 
 class InvertibleUpSampling(torch.nn.PixelShuffle, LipschitzModule):
     def __init__(self, kernel_size: int, k_coef_lip: float = 1.0):
-        torch.nn.PixelShuffle.__init__(self, upscale_factor = kernel_size)
+        torch.nn.PixelShuffle.__init__(self, upscale_factor=kernel_size)
         LipschitzModule.__init__(self, k_coef_lip)
 
     def vanilla_export(self):

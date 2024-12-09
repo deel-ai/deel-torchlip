@@ -72,13 +72,12 @@ def vanilla_model(model: nn.Module):
         model (nn.Module): Lipschitz neural network
     """
     for n, module in model.named_children():
-        if len(list(module.children())) > 0:
-            # compound module, go inside it
-            vanilla_model(module)
-
         if isinstance(module, LipschitzModule):
             # simple module
             setattr(model, n, module.vanilla_export())
+        elif len(list(module.children())) > 0:
+            # compound module, go inside it
+            vanilla_model(module)
 
 
 class _LipschitzCoefMultiplication(nn.Module):
