@@ -251,7 +251,7 @@ class HouseHolder(nn.Module, LipschitzModule):
 
     def forward(self, z, axis=1):
         theta_shape = (1, -1) + (1,) * (len(z.shape) - 2)
-        theta = self.theta.to(z.device).view(theta_shape)
+        theta = self.theta.view(theta_shape)
         x, y = z.split(z.shape[axis] // 2, axis)
         selector = (x * torch.sin(0.5 * theta)) - (y * torch.cos(0.5 * theta))
 
