@@ -31,11 +31,11 @@ from .module import LipschitzModule
 
 class InvertibleDownSampling(torch.nn.PixelUnshuffle, LipschitzModule):
     def __init__(self, kernel_size: int, k_coef_lip: float = 1.0):
-        torch.nn.PixelUnshuffle.__init__(self, kernel_size)
+        torch.nn.PixelUnshuffle.__init__(self, downscale_factor  = kernel_size)
         LipschitzModule.__init__(self, k_coef_lip)
 
     def vanilla_export(self):
         if self._coefficient_lip == 1.0:
-            return torch.nn.PixelUnshuffle(self.kernel_size)
+            return torch.nn.PixelUnshuffle(self.downscale_factor)
         else:
             return self
