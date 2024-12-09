@@ -39,7 +39,7 @@ Pooling Layers
 .. autoclass:: ScaledAdaptiveAvgPool2d
 .. autoclass:: ScaledAvgPool2d
 .. autoclass:: ScaledL2NormPool2d
-.. autoclass:: ScaledGlobalL2NormPool2d
+.. autoclass:: ScaledAdaptativeL2NormPool2d
 .. autoclass:: InvertibleDownSampling
 .. autoclass:: InvertibleUpSampling
 

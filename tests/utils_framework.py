@@ -42,7 +42,7 @@ from deel.torchlip.modules import FrobeniusConv2d
 from deel.torchlip.modules import ScaledAvgPool2d
 from deel.torchlip.modules import ScaledAdaptiveAvgPool2d
 from deel.torchlip.modules import ScaledL2NormPool2d
-from deel.torchlip.modules import ScaledGlobalL2NormPool2d
+from deel.torchlip.modules import ScaledAdaptativeL2NormPool2d
 from deel.torchlip.modules import InvertibleDownSampling
 from deel.torchlip.modules import InvertibleUpSampling
 from deel.torchlip.modules import LayerCentering
@@ -231,7 +231,7 @@ getters_dict = {
     ScaledL2NormPool2d: partial(
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
-    ScaledGlobalL2NormPool2d: partial(
+    ScaledAdaptativeL2NormPool2d: partial(
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
     SpectralConv2d: partial(

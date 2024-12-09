@@ -35,7 +35,7 @@ from .utils_framework import (
     ScaledAvgPool2d,
     ScaledAdaptiveAvgPool2d,
     ScaledL2NormPool2d,
-    ScaledGlobalL2NormPool2d,
+    ScaledAdaptativeL2NormPool2d,
 )
 
 
@@ -92,7 +92,7 @@ def test_pooling_simple(layer_type, layer_params):
     "layer_type",
     [
         ScaledAdaptiveAvgPool2d,
-        ScaledGlobalL2NormPool2d,
+        ScaledAdaptativeL2NormPool2d,
     ],
 )
 @pytest.mark.parametrize(
@@ -137,8 +137,8 @@ def test_pooling_global(layer_type, layer_params):
         (ScaledL2NormPool2d, {"kernel_size": (2, 2), "stride": (2, 2)}),
         (ScaledAdaptiveAvgPool2d, {"output_size": (1, 1)}),
         (ScaledAdaptiveAvgPool2d, {"output_size": (1, 1), "k_coef_lip": 2.5}),
-        (ScaledGlobalL2NormPool2d, {"output_size": (1, 1)}),
-        (ScaledGlobalL2NormPool2d, {"output_size": (1, 1), "k_coef_lip": 2.5}),
+        (ScaledAdaptativeL2NormPool2d, {"output_size": (1, 1)}),
+        (ScaledAdaptativeL2NormPool2d, {"output_size": (1, 1), "k_coef_lip": 2.5}),
     ],
 )
 def test_pool_vanilla_export(layer_type, layer_params):
@@ -206,7 +206,7 @@ def test_pool_vanilla_export(layer_type, layer_params):
             [[[[40.0 / math.sqrt(4.0 * 4.0)]], [[18.0 / math.sqrt(4.0 * 4.0)]]]],
         ),
         (
-            ScaledGlobalL2NormPool2d,
+            ScaledAdaptativeL2NormPool2d,
             {"output_size": (1, 1)},
             [[[[math.sqrt(120.0)]], [[math.sqrt(320.0)]]]],
         ),

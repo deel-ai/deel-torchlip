@@ -44,7 +44,7 @@ from .utils_framework import (
     ScaledL2NormPool2d,
     InvertibleDownSampling,
     InvertibleUpSampling,
-    ScaledGlobalL2NormPool2d,
+    ScaledAdaptativeL2NormPool2d,
     Flatten,
     Sequential,
 )
@@ -877,7 +877,7 @@ def test_scaledl2normPool2d(test_params):
 
 
 @pytest.mark.skipif(
-    hasattr(ScaledGlobalL2NormPool2d, "unavailable_class"),
+    hasattr(ScaledAdaptativeL2NormPool2d, "unavailable_class"),
     reason="compute_layer_sv not available",
 )
 @pytest.mark.parametrize(
@@ -890,7 +890,7 @@ def test_scaledl2normPool2d(test_params):
                 "layers": [
                     tInput(uft.to_framework_channel((1, 5, 5))),
                     uft.get_instance_framework(
-                        ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
+                        ScaledAdaptativeL2NormPool2d, {"data_format": "channels_last"}
                     ),
                 ]
             },
@@ -908,7 +908,7 @@ def test_scaledl2normPool2d(test_params):
                 "layers": [
                     tInput(uft.to_framework_channel((1, 5, 5))),
                     uft.get_instance_framework(
-                        ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
+                        ScaledAdaptativeL2NormPool2d, {"data_format": "channels_last"}
                     ),
                 ]
             },
@@ -926,7 +926,7 @@ def test_scaledl2normPool2d(test_params):
                 "layers": [
                     tInput(uft.to_framework_channel((1, 5, 5))),
                     uft.get_instance_framework(
-                        ScaledGlobalL2NormPool2d, {"data_format": "channels_last"}
+                        ScaledAdaptativeL2NormPool2d, {"data_format": "channels_last"}
                     ),
                 ]
             },

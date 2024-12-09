@@ -54,7 +54,7 @@ The following table indicates which module are safe to use in a Lipschitz networ
      -
    * - :class:`torch.nn.AvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`torch.nn.AdaptiveAvgPool2d`
      - no
-     - :class:`.ScaledAvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`.ScaledAdaptiveAvgPool2d` \ :raw-html-m2r:`<br>` \ :class:`.ScaledL2NormPool2d` \ :raw-html-m2r:`<br>` \ :class:`.ScaledGlobalL2NormPool2d`
+     - :class:`.ScaledAvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`.ScaledAdaptiveAvgPool2d` \ :raw-html-m2r:`<br>` \ :class:`.ScaledL2NormPool2d` \ :raw-html-m2r:`<br>` \ :class:`.ScaledAdaptativeL2NormPool2d`
      - The Lipschitz constant is bounded by ``sqrt(pool_h * pool_w)``.
    * - :class:`Flatten`
      - yes
