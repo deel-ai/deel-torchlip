@@ -41,11 +41,7 @@ def compute_lconv_coef_1d(
     stride = strides[0]
     k1 = kernel_size[0]
 
-    if (
-        (padding_mode in ["zeros", "same"])
-        and (stride == 1)
-        and (input_shape is not None)
-    ):
+    if (padding_mode in ["zeros"]) and (stride == 1) and (input_shape is not None):
         # See https://arxiv.org/abs/2006.06520
         in_l = input_shape[-1]
         k1_div2 = (k1 - 1) / 2
@@ -67,11 +63,7 @@ def compute_lconv_coef(
     stride = np.prod(strides)
     k1, k2 = kernel_size
 
-    if (
-        (padding_mode in ["zeros", "same"])
-        and (stride == 1)
-        and (input_shape is not None)
-    ):
+    if (padding_mode in ["zeros"]) and (stride == 1) and (input_shape is not None):
         h, w = input_shape[-2:]
         k1_div2 = (k1 - 1) / 2
         k2_div2 = (k2 - 1) / 2

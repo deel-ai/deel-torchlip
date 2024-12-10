@@ -32,7 +32,6 @@ import torch
 import torch.nn.functional as F
 from torch.nn.common_types import _size_2_t
 
-from ..utils import sqrt_with_gradeps
 from .module import LipschitzModule
 
 
@@ -232,4 +231,3 @@ class ScaledAdaptativeL2NormPool2d(
 
     def vanilla_export(self):
         return self
-
