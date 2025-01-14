@@ -212,7 +212,9 @@ def max_min(input: torch.Tensor, dim: Optional[int] = None) -> torch.Tensor:
     return torch.cat((F.relu(input), F.relu(-input)), dim=dim)
 
 
-def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.Tensor:
+def group_sort(
+    input: torch.Tensor, group_size: Optional[int] = None, dim: int = 1
+) -> torch.Tensor:
     r"""
     Applies GroupSort activation on the given tensor.
 
@@ -220,22 +222,28 @@ def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.T
         :py:func:`group_sort_2`
         :py:func:`full_sort`
     """
-    if group_size is None or group_size > input.shape[1]:
-        group_size = input.shape[1]
 
-    if input.shape[1] % group_size != 0:
+    if group_size is None or group_size > input.shape[dim]:
+        group_size = input.shape[dim]
+
+    if input.shape[dim] % group_size != 0:
         raise ValueError("The input size must be a multiple of the group size.")
 
-    fv = input.reshape([-1, group_size])
+    new_shape = (
+        input.shape[:dim]
+        + (input.shape[dim] // group_size, group_size)
+        + input.shape[dim + 1 :]
+    )
     if group_size == 2:
-        sfv = torch.chunk(fv, 2, 1)
-        b = sfv[0]
-        c = sfv[1]
-        newv = torch.cat((torch.min(b, c), torch.max(b, c)), dim=1)
-        newv = newv.reshape(input.shape)
-        return newv
+        resh_input = input.view(new_shape)
+        a, b = (
+            torch.min(resh_input, dim + 1, keepdim=True)[0],
+            torch.max(resh_input, dim + 1, keepdim=True)[0],
+        )
+        return torch.cat([a, b], dim=dim + 1).view(input.shape)
+    fv = input.reshape(new_shape)
 
-    return torch.sort(fv)[0].reshape(input.shape)
+    return torch.sort(fv, dim=dim + 1)[0].reshape(input.shape)
 
 
 def group_sort_2(input: torch.Tensor) -> torch.Tensor:
@@ -568,3 +576,42 @@ def process_labels_for_multi_gpu(labels: torch.Tensor) -> torch.Tensor:
     # Since element-wise KR terms are averaged by loss reduction later on, it is needed
     # to multiply by batch_size here.
     return torch.where(labels > 0, pos_factor, neg_factor)
+
+
+class SymmetricPad(torch.nn.Module):
+    """
+    Pads a 2D tensor symmetrically.
+
+    Args:
+        pad (tuple): A tuple (pad_left, pad_right, pad_top, pad_bottom) specifying
+                 the number of pixels to pad on each side. (or single int if
+                 common padding).
+
+        onedim: False for conv2d, True for conv1d.
+
+    """
+
+    def __init__(self, pad, onedim=False):
+        super().__init__()
+        self.onedim = onedim
+        num_dim = 2 if onedim else 4
+        if isinstance(pad, int):
+            self.pad = (pad,) * num_dim
+        else:
+            self.pad = torch.nn.modules.utils._reverse_repeat_tuple(pad, 2)
+        assert len(self.pad) == num_dim, f"Pad must be a tuple of {num_dim} integers"
+
+    def forward(self, x):
+
+        # Horizontal padding
+        left = x[:, ..., : self.pad[0]].flip(dims=[-1])
+        right = x[:, ..., -self.pad[1] :].flip(dims=[-1])
+        x = torch.cat([left, x, right], dim=-1)
+        if self.onedim:
+            return x
+        # Vertical padding
+        top = x[:, :, : self.pad[2], :].flip(dims=[-2])
+        bottom = x[:, :, -self.pad[3] :, :].flip(dims=[-2])
+        x = torch.cat([top, x, bottom], dim=-2)
+
+        return x

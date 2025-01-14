@@ -26,17 +26,22 @@
 # =====================================================================================
 
 import torch
+from torch import nn
 
-from .module import LipschitzModule
 
+class LipResidual(nn.Module):
+    """
+    This class is a 1-Lipschitz residual connection
+    With a learnable parameter alpha that give a tradeoff
+    between the x and the layer y=l(x)
 
-class InvertibleUpSampling(torch.nn.PixelShuffle, LipschitzModule):
-    def __init__(self, kernel_size: int, k_coef_lip: float = 1.0):
-        torch.nn.PixelShuffle.__init__(self, upscale_factor=kernel_size)
-        LipschitzModule.__init__(self, k_coef_lip)
+    Args:
+    """
 
-    def vanilla_export(self):
-        if self._coefficient_lip == 1.0:
-            return torch.nn.PixelShuffle(self.upscale_factor)
-        else:
-            return self
+    def __init__(self):
+        super().__init__()
+        self.alpha = nn.Parameter(torch.tensor(0.0), requires_grad=True)
+
+    def forward(self, x, y):
+        alpha = torch.sigmoid(self.alpha)
+        return alpha * x + (1 - alpha) * y

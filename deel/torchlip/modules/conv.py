@@ -34,10 +34,94 @@ from ..normalizers import DEFAULT_EPS_BJORCK
 from ..normalizers import DEFAULT_EPS_SPECTRAL
 from ..utils import frobenius_norm
 from ..utils import lconv_norm
+from .unconstrained import PadConv1d, PadConv2d
 from .module import LipschitzModule
 
 
-class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
+class SpectralConv1d(PadConv1d, LipschitzModule):
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: _size_2_t,
+        stride: _size_2_t = 1,
+        padding: _size_2_t = 0,
+        dilation: _size_2_t = 1,
+        groups: int = 1,
+        bias: bool = True,
+        padding_mode: str = "zeros",
+        k_coef_lip: float = 1.0,
+        eps_spectral: int = DEFAULT_EPS_SPECTRAL,
+        eps_bjorck: int = DEFAULT_EPS_BJORCK,
+    ):
+        """
+        This class is a Conv1d Layer constrained such that all singular of it's kernel
+        are 1. The computation based on BjorckNormalizer algorithm. As this is not
+        enough to ensure 1-Lipschitz a coercive coefficient is applied on the
+        output.
+        The computation is done in three steps:
+
+        1. reduce the largest singular value to 1, using iterated power method.
+        2. increase other singular values to 1, using BjorckNormalizer algorithm.
+        3. divide the output by the Lipschitz bound to ensure k-Lipschitz.
+
+        Args:
+            in_channels (int): Number of channels in the input image
+            out_channels (int): Number of channels produced by the convolution
+            kernel_size (int or tuple): Size of the convolving kernel
+            stride (int or tuple, optional): Stride of the convolution.
+            padding (int or tuple, optional): Zero-padding added to both sides of
+                the input.
+            padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
+                ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
+            dilation (int or tuple, optional): Spacing between kernel elements.
+            groups (int, optional): Number of blocked connections from input
+                channels to output channels.
+            bias (bool, optional): If ``True``, adds a learnable bias to the
+                output.
+            k_coef_lip: Lipschitz constant to ensure.
+            eps_spectral: stopping criterion for the iterative power algorithm.
+            eps_bjorck: stopping criterion Bjorck algorithm.
+
+        This documentation reuse the body of the original torch.nn.Conv1D doc.
+        """
+        # if not ((dilation == (1, 1)) or (dilation == [1, 1]) or (dilation == 1)):
+        #     raise RuntimeError("NormalizedConv does not support dilation rate")
+        # if padding_mode != "same":
+        #     raise RuntimeError("NormalizedConv only support padding='same'")
+
+        PadConv1d.__init__(
+            self,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            bias=bias,
+            dilation=dilation,
+            groups=groups,
+            padding_mode=padding_mode,
+        )
+        LipschitzModule.__init__(self, k_coef_lip)
+
+        torch.nn.init.orthogonal_(self.weight)
+        if self.bias is not None:
+            self.bias.data.fill_(0.0)
+
+        spectral_norm(
+            self,
+            name="weight",
+            eps=eps_spectral,
+        )
+        bjorck_norm(self, name="weight", eps=eps_bjorck)
+        lconv_norm(self)
+        self.apply_lipschitz_factor()
+
+    def vanilla_export(self):
+        return PadConv1d.vanilla_export(self)
+
+
+class SpectralConv2d(PadConv2d, LipschitzModule):
     def __init__(
         self,
         in_channels: int,
@@ -74,8 +158,9 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
             padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
                 ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
             dilation (int or tuple, optional): Spacing between kernel elements.
+                Has to be one
             groups (int, optional): Number of blocked connections from input
-                channels to output channels.
+                channels to output channels. Has to be one
             bias (bool, optional): If ``True``, adds a learnable bias to the
                 output.
             k_coef_lip: Lipschitz constant to ensure.
@@ -89,7 +174,7 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
         # if padding_mode != "same":
         #     raise RuntimeError("NormalizedConv only support padding='same'")
 
-        torch.nn.Conv2d.__init__(
+        PadConv2d.__init__(
             self,
             in_channels=in_channels,
             out_channels=out_channels,
@@ -97,6 +182,8 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
             stride=stride,
             padding=padding,
             bias=bias,
+            dilation=dilation,
+            groups=groups,
             padding_mode=padding_mode,
         )
         LipschitzModule.__init__(self, k_coef_lip)
@@ -115,24 +202,10 @@ class SpectralConv2d(torch.nn.Conv2d, LipschitzModule):
         self.apply_lipschitz_factor()
 
     def vanilla_export(self):
-        layer = torch.nn.Conv2d(
-            in_channels=self.in_channels,
-            out_channels=self.out_channels,
-            kernel_size=self.kernel_size,
-            stride=self.stride,
-            padding=self.padding,
-            dilation=self.dilation,
-            groups=self.groups,
-            bias=self.bias is not None,
-            padding_mode=self.padding_mode,
-        )
-        layer.weight.data = self.weight.detach()
-        if self.bias is not None:
-            layer.bias.data = self.bias.detach()
-        return layer
+        return PadConv2d.vanilla_export(self)
 
 
-class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
+class FrobeniusConv2d(PadConv2d, LipschitzModule):
     """
     Same as SpectralConv2d but in the case of a single output.
     """
@@ -155,14 +228,17 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
         # if padding_mode != "same":
         #     raise RuntimeError("NormalizedConv only support padding='same'")
 
-        torch.nn.Conv2d.__init__(
+        PadConv2d.__init__(
             self,
             in_channels=in_channels,
             out_channels=out_channels,
             kernel_size=kernel_size,
             stride=stride,
             padding=padding,
+            padding_mode=padding_mode,
             bias=bias,
+            dilation=dilation,
+            groups=groups,
         )
         LipschitzModule.__init__(self, k_coef_lip)
 
@@ -175,12 +251,98 @@ class FrobeniusConv2d(torch.nn.Conv2d, LipschitzModule):
         self.apply_lipschitz_factor()
 
     def vanilla_export(self):
-        layer = torch.nn.Conv2d(
+        return PadConv2d.vanilla_export(self)
+
+
+class SpectralConvTranspose2d(torch.nn.ConvTranspose2d, LipschitzModule):
+    r"""Applies a 2D transposed convolution operator over an input image
+    such that all singular of it's kernel are 1.
+    The computation are the same as for SpectralConv2d layer
+
+    Args:
+        in_channels (int): Number of channels in the input image
+        out_channels (int): Number of channels produced by the convolution
+        kernel_size (int or tuple): Size of the convolving kernel
+        stride (int or tuple, optional): Stride of the convolution.
+        padding (int or tuple, optional): Zero-padding added to both sides of
+            the input.
+        output_padding: only 0 or none are supported
+        padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
+            ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
+        dilation (int or tuple, optional): Spacing between kernel elements.
+            Has to be one.
+        groups (int, optional): Number of blocked connections from input
+            channels to output channels. Has to be one.
+        bias (bool, optional): If ``True``, adds a learnable bias to the
+            output.
+        k_coef_lip: Lipschitz constant to ensure.
+        eps_spectral: stopping criterion for the iterative power algorithm.
+        eps_bjorck: stopping criterion Bjorck algorithm.
+
+    This documentation reuse the body of the original torch.nn.ConvTranspose2d
+    doc.
+    """
+
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        kernel_size: _size_2_t,
+        stride: _size_2_t = 1,
+        padding: _size_2_t = 0,
+        output_padding: _size_2_t = 0,
+        groups: int = 1,
+        bias: bool = True,
+        dilation: _size_2_t = 1,
+        padding_mode: str = "zeros",
+        device=None,
+        dtype=None,
+        k_coef_lip: float = 1.0,
+        eps_spectral: int = DEFAULT_EPS_SPECTRAL,
+        eps_bjorck: int = DEFAULT_EPS_BJORCK,
+    ) -> None:
+        if dilation != 1:
+            raise ValueError("SpectralConvTranspose2d does not support dilation rate")
+        if output_padding not in [0, None]:
+            raise ValueError("SpectralConvTranspose2d only supports output_padding=0")
+        torch.nn.ConvTranspose2d.__init__(
+            self,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            stride=stride,
+            padding=padding,
+            output_padding=output_padding,
+            groups=groups,
+            bias=bias,
+            dilation=dilation,
+            padding_mode=padding_mode,
+            device=device,
+            dtype=dtype,
+        )
+        LipschitzModule.__init__(self, k_coef_lip)
+
+        torch.nn.init.orthogonal_(self.weight)
+        if self.bias is not None:
+            self.bias.data.fill_(0.0)
+
+        spectral_norm(
+            self,
+            name="weight",
+            eps=eps_spectral,
+        )
+        bjorck_norm(self, name="weight", eps=eps_bjorck)
+        lconv_norm(self, name="weight")
+        self.apply_lipschitz_factor()
+
+    def vanilla_export(self):
+        layer = torch.nn.ConvTranspose2d(
             in_channels=self.in_channels,
             out_channels=self.out_channels,
             kernel_size=self.kernel_size,
             stride=self.stride,
             padding=self.padding,
+            output_padding=self.output_padding,
             dilation=self.dilation,
             groups=self.groups,
             bias=self.bias is not None,

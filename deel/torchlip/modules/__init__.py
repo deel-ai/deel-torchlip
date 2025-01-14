@@ -48,10 +48,13 @@ be done by setting the param `niter_bjorck=0`.
 from .activation import FullSort
 from .activation import GroupSort
 from .activation import GroupSort2
+from .activation import HouseHolder
 from .activation import LPReLU
 from .activation import MaxMin
 from .conv import FrobeniusConv2d
 from .conv import SpectralConv2d
+from .conv import SpectralConv1d
+from .conv import SpectralConvTranspose2d
 from .downsampling import InvertibleDownSampling
 from .linear import FrobeniusLinear
 from .linear import SpectralLinear
@@ -72,4 +75,10 @@ from .module import vanilla_model
 from .pooling import ScaledAdaptiveAvgPool2d
 from .pooling import ScaledAvgPool2d
 from .pooling import ScaledL2NormPool2d
+from .pooling import ScaledAdaptativeL2NormPool2d
 from .upsampling import InvertibleUpSampling
+from .normalization import LayerCentering
+from .normalization import BatchCentering
+from .unconstrained import PadConv2d
+from .unconstrained import PadConv1d
+from .residual import LipResidual

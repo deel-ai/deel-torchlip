@@ -24,11 +24,11 @@ For this task we will select two classes: 0 and 8. Labels are changed to
 
     import torch
     from torchvision import datasets
-
+    
     # First we select the two classes
     selected_classes = [0, 8]  # must be two classes as we perform binary classification
-
-
+    
+    
     def prepare_data(dataset, class_a=0, class_b=8):
         """
         This function converts the MNIST data to make it suitable for our binary
@@ -42,25 +42,25 @@ For this task we will select two classes: 0 and 8. Labels are changed to
         )  # mask to select only items from class_a or class_b
         x = x[mask]
         y = y[mask]
-
+    
         # convert from range int[0,255] to float32[-1,1]
         x = x.float() / 255
         x = x.reshape((-1, 28, 28, 1))
         # change label to binary classification {-1,1}
-
+    
         y_ = torch.zeros_like(y).float()
         y_[y == class_a] = 1.0
         y_[y == class_b] = -1.0
         return torch.utils.data.TensorDataset(x, y_)
-
-
+    
+    
     train = datasets.MNIST("./data", train=True, download=True)
     test = datasets.MNIST("./data", train=False, download=True)
-
+    
     # Prepare the data
     train = prepare_data(train, selected_classes[0], selected_classes[1])
     test = prepare_data(test, selected_classes[0], selected_classes[1])
-
+    
     # Display infos about dataset
     print(
         f"Train set size: {len(train)} samples, classes proportions: "
@@ -70,7 +70,7 @@ For this task we will select two classes: 0 and 8. Labels are changed to
         f"Test set size: {len(test)} samples, classes proportions: "
         f"{100 * (test.tensors[1] == 1).numpy().mean():.2f} %"
     )
-
+    
 
 
 
@@ -91,9 +91,9 @@ convolutional layers.
 
     import torch
     from deel import torchlip
-
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    
     ninputs = 28 * 28
     wass = torchlip.Sequential(
         torch.nn.Flatten(),
@@ -105,14 +105,9 @@ convolutional layers.
         torchlip.FullSort(),
         torchlip.FrobeniusLinear(32, 1),
     ).to(device)
-
+    
     wass
 
-
-
-.. parsed-literal::
-
-    Sequential model contains a layer which is not a Lipschitz layer: Flatten(start_dim=1, end_dim=-1)
 
 
 
@@ -121,13 +116,44 @@ convolutional layers.
 
     Sequential(
       (0): Flatten(start_dim=1, end_dim=-1)
-      (1): SpectralLinear(in_features=784, out_features=128, bias=True)
+      (1): ParametrizedSpectralLinear(
+        in_features=784, out_features=128, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (2): FullSort()
-      (3): SpectralLinear(in_features=128, out_features=64, bias=True)
+      (3): ParametrizedSpectralLinear(
+        in_features=128, out_features=64, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (4): FullSort()
-      (5): SpectralLinear(in_features=64, out_features=32, bias=True)
+      (5): ParametrizedSpectralLinear(
+        in_features=64, out_features=32, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (6): FullSort()
-      (7): FrobeniusLinear(in_features=32, out_features=1, bias=True)
+      (7): ParametrizedFrobeniusLinear(
+        in_features=32, out_features=1, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _FrobeniusNorm()
+          )
+        )
+      )
     )
 
 
@@ -137,42 +163,45 @@ convolutional layers.
 
 .. code:: ipython3
 
-    from deel.torchlip.functional import kr_loss, hkr_loss, hinge_margin_loss
-
+    from deel.torchlip import KRLoss, HKRLoss, HingeMarginLoss
+    
     # training parameters
     epochs = 10
     batch_size = 128
-
+    
     # loss parameters
     min_margin = 1
-    alpha = 10
-
+    alpha = 0.98
+    
+    kr_loss = KRLoss()
+    hkr_loss = HKRLoss(alpha=alpha, min_margin=min_margin)
+    hinge_margin_loss =HingeMarginLoss(min_margin=min_margin)
     optimizer = torch.optim.Adam(lr=0.001, params=wass.parameters())
-
+    
     train_loader = torch.utils.data.DataLoader(train, batch_size=batch_size, shuffle=True)
     test_loader = torch.utils.data.DataLoader(test, batch_size=32, shuffle=False)
-
+    
     for epoch in range(epochs):
-
+    
         m_kr, m_hm, m_acc = 0, 0, 0
         wass.train()
-
+    
         for step, (data, target) in enumerate(train_loader):
-
+    
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = wass(data)
-            loss = hkr_loss(output, target, alpha=alpha, min_margin=min_margin)
+            loss = hkr_loss(output, target)
             loss.backward()
             optimizer.step()
-
+    
             # Compute metrics on batch
-            m_kr += kr_loss(output, target, (1, -1))
-            m_hm += hinge_margin_loss(output, target, min_margin)
+            m_kr += kr_loss(output, target)
+            m_hm += hinge_margin_loss(output, target)
             m_acc += (torch.sign(output).flatten() == torch.sign(target)).sum() / len(
                 target
             )
-
+    
         # Train metrics for the current epoch
         metrics = [
             f"{k}: {v:.04f}"
@@ -182,7 +211,7 @@ convolutional layers.
                 "acc": m_acc / (step + 1),
             }.items()
         ]
-
+    
         # Compute test loss for the current epoch
         wass.eval()
         testo = []
@@ -190,21 +219,21 @@ convolutional layers.
             data, target = data.to(device), target.to(device)
             testo.append(wass(data).detach().cpu())
         testo = torch.cat(testo).flatten()
-
+    
         # Validation metrics for the current epoch
         metrics += [
             f"val_{k}: {v:.04f}"
             for k, v in {
                 "loss": hkr_loss(
-                    testo, test.tensors[1], alpha=alpha, min_margin=min_margin
+                    testo, test.tensors[1]
                 ),
-                "KR": kr_loss(testo.flatten(), test.tensors[1], (1, -1)),
+                "KR": kr_loss(testo.flatten(), test.tensors[1]),
                 "acc": (torch.sign(testo).flatten() == torch.sign(test.tensors[1]))
                 .float()
                 .mean(),
             }.items()
         ]
-
+    
         print(f"Epoch {epoch + 1}/{epochs}")
         print(" - ".join(metrics))
 
@@ -213,25 +242,61 @@ convolutional layers.
 .. parsed-literal::
 
     Epoch 1/10
-    loss: -2.5269 - KR: 1.6177 - acc: 0.8516 - val_loss: -2.7241 - val_KR: 3.0157 - val_acc: 0.9939
+    loss: -0.0302 - KR: 1.5302 - acc: 0.9242 - val_loss: -0.0375 - val_KR: 2.4426 - val_acc: 0.9923
+
+
+.. parsed-literal::
+
     Epoch 2/10
-    loss: -3.6040 - KR: 3.8627 - acc: 0.9918 - val_loss: -4.5285 - val_KR: 4.7897 - val_acc: 0.9918
+    loss: -0.0479 - KR: 2.8884 - acc: 0.9900 - val_loss: -0.0575 - val_KR: 3.4451 - val_acc: 0.9923
+
+
+.. parsed-literal::
+
     Epoch 3/10
-    loss: -5.7646 - KR: 5.4015 - acc: 0.9922 - val_loss: -5.7246 - val_KR: 6.0067 - val_acc: 0.9898
+    loss: -0.0459 - KR: 3.7795 - acc: 0.9895 - val_loss: -0.0713 - val_KR: 4.1205 - val_acc: 0.9923
+
+
+.. parsed-literal::
+
     Epoch 4/10
-    loss: -6.6268 - KR: 6.2105 - acc: 0.9921 - val_loss: -6.2183 - val_KR: 6.4874 - val_acc: 0.9893
+    loss: -0.0534 - KR: 4.4300 - acc: 0.9898 - val_loss: -0.0829 - val_KR: 4.6154 - val_acc: 0.9923
+
+
+.. parsed-literal::
+
     Epoch 5/10
-    loss: -6.4072 - KR: 6.5715 - acc: 0.9931 - val_loss: -6.4530 - val_KR: 6.7446 - val_acc: 0.9887
+    loss: -0.0940 - KR: 4.9912 - acc: 0.9917 - val_loss: -0.0908 - val_KR: 5.2786 - val_acc: 0.9893
+
+
+.. parsed-literal::
+
     Epoch 6/10
-    loss: -6.7689 - KR: 6.7803 - acc: 0.9926 - val_loss: -6.6342 - val_KR: 6.8849 - val_acc: 0.9898
+    loss: -0.1041 - KR: 5.4511 - acc: 0.9940 - val_loss: -0.1060 - val_KR: 5.7054 - val_acc: 0.9928
+
+
+.. parsed-literal::
+
     Epoch 7/10
-    loss: -6.2389 - KR: 6.8948 - acc: 0.9932 - val_loss: -6.7603 - val_KR: 6.9643 - val_acc: 0.9933
+    loss: -0.1136 - KR: 5.8117 - acc: 0.9947 - val_loss: -0.1105 - val_KR: 5.9891 - val_acc: 0.9918
+
+
+.. parsed-literal::
+
     Epoch 8/10
-    loss: -6.9207 - KR: 6.9642 - acc: 0.9933 - val_loss: -6.8199 - val_KR: 7.0147 - val_acc: 0.9918
+    loss: -0.1200 - KR: 6.0296 - acc: 0.9954 - val_loss: -0.1156 - val_KR: 6.1311 - val_acc: 0.9944
+
+
+.. parsed-literal::
+
     Epoch 9/10
-    loss: -6.9446 - KR: 7.0211 - acc: 0.9936 - val_loss: -6.8038 - val_KR: 7.0666 - val_acc: 0.9887
+    loss: -0.1236 - KR: 6.1587 - acc: 0.9953 - val_loss: -0.1139 - val_KR: 6.2823 - val_acc: 0.9918
+
+
+.. parsed-literal::
+
     Epoch 10/10
-    loss: -6.5403 - KR: 7.0694 - acc: 0.9942 - val_loss: -6.9136 - val_KR: 7.1086 - val_acc: 0.9933
+    loss: -0.1198 - KR: 6.3513 - acc: 0.9964 - val_loss: -0.1207 - val_KR: 6.3622 - val_acc: 0.9944
 
 
 4. Evaluate the Lipschitz constant of our networks
@@ -245,7 +310,7 @@ We can estimate the Lipschitz constant by evaluating
 .. math::
 
 
-       \frac{\Vert{}F(x_2) - F(x_1)\Vert{}}{\Vert{}x_2 - x_1\Vert{}} \quad\text{or}\quad
+       \frac{\Vert{}F(x_2) - F(x_1)\Vert{}}{\Vert{}x_2 - x_1\Vert{}} \quad\text{or}\quad 
        \frac{\Vert{}F(x + \epsilon) - F(x)\Vert{}}{\Vert{}\epsilon\Vert{}}
 
 for various inputs.
@@ -253,9 +318,9 @@ for various inputs.
 .. code:: ipython3
 
     from scipy.spatial.distance import pdist
-
+    
     wass.eval()
-
+    
     p = []
     for _ in range(64):
         eps = 1e-3
@@ -263,7 +328,7 @@ for various inputs.
         dist = torch.distributions.Uniform(-eps, +eps).sample(batch.shape)
         y1 = wass(batch.to(device)).detach().cpu()
         y2 = wass((batch + dist).to(device)).detach().cpu()
-
+    
         p.append(
             torch.max(
                 torch.norm(y2 - y1, dim=1)
@@ -275,7 +340,7 @@ for various inputs.
 
 .. parsed-literal::
 
-    tensor(0.1349)
+    tensor(0.1312)
 
 
 .. code:: ipython3
@@ -286,14 +351,14 @@ for various inputs.
         y = wass(batch.to(device)).detach().cpu().numpy()
         xd = pdist(x.reshape(batch.shape[0], -1))
         yd = pdist(y.reshape(batch.shape[0], -1))
-
+    
         p.append((yd / xd).max())
     print(torch.tensor(p).max())
 
 
 .. parsed-literal::
 
-    tensor(0.9038, dtype=torch.float64)
+    tensor(0.8606, dtype=torch.float64)
 
 
 As we can see, using the :math:`\epsilon`-version, we greatly
@@ -323,16 +388,80 @@ are 1.
 .. parsed-literal::
 
     === Before export ===
-    SpectralLinear(in_features=784, out_features=128, bias=True), min=0.9999998807907104, max=1.0
-    SpectralLinear(in_features=128, out_features=64, bias=True), min=0.9999998807907104, max=1.0000001192092896
-    SpectralLinear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.0
-    FrobeniusLinear(in_features=32, out_features=1, bias=True), min=0.9999999403953552, max=0.9999999403953552
+    ParametrizedSpectralLinear(
+      in_features=784, out_features=128, bias=True
+      (parametrizations): ModuleDict(
+        (weight): ParametrizationList(
+          (0): _SpectralNorm()
+          (1): _BjorckNorm()
+        )
+      )
+    ), min=0.9999998807907104, max=1.0
+    ParametrizedSpectralLinear(
+      in_features=128, out_features=64, bias=True
+      (parametrizations): ModuleDict(
+        (weight): ParametrizationList(
+          (0): _SpectralNorm()
+          (1): _BjorckNorm()
+        )
+      )
+    ), min=0.9999998211860657, max=1.000000238418579
+    ParametrizedSpectralLinear(
+      in_features=64, out_features=32, bias=True
+      (parametrizations): ModuleDict(
+        (weight): ParametrizationList(
+          (0): _SpectralNorm()
+          (1): _BjorckNorm()
+        )
+      )
+    ), min=0.9999998807907104, max=1.0
+    ParametrizedFrobeniusLinear(
+      in_features=32, out_features=1, bias=True
+      (parametrizations): ModuleDict(
+        (weight): ParametrizationList(
+          (0): _FrobeniusNorm()
+        )
+      )
+    ), min=0.9999999403953552, max=0.9999999403953552
 
+
+4.2 Model export
+~~~~~~~~~~~~~~~~
+
+Once training is finished, the model can be optimized for inference by
+using the ``vanilla_export()`` method. The ``torchlip`` layers are
+converted to their PyTorch counterparts, e.g. ``SpectralConv2d``
+layers will be converted into ``torch.nn.Conv2d`` layers.
+
+Warnings:
+^^^^^^^^^
+
+vanilla_export method modifies the model in-place.
+
+In order to build and export a new model while keeping the reference
+one, it is required to follow these steps:
+
+# Build e new mode for instance with torchlip.Sequential(
+torchlip.SpectralConv2d(…), …)
+
+``wexport = <your_function_to_build_the_model>()``
+
+# Copy the parameters from the reference t the new model
+
+``wexport.load_state_dict(wass.state_dict())``
+
+# one forward required to initialize pamatrizations
+
+``vanilla_model(one_input)``
+
+# vanilla_export the new model
+
+``wexport = wexport.vanilla_export()``
 
 .. code:: ipython3
 
     wexport = wass.vanilla_export()
-
+    
     print("=== After export ===")
     layers = list(wexport.children())
     for layer in layers:
@@ -346,7 +475,7 @@ are 1.
 
     === After export ===
     Linear(in_features=784, out_features=128, bias=True), min=0.9999998807907104, max=1.0
-    Linear(in_features=128, out_features=64, bias=True), min=0.9999998807907104, max=1.0000001192092896
+    Linear(in_features=128, out_features=64, bias=True), min=0.9999998211860657, max=1.000000238418579
     Linear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.0
     Linear(in_features=32, out_features=1, bias=True), min=0.9999999403953552, max=0.9999999403953552
 

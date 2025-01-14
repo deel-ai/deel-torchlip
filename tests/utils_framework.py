@@ -21,7 +21,6 @@ from torch.nn import ReLU as tReLU
 from torch.nn import Softmax as tSoftmax
 from torch.nn import MaxPool2d as tMaxPool2d
 from torch.nn import Conv2d as tConv2d
-from torch.nn import Conv2d as PadConv2d
 from torch.nn import Upsample as tUpSampling2d
 from torch.nn import Unflatten as tReshape
 from torch import int32 as type_int32
@@ -30,18 +29,27 @@ from torch.nn import MultiMarginLoss as tMultiMarginLoss
 
 from deel.torchlip import GroupSort
 from deel.torchlip import GroupSort2
+from deel.torchlip import HouseHolder
+
 from deel.torchlip import Sequential
 from deel.torchlip.modules import LipschitzModule as LipschitzLayer
 from deel.torchlip.modules import SpectralLinear
 from deel.torchlip.modules import SpectralConv2d
+from deel.torchlip.modules import SpectralConv1d
+from deel.torchlip.modules import SpectralConvTranspose2d
 from deel.torchlip.modules import FrobeniusLinear
 from deel.torchlip.modules import FrobeniusConv2d
 from deel.torchlip.modules import ScaledAvgPool2d
 from deel.torchlip.modules import ScaledAdaptiveAvgPool2d
 from deel.torchlip.modules import ScaledL2NormPool2d
+from deel.torchlip.modules import ScaledAdaptativeL2NormPool2d
 from deel.torchlip.modules import InvertibleDownSampling
 from deel.torchlip.modules import InvertibleUpSampling
+from deel.torchlip.modules import LayerCentering
+from deel.torchlip.modules import BatchCentering
 from deel.torchlip.utils import evaluate_lip_const
+from deel.torchlip.modules import PadConv2d
+from deel.torchlip.modules import LipResidual
 
 from deel.torchlip.modules import (
     KRLoss,
@@ -64,6 +72,7 @@ from deel.torchlip.modules import vanilla_model
 from deel.torchlip.functional import invertible_downsample
 from deel.torchlip.functional import invertible_upsample
 from deel.torchlip.functional import process_labels_for_multi_gpu
+from deel.torchlip.functional import SymmetricPad
 
 from deel.torchlip.utils.bjorck_norm import bjorck_norm, remove_bjorck_norm
 from deel.torchlip.utils.frobenius_norm import (
@@ -77,6 +86,7 @@ from deel.torchlip.utils.lconv_norm import (
 )
 from torch.nn import Module as Loss
 
+framework = "torch"
 
 # to avoid linter F401
 __all__ = [
@@ -93,11 +103,14 @@ __all__ = [
     "type_int32",
     "GroupSort",
     "GroupSort2",
+    "HouseHolder",
     "Sequential",
     "FrobeniusLinear",
     "FrobeniusConv2d",
     "InvertibleDownSampling",
     "InvertibleUpSampling",
+    "LayerCentering",
+    "BatchCentering",
     "evaluate_lip_const",
     "DEFAULT_EPS_SPECTRAL",
     "invertible_downsample",
@@ -113,6 +126,8 @@ __all__ = [
     "tReshape",
     "CategoricalHingeLoss",
     "process_labels_for_multi_gpu",
+    "SpectralConv1d",
+    "LipResidual",
 ]
 
 
@@ -137,18 +152,16 @@ class module_Unavailable_class:
         return None
 
 
+TauCategoricalCrossentropyLoss = TauCrossEntropyLoss
+TauSparseCategoricalCrossentropyLoss = TauCrossEntropyLoss
+TauBinaryCrossentropyLoss = TauBCEWithLogitsLoss
+
 tInput = module_Unavailable_foo
-Householder = module_Unavailable_class
-SpectralConv2dTranspose = module_Unavailable_class
-ScaledGlobalL2NormPool2d = module_Unavailable_class
 AutoWeightClipConstraint = module_Unavailable_class
 SpectralConstraint = module_Unavailable_class
 FrobeniusConstraint = module_Unavailable_class
 CondenseCallback = module_Unavailable_class
 MonitorCallback = module_Unavailable_class
-TauCategoricalCrossentropyLoss = TauCrossEntropyLoss
-TauSparseCategoricalCrossentropyLoss = TauCrossEntropyLoss
-TauBinaryCrossentropyLoss = TauBCEWithLogitsLoss
 CategoricalProvableRobustAccuracy = module_Unavailable_class
 BinaryProvableRobustAccuracy = module_Unavailable_class
 CategoricalProvableAvgRobustness = module_Unavailable_class
@@ -176,9 +189,7 @@ def replace_key_params(inst_params, dict_keys_replace):
         if k in layp:
             val = layp.pop(k)
             if v is None:
-                warnings.warn(
-                    UserWarning("Warning key is not used", k, " in tensorflow")
-                )
+                warnings.warn(UserWarning("Warning key is not used", k, " in pytorch"))
             else:
                 if isinstance(v, tuple):
                     layp[v[0]] = v[1](val)
@@ -197,11 +208,18 @@ def get_instance_withcheck(
     instance_type, inst_params, dict_keys_replace={}, list_keys_notimplemented=[]
 ):
     for k in list_keys_notimplemented:
-        if k in inst_params:
-            warnings.warn(
-                UserWarning("Warning key is not implemented", k, " in pytorch")
-            )
-            return None
+        if isinstance(k, tuple):
+            kk = k[0]
+            kv = k[1]
+        else:
+            kk = k
+            kv = None
+        if kk in inst_params:
+            if (kv is None) or inst_params[kk] in kv:
+                warnings.warn(
+                    UserWarning("Warning key is not implemented", kk, " in tensorflow")
+                )
+                return None
     layp = replace_key_params(inst_params, dict_keys_replace)
     return instance_type(**layp)
 
@@ -213,8 +231,20 @@ getters_dict = {
     ScaledL2NormPool2d: partial(
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
+    ScaledAdaptativeL2NormPool2d: partial(
+        get_instance_withreplacement, dict_keys_replace={"data_format": None}
+    ),
     SpectralConv2d: partial(
         get_instance_withreplacement, dict_keys_replace={"name": None}
+    ),
+    SpectralConvTranspose2d: partial(
+        get_instance_withreplacement,
+        dict_keys_replace={
+            "name": None,
+            "data_format": None,
+            "activation": None,
+            "input_shape": None,
+        },
     ),
     SpectralLinear: partial(
         get_instance_withreplacement, dict_keys_replace={"name": None}
@@ -223,35 +253,31 @@ getters_dict = {
         get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
     KRLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
-    HingeMarginLoss: partial(get_instance_withcheck, dict_keys_replace={"name": None}),
+    HingeMarginLoss: partial(
+        get_instance_withreplacement, dict_keys_replace={"name": None}
+    ),
     HKRLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     HingeMulticlassLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     HKRMulticlassLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     KRMulticlassLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     SoftHKRMulticlassLoss: partial(
-        get_instance_withcheck,
+        get_instance_withreplacement,
         dict_keys_replace={"name": None},
-        list_keys_notimplemented=[],
     ),
     tLinear: partial(
         get_instance_withcheck,
@@ -268,6 +294,9 @@ getters_dict = {
                 lambda x: "zeros" if x.lower() in ["same", "valid"] else x,
             ),
         },
+    ),
+    HouseHolder: partial(
+        get_instance_withreplacement, dict_keys_replace={"data_format": None}
     ),
 }
 
@@ -319,6 +348,9 @@ class tModel(torch.nn.Module):
         self.dict_tensors = dict_tensors
         self.functional_input_output_tensors = functional_input_output_tensors
         self.modList = torch.nn.ModuleList([dict_tensors[key] for key in dict_tensors])
+
+    def get_module_by_name(self, name):
+        return self.dict_tensors[name]
 
     def forward(self, x):
         x = self.functional_input_output_tensors(self.dict_tensors, x)
@@ -459,8 +491,17 @@ def load_model(
     return model
 
 
+def load_state_dict(path, model):
+    model.load_state_dict(torch.load(path))
+    return model
+
+
 def get_layer_weights_by_index(model, layer_idx):
     return get_layer_weights(model[layer_idx])
+
+
+def get_layer_by_index(model, layer_idx):
+    return model[layer_idx]
 
 
 # .weight.detach().cpu().numpy()
@@ -484,7 +525,7 @@ def initialize_kernel(model, layer_idx, kernel_initializer):
 
 
 def initializers_Constant(value):
-    return None
+    return value
 
 
 def check_parametrization(m, is_parametrized):
@@ -528,8 +569,12 @@ def to_NCHW(x):
     return x
 
 
+def to_NCHW_inv(x):
+    return x
+
+
 def get_NCHW(x):
-    return (x.shape[0], x.shape[1], x.shape[2], x.shape[3])
+    return (x.shape[-4], x.shape[-3], x.shape[-2], x.shape[-1])
 
 
 def scaleAlpha(alpha):
@@ -581,8 +626,42 @@ def vanillaModel(model):
     return model
 
 
-def is_supported_padding(padding):
-    return padding.lower() in ["same", "valid", "reflect", "circular"]  # "constant",
+def is_supported_padding(padding, layer_type):
+    layertype2padding = {
+        SpectralConv2d: [
+            "same",
+            "zeros",
+            "valid",
+            "reflect",
+            "circular",
+            "symmetric",
+            "replicate",
+        ],
+        FrobeniusConv2d: [
+            "same",
+            "zeros",
+            "valid",
+            "reflect",
+            "circular",
+            "symmetric",
+            "replicate",
+        ],
+        PadConv2d: [
+            "same",
+            "zeros",
+            "valid",
+            "reflect",
+            "circular",
+            "symmetric",
+            "replicate",
+        ],
+    }
+    if layer_type in layertype2padding:
+        return padding.lower() in layertype2padding[layer_type]
+    else:
+        assert False
+        warnings.warn(f"layer {layer_type} type not supported for padding")
+        return False
 
 
 def pad_input(x, padding, kernel_size):
@@ -591,7 +670,7 @@ def pad_input(x, padding, kernel_size):
         kernel_size = [kernel_size, kernel_size]
     if padding.lower() in ["same", "valid"]:
         return x
-    elif padding.lower() in ["constant", "reflect", "circular"]:
+    elif padding.lower() in ["constant", "reflect", "circular", "replicate"]:
         p_vert, p_hor = kernel_size[0] // 2, kernel_size[1] // 2
         pad_sizes = [
             p_hor,
@@ -600,6 +679,10 @@ def pad_input(x, padding, kernel_size):
             p_vert,
         ]  # [[0, 0], [p_vert, p_vert], [p_hor, p_hor], [0, 0]]
         return pad(x, tuple(pad_sizes), padding)
+    elif padding.lower() == "symmetric":
+        p_vert, p_hor = kernel_size[0] // 2, kernel_size[1] // 2
+        sym_pad = SymmetricPad([p_hor, p_vert])
+        return sym_pad(x)
 
 
 class MultiMarginLoss(tMultiMarginLoss):
@@ -619,3 +702,13 @@ class tConcatenate(torch.nn.Module):
 
     def forward(self, x):
         return torch.cat(x, dim=self.dim)
+
+
+class tSplit(torch.nn.Module):
+    def __init__(self, chunks, dim=-1):
+        super(tSplit, self).__init__()
+        self.chunks = chunks
+        self.dim = dim
+
+    def forward(self, x):
+        return torch.chunk(x, self.chunks, dim=self.dim)
