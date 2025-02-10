@@ -64,7 +64,6 @@ from deel.torchlip.modules import (
     CategoricalHingeLoss,
 )
 
-from deel.torchlip.init import spectral_, bjorck_
 from deel.torchlip.normalizers import spectral_normalization
 from deel.torchlip.normalizers import bjorck_normalization
 from deel.torchlip.normalizers import DEFAULT_EPS_SPECTRAL
@@ -174,6 +173,7 @@ LorthRegularizer = module_Unavailable_class
 Model = module_Unavailable_class
 compute_layer_sv = module_Unavailable_class
 OrthLinearRegularizer = module_Unavailable_class
+SpectralInitializer = module_Unavailable_class
 
 MODEL_PATH = "model.h5"
 LIP_LAYERS = "torchlip_layers"
@@ -589,13 +589,6 @@ def scaleDivAlpha(alpha):
     warnings.warn("scaleAlpha is deprecated, use alpha in [0,1] instead")
     # return 1.0
     return 1.0 / (1 + 1.0 / alpha)
-
-
-def SpectralInitializer(eps_spectral, eps_bjorck):
-    if eps_bjorck is None:
-        return partial(spectral_, eps_spectral=eps_spectral)
-    else:
-        return partial(bjorck_, eps_spectral=eps_spectral, eps_bjorck=eps_bjorck)
 
 
 class tAdd(torch.nn.Module):

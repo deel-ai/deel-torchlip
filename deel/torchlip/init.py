@@ -24,8 +24,8 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
-"""
-"""
+""" """
+import warnings
 import torch
 
 from .normalizers import bjorck_normalization
@@ -57,6 +57,9 @@ def spectral_(
         eps_spectral (float): stopping criterion of iterative power method
         maxiter_spectral (int): maximum number of iterations for the power iteration
     """
+    warnings.warn(
+        "spectral_ initialization is deprecated, use torch.nn.init.orthogonal_ instead"
+    )
     with torch.no_grad():
         tensor.copy_(
             spectral_normalization(
@@ -91,6 +94,9 @@ def bjorck_(
         maxiter_bjorck (int): maximum number of iterations for bjorck algorithm
         beta: Value to use for the :math:`\beta` parameter.
     """
+    warnings.warn(
+        "bjorck_ initialization is deprecated, use torch.nn.init.orthogonal_ instead"
+    )
     with torch.no_grad():
         spectral_tensor = spectral_normalization(
             tensor, None, eps=eps_spectral, maxiter=maxiter_spectral
