@@ -235,7 +235,6 @@ def test_AvgPooling(layer_type, layer_params, expected):
     xnp = np.asarray(input)
     xnp = uft.to_NCHW_inv(xnp)  # move channel if needed (TF)
     x = uft.to_tensor(xnp)
-    print(x.shape)
     uft.build_layer(pool, x.shape[1:])
 
     y = pool(x).numpy()
