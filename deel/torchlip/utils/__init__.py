@@ -30,6 +30,7 @@ Contains utility functions.
 from typing import Optional
 
 import torch
+import torch.func as tfc
 
 from .bjorck_norm import bjorck_norm
 from .bjorck_norm import remove_bjorck_norm
@@ -47,42 +48,38 @@ def evaluate_lip_const(
     seed: Optional[int] = None,
 ) -> float:
     """
-    Evaluate the Lipschitz constant of a model, with the naive method.
+    Evaluate the Lipschitz constant of a model, using the Jacobian of the model.
     Please note that the estimation of the lipschitz constant is done locally around
-    input sample. This may not correctly estimate the behavior in the whole domain.
+    input samples. This may not correctly estimate the behaviour in the whole domain.
 
     Args:
-        model: Torch model used to make predictions.
-        x: Inputs used to compute the lipschitz constant.
-        eps: Magnitude of noise to add to input in order to compute the constant.
-        seed: Seed used when generating the noise. If None, a random seed will be
-            used.
+        model: built keras model used to make predictions
+        x: inputs used to compute the lipschitz constant
 
     Returns:
-        The empirically evaluated lipschitz constant. The computation might also be
-        inaccurate in high dimensional space.
+        float: the empirically evaluated Lipschitz constant. The computation might also
+            be inaccurate in high dimensional space.
 
     """
-    y_pred = model(x.float())
 
-    with torch.random.fork_rng():
-        if seed is None:
-            torch.random.seed()
-        else:
-            torch.random.manual_seed(seed)
-        x_var = x + torch.distributions.Uniform(low=eps * 0.25, high=eps).sample(
-            x.shape
-        )
+    def model_func(x):
+        y = model(torch.unsqueeze(x, dim=0))  # Forward pass
+        return y
 
-    y_pred_var = model(x_var.float())
+    x_src = x.clone().detach().requires_grad_(True)
 
-    dx = x - x_var
-    dfx = y_pred - y_pred_var
-    ndx = torch.sum(torch.square(dx), dim=tuple(range(1, len(x.shape))))
-    ndfx = torch.sum(torch.square(dfx.data), dim=tuple(range(1, len(y_pred.shape))))
-    lip_cst = torch.sqrt(torch.max(ndfx / ndx))
+    # Compute the Jacobian using jacrev
+    batch_jacobian = tfc.vmap(tfc.jacrev(model_func))(x_src)
 
-    return float(lip_cst.item())
+    # Reshape the Jacobian to match the desired shape
+    batch_size = x.shape[0]
+    xdim = torch.prod(torch.tensor(x.shape[1:])).item()
+    print(batch_jacobian.shape, x.shape)
+    batch_jacobian = batch_jacobian.view(batch_size, -1, xdim)
+
+    # Compute singular values and check Lipschitz property
+    lip_cst = torch.linalg.norm(batch_jacobian, ord=2, dim=(-2, -1))
+    return float(torch.max(lip_cst).item())
 
 
 __all__ = [
