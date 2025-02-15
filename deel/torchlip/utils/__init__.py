@@ -30,7 +30,11 @@ Contains utility functions.
 from typing import Optional
 
 import torch
-import torch.func as tfc
+
+if torch.__version__.startswith("1."):
+    import functorch as tfc
+else:
+    import torch.func as tfc
 
 from .bjorck_norm import bjorck_norm
 from .bjorck_norm import remove_bjorck_norm
@@ -74,7 +78,6 @@ def evaluate_lip_const(
     # Reshape the Jacobian to match the desired shape
     batch_size = x.shape[0]
     xdim = torch.prod(torch.tensor(x.shape[1:])).item()
-    print(batch_jacobian.shape, x.shape)
     batch_jacobian = batch_jacobian.view(batch_size, -1, xdim)
 
     # Compute singular values and check Lipschitz property
