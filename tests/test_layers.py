@@ -213,9 +213,9 @@ def train_k_lip_model(
     test_dl = linear_generator(batch_size, input_shape, kernel)
     np.random.seed(42)
     uft.set_seed(42)
+    x, y = test_dl.send(None)
 
     loss, mse = uft.run_test(model, test_dl, loss_fn, metrics, steps=10)
-    x, y = test_dl.send(None)
 
     x = uft.to_tensor(x)
     empirical_lip_const = uft.evaluate_lip_const(model=model, x=x, seed=42)
@@ -235,10 +235,10 @@ def train_k_lip_model(
     np.random.seed(42)
     uft.set_seed(42)
     test_dl = linear_generator(batch_size, input_shape, kernel)  # .send(None)
+    x, y = test_dl.send(None)
     from_disk_loss, from_disk_mse = uft.run_test(
         model, test_dl, loss_fn, metrics, steps=10
     )
-    x, y = test_dl.send(None)
     x = uft.to_tensor(x)
     from_empirical_lip_const = uft.evaluate_lip_const(model=model, x=x, seed=42)
 
@@ -1316,10 +1316,10 @@ def test_SpectralConv1d_vanilla_export(
 
     # Test saving/loading model
     with tempfile.TemporaryDirectory() as tmpdir:
-        uft.MODEL_PATH = os.path.join(tmpdir, uft.MODEL_PATH)
-        uft.save_model(model, uft.MODEL_PATH, overwrite=True)
+        model_path = os.path.join(tmpdir, uft.MODEL_PATH)
+        uft.save_model(model, model_path, overwrite=True)
         uft.load_model(
-            uft.MODEL_PATH,
+            model_path,
             layer_type=layer_type,
             layer_params=layer_params,
             input_shape=input_shape,
@@ -1397,10 +1397,10 @@ def test_Conv2d_vanilla_export(pad, pad_mode, kernel_size, layer_params, layer_t
 
     # Test saving/loading model
     with tempfile.TemporaryDirectory() as tmpdir:
-        uft.MODEL_PATH = os.path.join(tmpdir, uft.MODEL_PATH)
-        uft.save_model(model, uft.MODEL_PATH, overwrite=True)
+        model_path = os.path.join(tmpdir, uft.MODEL_PATH)
+        uft.save_model(model, model_path, overwrite=True)
         uft.load_model(
-            uft.MODEL_PATH,
+            model_path,
             layer_type=layer_type,
             layer_params=layer_params,
             input_shape=input_shape,
@@ -1448,10 +1448,10 @@ def test_SpectralConvTranspose2d_vanilla_export():
 
     # Test saving/loading model
     with tempfile.TemporaryDirectory() as tmpdir:
-        uft.MODEL_PATH = os.path.join(tmpdir, uft.MODEL_PATH)
-        uft.save_model(model, uft.MODEL_PATH, overwrite=True)
+        model_path = os.path.join(tmpdir, uft.MODEL_PATH)
+        uft.save_model(model, model_path, overwrite=True)
         uft.load_model(
-            uft.MODEL_PATH,
+            model_path,
             layer_type=SpectralConvTranspose2d,
             layer_params=kwargs,
             input_shape=kwargs["input_shape"],
