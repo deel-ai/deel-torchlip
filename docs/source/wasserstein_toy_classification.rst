@@ -23,7 +23,7 @@ We first build our two moons dataset.
 .. code:: ipython3
 
     from sklearn.datasets import make_moons, make_circles  # the synthetic dataset
-
+    
     circle_or_moons = 1  # 0 for circle, 1 for moons
     n_samples = 5000  # number of sample in the dataset
     noise = 0.05  # amount of noise to add in the data. Tested with 0.14 for circles 0.05 for two moons
@@ -35,7 +35,7 @@ We first build our two moons dataset.
         X, Y = make_circles(n_samples=n_samples, noise=noise, factor=factor)
     else:
         X, Y = make_moons(n_samples=n_samples, noise=noise)
-
+    
     # When working with the HKR-classifier, using labels {-1, 1} instead of {0, 1} is advised.
     # This will be explained later on.
     Y[Y == 1] = -1
@@ -44,7 +44,7 @@ We first build our two moons dataset.
 .. code:: ipython3
 
     import seaborn as sns
-
+    
     X1 = X[Y == 1]
     X2 = X[Y == -1]
     sns.scatterplot(x=X1[:1000, 0], y=X1[:1000, 1])
@@ -55,7 +55,7 @@ We first build our two moons dataset.
 
 .. parsed-literal::
 
-    <AxesSubplot:>
+    <Axes: >
 
 
 
@@ -147,9 +147,9 @@ sub-class of functions.
 
     import torch
     from deel import torchlip
-
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    
     # Other Lipschitz activations are ReLU, MaxMin, GroupSort2, GroupSort.
     wass = torchlip.Sequential(
         torchlip.SpectralLinear(2, 256),
@@ -160,7 +160,7 @@ sub-class of functions.
         torchlip.FullSort(),
         torchlip.FrobeniusLinear(64, 1),
     ).to(device)
-
+    
     wass
 
 
@@ -169,13 +169,44 @@ sub-class of functions.
 .. parsed-literal::
 
     Sequential(
-      (0): SpectralLinear(in_features=2, out_features=256, bias=True)
+      (0): ParametrizedSpectralLinear(
+        in_features=2, out_features=256, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (1): FullSort()
-      (2): SpectralLinear(in_features=256, out_features=128, bias=True)
+      (2): ParametrizedSpectralLinear(
+        in_features=256, out_features=128, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (3): FullSort()
-      (4): SpectralLinear(in_features=128, out_features=64, bias=True)
+      (4): ParametrizedSpectralLinear(
+        in_features=128, out_features=64, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (5): FullSort()
-      (6): FrobeniusLinear(in_features=64, out_features=1, bias=True)
+      (6): ParametrizedFrobeniusLinear(
+        in_features=64, out_features=1, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _FrobeniusNorm()
+          )
+        )
+      )
     )
 
 
@@ -195,40 +226,43 @@ dataset.
 
 .. code:: ipython3
 
-    from deel.torchlip.functional import kr_loss, hkr_loss, hinge_margin_loss
-
+    from deel.torchlip import KRLoss, HKRLoss, HingeMarginLoss
+    
     batch_size = 256
     n_epochs = 10
-
-    alpha = 10
+    
+    alpha = 0.98
     min_margin = 0.29  # minimum margin to enforce between the values of F for each class
-
+    
+    kr_loss = KRLoss()
+    hkr_loss = HKRLoss(alpha=alpha, min_margin=min_margin)
+    hinge_margin_loss =HingeMarginLoss(min_margin=min_margin)
     optimizer = torch.optim.Adam(lr=0.01, params=wass.parameters())
-
+    
     loader = torch.utils.data.DataLoader(
         torch.utils.data.TensorDataset(torch.tensor(X).float(), torch.tensor(Y).float()),
         batch_size=batch_size,
         shuffle=True,
     )
-
+    
     for epoch in range(n_epochs):
-
+    
         m_kr, m_hm, m_acc = 0, 0, 0
-
+    
         for step, (data, target) in enumerate(loader):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = wass(data)
-            loss = hkr_loss(output, target, alpha=alpha, min_margin=min_margin)
+            loss = hkr_loss(output, target)
             loss.backward()
             optimizer.step()
-
-            m_kr += kr_loss(output, target, (1, -1))
-            m_hm += hinge_margin_loss(output, target, min_margin)
+    
+            m_kr += kr_loss(output, target)
+            m_hm += hinge_margin_loss(output, target)
             m_acc += (
                 torch.sign(output.view(target.shape)) == torch.sign(target)
             ).sum() / len(target)
-
+    
         print(f"Epoch {epoch + 1}/{n_epochs}")
         print(
             f"loss: {loss:.04f} - "
@@ -242,25 +276,41 @@ dataset.
 .. parsed-literal::
 
     Epoch 1/10
-    loss: 1.7240 - KR: 0.0837 - hinge: 0.2519 - accuracy: 0.5387
+    loss: 0.1045 - KR: 0.0198 - hinge: 0.1362 - accuracy: 0.5065
     Epoch 2/10
-    loss: -0.3211 - KR: 0.5286 - hinge: 0.0969 - accuracy: 0.8665
+    loss: 0.0195 - KR: 0.2597 - hinge: 0.0510 - accuracy: 0.8651
+
+
+.. parsed-literal::
+
     Epoch 3/10
-    loss: -0.7250 - KR: 0.8928 - hinge: 0.0484 - accuracy: 0.9253
+    loss: 0.0021 - KR: 0.4625 - hinge: 0.0193 - accuracy: 0.9495
     Epoch 4/10
-    loss: -0.6545 - KR: 0.9257 - hinge: 0.0328 - accuracy: 0.9552
+    loss: -0.0094 - KR: 0.4755 - hinge: 0.0046 - accuracy: 0.9947
+
+
+.. parsed-literal::
+
     Epoch 5/10
-    loss: -0.5023 - KR: 0.9287 - hinge: 0.0262 - accuracy: 0.9696
+    loss: -0.0107 - KR: 0.5690 - hinge: 0.0014 - accuracy: 0.9996
     Epoch 6/10
-    loss: -0.5727 - KR: 0.9217 - hinge: 0.0223 - accuracy: 0.9785
+    loss: -0.0135 - KR: 0.6430 - hinge: 0.0011 - accuracy: 0.9998
+
+
+.. parsed-literal::
+
     Epoch 7/10
-    loss: -0.6651 - KR: 0.9306 - hinge: 0.0202 - accuracy: 0.9862
+    loss: -0.0129 - KR: 0.6983 - hinge: 0.0014 - accuracy: 0.9990
     Epoch 8/10
-    loss: -0.5247 - KR: 0.9454 - hinge: 0.0208 - accuracy: 0.9810
+    loss: -0.0119 - KR: 0.7164 - hinge: 0.0012 - accuracy: 0.9994
+
+
+.. parsed-literal::
+
     Epoch 9/10
-    loss: -0.6442 - KR: 0.9496 - hinge: 0.0205 - accuracy: 0.9811
+    loss: -0.0149 - KR: 0.7620 - hinge: 0.0014 - accuracy: 0.9994
     Epoch 10/10
-    loss: -0.7998 - KR: 0.9713 - hinge: 0.0211 - accuracy: 0.9791
+    loss: -0.0152 - KR: 0.7569 - hinge: 0.0012 - accuracy: 0.9992
 
 
 2.6. Plot output countour line
@@ -274,29 +324,30 @@ draw a countour plot to visualize :math:`F`.
 
     import matplotlib.pyplot as plt
     import numpy as np
-
+    
     x = np.linspace(X[:, 0].min() - 0.2, X[:, 0].max() + 0.2, 120)
     y = np.linspace(X[:, 1].min() - 0.2, X[:, 1].max() + 0.2, 120)
     xx, yy = np.meshgrid(x, y, sparse=False)
     X_pred = np.stack((xx.ravel(), yy.ravel()), axis=1)
-
+    
     # Make predictions from F:
     Y_pred = wass(torch.tensor(X_pred).float().to(device))
     Y_pred = Y_pred.reshape(x.shape[0], y.shape[0]).detach().cpu().numpy()
-
+    
     # We are also going to check the exported version:
     vwass = wass.vanilla_export()
+    
     Y_predv = vwass(torch.tensor(X_pred).float().to(device))
     Y_predv = Y_predv.reshape(x.shape[0], y.shape[0]).detach().cpu().numpy()
-
+    
     # Plot the results:
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(20, 6))
-
+    
     sns.scatterplot(x=X[Y == 1, 0], y=X[Y == 1, 1], alpha=0.1, ax=ax1)
     sns.scatterplot(x=X[Y == -1, 0], y=X[Y == -1, 1], alpha=0.1, ax=ax1)
     cset = ax1.contour(xx, yy, Y_pred, cmap="twilight", levels=np.arange(-1.2, 1.2, 0.4))
     ax1.clabel(cset, inline=1, fontsize=10)
-
+    
     sns.scatterplot(x=X[Y == 1, 0], y=X[Y == 1, 1], alpha=0.1, ax=ax2)
     sns.scatterplot(x=X[Y == -1, 0], y=X[Y == -1, 1], alpha=0.1, ax=ax2)
     cset = ax2.contour(xx, yy, Y_predv, cmap="twilight", levels=np.arange(-1.2, 1.2, 0.4))
@@ -307,7 +358,7 @@ draw a countour plot to visualize :math:`F`.
 
 .. parsed-literal::
 
-    <a list of 6 text.Text objects>
+    <a list of 4 text.Text objects>
 
 
 

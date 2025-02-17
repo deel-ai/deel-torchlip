@@ -24,19 +24,23 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
-"""
-"""
+""" """
+import warnings
 import torch
 
 from .normalizers import bjorck_normalization
 from .normalizers import DEFAULT_BETA
-from .normalizers import DEFAULT_NITER_BJORCK
-from .normalizers import DEFAULT_NITER_SPECTRAL_INIT
+from .normalizers import DEFAULT_EPS_SPECTRAL
+from .normalizers import DEFAULT_MAXITER_SPECTRAL
+from .normalizers import DEFAULT_EPS_BJORCK
+from .normalizers import DEFAULT_MAXITER_BJORCK
 from .normalizers import spectral_normalization
 
 
 def spectral_(
-    tensor: torch.Tensor, n_power_iterations: int = DEFAULT_NITER_SPECTRAL_INIT
+    tensor: torch.Tensor,
+    eps_spectral: float = DEFAULT_EPS_SPECTRAL,
+    maxiter_spectral: int = DEFAULT_MAXITER_SPECTRAL,
 ):
     r"""
     Apply spectral normalization on the given tensor in-place.
@@ -50,15 +54,26 @@ def spectral_(
 
     Args:
         tensor: A 2-dimensional ``torch.Tensor``.
-        n_power_iterations: Number of iterations to perform.
+        eps_spectral (float): stopping criterion of iterative power method
+        maxiter_spectral (int): maximum number of iterations for the power iteration
     """
+    warnings.warn(
+        "spectral_ initialization is deprecated, use torch.nn.init.orthogonal_ instead"
+    )
     with torch.no_grad():
-        tensor.copy_(spectral_normalization(tensor, None, n_power_iterations)[0])
+        tensor.copy_(
+            spectral_normalization(
+                tensor, None, eps=eps_spectral, maxiter=maxiter_spectral
+            )[0]
+        )
 
 
 def bjorck_(
     tensor: torch.Tensor,
-    n_iterations: int = DEFAULT_NITER_BJORCK,
+    eps_spectral: float = DEFAULT_EPS_SPECTRAL,
+    maxiter_spectral: int = DEFAULT_MAXITER_SPECTRAL,
+    eps_bjorck=DEFAULT_EPS_BJORCK,
+    maxiter_bjorck: int = DEFAULT_MAXITER_BJORCK,
     beta: float = DEFAULT_BETA,
 ):
     r"""
@@ -73,8 +88,21 @@ def bjorck_(
 
     Args:
         tensor: A 2-dimensional ``torch.Tensor``.
-        n_iterations: Number of iterations to perform.
+        eps_spectral (float): stopping criterion of iterative power method
+        maxiter_spectral (int): maximum number of iterations for the power iteration
+        eps_bjorck (float): stopping criterion in bjorck algorithm
+        maxiter_bjorck (int): maximum number of iterations for bjorck algorithm
         beta: Value to use for the :math:`\beta` parameter.
     """
+    warnings.warn(
+        "bjorck_ initialization is deprecated, use torch.nn.init.orthogonal_ instead"
+    )
     with torch.no_grad():
-        tensor.copy_(bjorck_normalization(tensor, n_iterations, beta))
+        spectral_tensor = spectral_normalization(
+            tensor, None, eps=eps_spectral, maxiter=maxiter_spectral
+        )[0]
+        tensor.copy_(
+            bjorck_normalization(
+                spectral_tensor, eps=eps_bjorck, beta=beta, maxiter=maxiter_bjorck
+            )
+        )

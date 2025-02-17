@@ -24,43 +24,36 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
-from typing import Any
-from typing import TypeVar
-
 import torch
-
-from .hook_norm import HookNorm
-
-
-class FrobeniusNorm(HookNorm):
-    def __init__(self, module: torch.nn.Module, name: str):
-        super().__init__(module, name)
-
-    def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
-        w: torch.Tensor = self.weight(module)
-        return w / torch.norm(w)  # type: ignore
-
-    @staticmethod
-    def apply(module: torch.nn.Module, name: str) -> "FrobeniusNorm":
-        return FrobeniusNorm(module, name)
+import torch.nn as nn
+import torch.nn.utils.parametrize as parametrize
 
 
-T_module = TypeVar("T_module", bound=torch.nn.Module)
+class _FrobeniusNorm(nn.Module):
+    def __init__(self, disjoint_neurons: bool) -> None:
+        super().__init__()
+        self.dim_norm = 1 if disjoint_neurons else None
+
+    def forward(self, weight: torch.Tensor) -> torch.Tensor:
+        return weight / torch.norm(weight, dim=self.dim_norm, keepdim=True)
 
 
-def frobenius_norm(module: T_module, name: str = "weight") -> T_module:
+def frobenius_norm(
+    module: nn.Module, name: str = "weight", disjoint_neurons: bool = True
+) -> nn.Module:
     r"""
     Applies Frobenius normalization to a parameter in the given module.
 
     .. math::
          \mathbf{W} = \dfrac{\mathbf{W}}{\Vert{}\mathbf{W}\Vert{}}
 
-    This is implemented via a hook that applies Bjorck normalization before every
+    This is implemented via a hook that applies Frobenius normalization before every
     ``forward()`` call.
 
     Args:
         module: Containing module.
         name: Name of weight parameter.
+        disjoint_neurons: Normalize, independently per neuron or not, the matrix weight.
 
     Returns:
         The original module with the Frobenius normalization hook.
@@ -72,11 +65,11 @@ def frobenius_norm(module: T_module, name: str = "weight") -> T_module:
         Linear(in_features=20, out_features=40, bias=True)
 
     """
-    FrobeniusNorm.apply(module, name)
+    parametrize.register_parametrization(module, name, _FrobeniusNorm(disjoint_neurons))
     return module
 
 
-def remove_frobenius_norm(module: T_module, name: str = "weight") -> T_module:
+def remove_frobenius_norm(module: nn.Module, name: str = "weight") -> nn.Module:
     r"""
     Removes the Frobenius normalization reparameterization from a module.
 
@@ -89,10 +82,9 @@ def remove_frobenius_norm(module: T_module, name: str = "weight") -> T_module:
         >>> m = frobenius_norm(nn.Linear(20, 40))
         >>> remove_frobenius_norm(m)
     """
-    for k, hook in module._forward_pre_hooks.items():
-        if isinstance(hook, FrobeniusNorm) and hook.name == name:
-            hook.remove(module)
-            del module._forward_pre_hooks[k]
-            return module
-
-    raise ValueError("frobenius_norm of '{}' not found in {}".format(name, module))
+    for key, m in module.parametrizations[name]._modules.items():
+        if isinstance(m, _FrobeniusNorm):
+            if len(module.parametrizations["weight"]) == 1:
+                parametrize.remove_parametrizations(module, name)
+            else:
+                del module.parametrizations[name]._modules[key]

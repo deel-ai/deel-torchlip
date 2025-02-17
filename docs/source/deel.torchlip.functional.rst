@@ -9,12 +9,6 @@ deel.torchlip.functional
 Non-linear activation functions
 -------------------------------
 
-:hidden:`invertible down/up sample`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. autofunction:: invertible_downsample
-.. autofunction:: invertible_upsample
-
 :hidden:`max_min`
 ~~~~~~~~~~~~~~~~~
 
@@ -31,6 +25,7 @@ Non-linear activation functions
 ~~~~~~~~~~~~~~~~
 
 .. autofunction:: lipschitz_prelu
+
 
 Loss functions
 --------------

@@ -24,53 +24,43 @@
 # rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
-from typing import Any
-from typing import TypeVar
-
 import torch
+import torch.nn as nn
+import torch.nn.utils.parametrize as parametrize
 
 from ..normalizers import bjorck_normalization
-from ..normalizers import DEFAULT_NITER_BJORCK
-from .hook_norm import HookNorm
+from ..normalizers import DEFAULT_EPS_BJORCK
 
 
-class BjorckNorm(HookNorm):
-    """
-    Bjorck Normalization from https://arxiv.org/abs/1811.05381
-    """
+class _BjorckNorm(nn.Module):
+    def __init__(self, weight: torch.Tensor, eps: float) -> None:
+        super().__init__()
+        self.eps = eps
+        self.register_buffer("_w_bjorck", weight.data)
 
-    n_iterations: int
-
-    def __init__(self, module: torch.nn.Module, name: str, n_iterations: int):
-        super().__init__(module, name)
-        self.n_iterations = n_iterations
-
-    def compute_weight(self, module: torch.nn.Module, inputs: Any) -> torch.Tensor:
-        return bjorck_normalization(self.weight(module), self.n_iterations)
-
-    @staticmethod
-    def apply(module: torch.nn.Module, name: str, n_iterations: int) -> "BjorckNorm":
-        return BjorckNorm(module, name, n_iterations)
-
-
-T_module = TypeVar("T_module", bound=torch.nn.Module)
+    def forward(self, weight: torch.Tensor) -> torch.Tensor:
+        if self.training:
+            w_bjorck = bjorck_normalization(weight, self.eps)
+            self._w_bjorck = w_bjorck.data
+        else:
+            w_bjorck = self._w_bjorck
+        return w_bjorck
 
 
 def bjorck_norm(
-    module: T_module, name: str = "weight", n_iterations: int = DEFAULT_NITER_BJORCK
-) -> T_module:
+    module: nn.Module, name: str = "weight", eps: float = DEFAULT_EPS_BJORCK
+) -> nn.Module:
     r"""
     Applies Bjorck normalization to a parameter in the given module.
 
     Bjorck normalization ensures that all eigen values of a vectors remain close or
     equal to one during training. If the dimension of the weight tensor is greater than
     2, it is reshaped to 2D for iteration.
-    This is implemented via a hook that applies Bjorck normalization before every
-    ``forward()`` call.
+    This is implemented via a Bjorck normalization parametrization.
 
     .. note::
-        It is recommended to use :py:func:`torch.nn.utils.spectral_norm` before
-        this hook to greatly reduce the number of iterations required.
+        It is recommended to use :py:func:`torch.nn.utils.parameterize.spectral_norm`
+        before this hook to greatly reduce the number of iterations required.
 
     See `Sorting out Lipschitz function approximation
     <https://arxiv.org/abs/1811.05381>`_.
@@ -92,11 +82,12 @@ def bjorck_norm(
     See Also:
         :py:func:`deel.torchlip.normalizers.bjorck_normalization`
     """
-    BjorckNorm.apply(module, name, n_iterations)
+    weight = getattr(module, name, None)
+    parametrize.register_parametrization(module, name, _BjorckNorm(weight, eps))
     return module
 
 
-def remove_bjorck_norm(module: T_module, name: str = "weight") -> T_module:
+def remove_bjorck_norm(module: nn.Module, name: str = "weight") -> nn.Module:
     r"""
     Removes the Bjorck normalization reparameterization from a module.
 
@@ -108,10 +99,9 @@ def remove_bjorck_norm(module: T_module, name: str = "weight") -> T_module:
         >>> m = bjorck_norm(nn.Linear(20, 40))
         >>> remove_bjorck_norm(m)
     """
-    for k, hook in module._forward_pre_hooks.items():
-        if isinstance(hook, BjorckNorm) and hook.name == name:
-            hook.remove(module)
-            del module._forward_pre_hooks[k]
-            return module
-
-    raise ValueError("bjorck_norm of '{}' not found in {}".format(name, module))
+    for key, m in module.parametrizations[name]._modules.items():
+        if isinstance(m, _BjorckNorm):
+            if len(module.parametrizations["weight"]) == 1:
+                parametrize.remove_parametrizations(module, name)
+            else:
+                del module.parametrizations[name]._modules[key]

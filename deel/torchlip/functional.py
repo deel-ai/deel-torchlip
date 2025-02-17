@@ -212,7 +212,9 @@ def max_min(input: torch.Tensor, dim: Optional[int] = None) -> torch.Tensor:
     return torch.cat((F.relu(input), F.relu(-input)), dim=dim)
 
 
-def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.Tensor:
+def group_sort(
+    input: torch.Tensor, group_size: Optional[int] = None, dim: int = 1
+) -> torch.Tensor:
     r"""
     Applies GroupSort activation on the given tensor.
 
@@ -220,22 +222,28 @@ def group_sort(input: torch.Tensor, group_size: Optional[int] = None) -> torch.T
         :py:func:`group_sort_2`
         :py:func:`full_sort`
     """
-    if group_size is None or group_size > input.shape[1]:
-        group_size = input.shape[1]
 
-    if input.shape[1] % group_size != 0:
+    if group_size is None or group_size > input.shape[dim]:
+        group_size = input.shape[dim]
+
+    if input.shape[dim] % group_size != 0:
         raise ValueError("The input size must be a multiple of the group size.")
 
-    fv = input.reshape([-1, group_size])
+    new_shape = (
+        input.shape[:dim]
+        + (input.shape[dim] // group_size, group_size)
+        + input.shape[dim + 1 :]
+    )
     if group_size == 2:
-        sfv = torch.chunk(fv, 2, 1)
-        b = sfv[0]
-        c = sfv[1]
-        newv = torch.cat((torch.min(b, c), torch.max(b, c)), dim=1)
-        newv = newv.reshape(input.shape)
-        return newv
+        resh_input = input.view(new_shape)
+        a, b = (
+            torch.min(resh_input, dim + 1, keepdim=True)[0],
+            torch.max(resh_input, dim + 1, keepdim=True)[0],
+        )
+        return torch.cat([a, b], dim=dim + 1).view(input.shape)
+    fv = input.reshape(new_shape)
 
-    return torch.sort(fv)[0].reshape(input.shape)
+    return torch.sort(fv, dim=dim + 1)[0].reshape(input.shape)
 
 
 def group_sort_2(input: torch.Tensor) -> torch.Tensor:
@@ -278,13 +286,16 @@ def lipschitz_prelu(
 
 
 # Losses
+def apply_reduction(val: torch.Tensor, reduction: str) -> torch.Tensor:
+    if reduction == "auto":
+        reduction = "mean"
+    red = getattr(torch, reduction, None)
+    if red is None:
+        return val
+    return red(val)
 
 
-def kr_loss(
-    input: torch.Tensor,
-    target: torch.Tensor,
-    true_values: Tuple[int, int] = (0, 1),
-) -> torch.Tensor:
+def kr_loss(input: torch.Tensor, target: torch.Tensor, multi_gpu=False) -> torch.Tensor:
     r"""
     Loss to estimate the Wasserstein-1 distance using Kantorovich-Rubinstein duality,
     as per
@@ -295,26 +306,96 @@ def kr_loss(
             - \underset{\mathbf{x}\sim{}\nu}{\mathbb{E}}[f(\mathbf{x})]
 
     where :math:`\mu` and :math:`\nu` are the distributions corresponding to the
-    two possible labels as specific by ``true_values``.
+    two possible labels as specific by their sign.
+
+    `target` accepts label values in (0, 1), (-1, 1), or pre-processed with the
+    `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
+
+    Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to
+    pre-process the labels `target` with the
+    `deel.torchlip.functional.process_labels_for_multi_gpu()` function.
 
     Args:
         input: Tensor of arbitrary shape.
         target: Tensor of the same shape as input.
-        true_values: Tuple containing the two label for the predicted class.
+        multi_gpu (bool): set to True when running on multi-GPU/TPU
+
+    Returns:
+        The Wasserstein-1 loss between ``input`` and ``target``.
+    """
+    if multi_gpu:
+        return kr_loss_multi_gpu(input, target)
+    else:
+        return kr_loss_standard(input, target)
+
+
+def kr_loss_standard(input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    r"""
+    Loss to estimate the Wasserstein-1 distance using Kantorovich-Rubinstein duality,
+    as per
+
+    .. math::
+        \mathcal{W}(\mu, \nu) = \sup\limits_{f\in{}Lip_1(\Omega)}
+            \underset{\mathbf{x}\sim{}\mu}{\mathbb{E}}[f(\mathbf{x})]
+            - \underset{\mathbf{x}\sim{}\nu}{\mathbb{E}}[f(\mathbf{x})]
+
+    where :math:`\mu` and :math:`\nu` are the distributions corresponding to the
+    two possible labels as specific by their sign.
+
+    `target` accepts label values in (0, 1), (-1, 1)
+
+    Args:
+        input: Tensor of arbitrary shape.
+        target: Tensor of the same shape as input.
 
     Returns:
         The Wasserstein-1 loss between ``input`` and ``target``.
     """
 
-    v0, v1 = true_values
     target = target.view(input.shape)
-    return torch.mean(input[target == v0]) - torch.mean(input[target == v1])
+    pos_target = (target > 0).to(input.dtype)
+    mean_pos = torch.mean(pos_target, dim=0)
+    # pos factor = batch_size/number of positive samples
+    pos_factor = torch.nan_to_num(1.0 / mean_pos)
+    # neg factor = batch_size/number of negative samples
+    neg_factor = -torch.nan_to_num(1.0 / (1.0 - mean_pos))
+
+    weighted_input = torch.where(target > 0, pos_factor, neg_factor) * input
+    # Since element-wise KR terms are averaged by loss reduction later on, it is needed
+    # to multiply by batch_size here.
+    # In binary case (`y_true` of shape (batch_size, 1)), `tf.reduce_mean(axis=-1)`
+    # behaves like `tf.squeeze()` to return element-wise loss of shape (batch_size, ).
+    return torch.mean(weighted_input, dim=-1)
+
+
+def kr_loss_multi_gpu(input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+    r"""Returns the element-wise KR loss when computing with a multi-GPU/TPU strategy.
+
+    `target` and `input` can be either of shape (batch_size, 1) or
+    (batch_size, # classes).
+
+    When using this loss function, the labels `target` must be pre-processed with the
+    `process_labels_for_multi_gpu()` function.
+
+    Args:
+        input: Tensor of arbitrary shape.
+        target: pre-processed Tensor of the same shape as input.
+
+    Returns:
+        The Wasserstein-1 loss between ``input`` and ``target``.
+    """
+    target = target.view(input.shape).to(input.dtype)
+    # Since the information of batch size was included in `target` by
+    # `process_labels_for_multi_gpu()`, there is no need here to multiply by batch size.
+    # In binary case (`target` of shape (batch_size, 1)), `torch.mean(dim=-1)`
+    # behaves like `torch.squeeze()` to return element-wise loss of shape (batch_size,)
+    return torch.mean(input * target, dim=-1)
 
 
 def neg_kr_loss(
     input: torch.Tensor,
     target: torch.Tensor,
-    true_values: Tuple[int, int] = (0, 1),
+    multi_gpu=False,
 ) -> torch.Tensor:
     """
     Loss to estimate the negative wasserstein-1 distance using Kantorovich-Rubinstein
@@ -323,7 +404,7 @@ def neg_kr_loss(
     Args:
         input: Tensor of arbitrary shape.
         target: Tensor of the same shape as input.
-        true_values: Tuple containing the two label for the predicted classes.
+        multi_gpu (bool): set to True when running on multi-GPU/TPU
 
     Returns:
         The negative Wasserstein-1 loss between ``input`` and ``target``.
@@ -331,7 +412,7 @@ def neg_kr_loss(
     See Also:
         :py:func:`kr_loss`
     """
-    return -kr_loss(input, target, true_values)
+    return -kr_loss(input, target, multi_gpu=multi_gpu)
 
 
 def hinge_margin_loss(
@@ -356,12 +437,9 @@ def hinge_margin_loss(
         The hinge margin loss.
     """
     target = target.view(input.shape)
-    return torch.mean(
-        torch.max(
-            torch.zeros_like(input),
-            min_margin - torch.sign(target) * input,
-        )
-    )
+    sign_target = torch.where(target > 0, 1.0, -1.0).to(input.dtype)
+    hinge = F.relu(min_margin / 2.0 - sign_target * input)
+    return torch.mean(hinge, dim=-1)
 
 
 def hkr_loss(
@@ -369,7 +447,7 @@ def hkr_loss(
     target: torch.Tensor,
     alpha: float,
     min_margin: float = 1.0,
-    true_values: Tuple[int, int] = (-1, 1),
+    multi_gpu=False,
 ) -> torch.Tensor:
     """
     Loss to estimate the wasserstein-1 distance with a hinge regularization using
@@ -378,9 +456,9 @@ def hkr_loss(
     Args:
         input: Tensor of arbitrary shape.
         target: Tensor of the same shape as input.
-        alpha: Regularization factor between the hinge and the KR loss.
+        alpha: Regularization factor ([0,1]) between the hinge and the KR loss.
         min_margin: Minimal margin for the hinge loss.
-        true_values: tuple containing the two label for each predicted class.
+        multi_gpu (bool): set to True when running on multi-GPU/TPU
 
     Returns:
         The regularized Wasserstein-1 loss.
@@ -389,37 +467,17 @@ def hkr_loss(
         :py:func:`hinge_margin_loss`
         :py:func:`kr_loss`
     """
-    if alpha == np.inf:  # alpha negative hinge only
+    kr_loss_fct = kr_loss_multi_gpu if multi_gpu else kr_loss
+    assert alpha <= 1.0
+    if alpha == 1.0:  # alpha for  hinge only
         return hinge_margin_loss(input, target, min_margin)
-
+    if alpha == 0:
+        return -kr_loss_fct(input, target)
     # true value: positive value should be the first to be coherent with the
     # hinge loss (positive y_pred)
-    return alpha * hinge_margin_loss(input, target, min_margin) - kr_loss(
-        input, target, (true_values[1], true_values[0])
-    )
-
-
-def kr_multiclass_loss(
-    input: torch.Tensor,
-    target: torch.Tensor,
-) -> torch.Tensor:
-    r"""
-    Loss to estimate average of W1 distance using Kantorovich-Rubinstein
-    duality over outputs. In this multiclass setup thr KR term is computed
-    for each class and then averaged.
-
-    Args:
-        input: Tensor of arbitrary shape.
-        target: Tensor of the same shape as input.
-                target has to be one hot encoded (labels being 1s and 0s ).
-
-    Returns:
-        The Wasserstein multiclass loss between ``input`` and ``target``.
-    """
-    esp_true_true = torch.sum(input * target, 0) / torch.sum(target, 0)
-    esp_false_true = torch.sum(input * (1 - target), 0) / torch.sum((1 - target), 0)
-
-    return torch.mean(esp_true_true - esp_false_true)
+    return alpha * hinge_margin_loss(input, target, min_margin) - (
+        1 - alpha
+    ) * kr_loss_fct(input, target)
 
 
 def hinge_multiclass_loss(
@@ -430,7 +488,7 @@ def hinge_multiclass_loss(
     """
     Loss to estimate the Hinge loss in a multiclass setup. It compute the
     elementwise hinge term. Note that this formulation differs from the
-    one commonly found in tensorflow/pytorch (with marximise the difference
+    one commonly found in tensorflow/pytorch (with maximise the difference
     between the two largest logits). This formulation is consistent with the
     binary classification loss used in a multiclass fashion.
 
@@ -445,10 +503,12 @@ def hinge_multiclass_loss(
     Returns:
         The hinge margin multiclass loss.
     """
-    return torch.mean(
-        ((target.shape[-1] - 2) * target + 1)
-        * F.relu(min_margin - (2 * target - 1) * input)
-    )
+    sign_target = torch.where(target > 0, 1.0, -1.0).to(input.dtype)
+    hinge = F.relu(min_margin / 2.0 - sign_target * input)
+    # reweight positive elements
+    factor = target.shape[-1] - 1.0
+    hinge = torch.where(target > 0, hinge * factor, hinge)
+    return torch.mean(hinge, dim=-1)
 
 
 def hkr_multiclass_loss(
@@ -456,6 +516,7 @@ def hkr_multiclass_loss(
     target: torch.Tensor,
     alpha: float = 0.0,
     min_margin: float = 1.0,
+    multi_gpu=False,
 ) -> torch.Tensor:
     """
     Loss to estimate the wasserstein-1 distance with a hinge regularization using
@@ -464,9 +525,9 @@ def hkr_multiclass_loss(
     Args:
         input: Tensor of arbitrary shape.
         target: Tensor of the same shape as input.
-        alpha: Regularization factor between the hinge and the KR loss.
+        alpha: Regularization factor ([0,1]) between the hinge and the KR loss.
         min_margin: Minimal margin for the hinge loss.
-        true_values: tuple containing the two label for each predicted class.
+        multi_gpu (bool): set to True when running on multi-GPU/TPU
 
     Returns:
         The regularized Wasserstein-1 loss.
@@ -476,11 +537,81 @@ def hkr_multiclass_loss(
         :py:func:`kr_loss`
     """
 
-    if alpha == np.inf:  # alpha negative hinge only
+    assert alpha <= 1.0
+    kr_loss_fct = kr_loss_multi_gpu if multi_gpu else kr_loss
+    if alpha == 1.0:  # alpha  hinge only
         return hinge_multiclass_loss(input, target, min_margin)
     elif alpha == 0.0:  # alpha = 0 => KR only
-        return -kr_multiclass_loss(input, target)
+        return -kr_loss_fct(input, target)
     else:
-        return -kr_multiclass_loss(input, target) + alpha * hinge_multiclass_loss(
-            input, target, min_margin
-        )
+        return alpha * hinge_multiclass_loss(input, target, min_margin) - (
+            1 - alpha
+        ) * kr_loss_fct(input, target)
+
+
+def process_labels_for_multi_gpu(labels: torch.Tensor) -> torch.Tensor:
+    """Process labels to be fed to any loss based on KR estimation with a multi-GPU/TPU
+    strategy.
+
+    When using a multi-GPU/TPU strategy, the flag `multi_gpu` in KR-based losses must be
+    set to True and the labels have to be pre-processed with this function.
+
+    For binary classification, the labels should be of shape [batch_size, 1].
+    For multiclass problems, the labels must be one-hot encoded (1 or 0) with shape
+    [batch_size, number of classes].
+
+    Args:
+        labels (torch.Tensor): tensor containing the labels
+
+    Returns:
+        torch.Tensor: labels processed for KR-based losses with multi-GPU/TPU strategy.
+    """
+    pos_labels = torch.where(labels > 0, 1.0, 0.0).to(labels.dtype)
+    mean_pos = torch.mean(pos_labels, dim=0)
+    # pos factor = batch_size/number of positive samples
+    pos_factor = torch.nan_to_num(1.0 / mean_pos)
+    # neg factor = batch_size/number of negative samples
+    neg_factor = -torch.nan_to_num(1.0 / (1.0 - mean_pos))
+
+    # Since element-wise KR terms are averaged by loss reduction later on, it is needed
+    # to multiply by batch_size here.
+    return torch.where(labels > 0, pos_factor, neg_factor)
+
+
+class SymmetricPad(torch.nn.Module):
+    """
+    Pads a 2D tensor symmetrically.
+
+    Args:
+        pad (tuple): A tuple (pad_left, pad_right, pad_top, pad_bottom) specifying
+                 the number of pixels to pad on each side. (or single int if
+                 common padding).
+
+        onedim: False for conv2d, True for conv1d.
+
+    """
+
+    def __init__(self, pad, onedim=False):
+        super().__init__()
+        self.onedim = onedim
+        num_dim = 2 if onedim else 4
+        if isinstance(pad, int):
+            self.pad = (pad,) * num_dim
+        else:
+            self.pad = torch.nn.modules.utils._reverse_repeat_tuple(pad, 2)
+        assert len(self.pad) == num_dim, f"Pad must be a tuple of {num_dim} integers"
+
+    def forward(self, x):
+
+        # Horizontal padding
+        left = x[:, ..., : self.pad[0]].flip(dims=[-1])
+        right = x[:, ..., -self.pad[1] :].flip(dims=[-1])
+        x = torch.cat([left, x, right], dim=-1)
+        if self.onedim:
+            return x
+        # Vertical padding
+        top = x[:, :, : self.pad[2], :].flip(dims=[-2])
+        bottom = x[:, :, -self.pad[3] :, :].flip(dims=[-2])
+        x = torch.cat([top, x, bottom], dim=-2)
+
+        return x

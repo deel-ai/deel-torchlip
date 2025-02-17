@@ -33,6 +33,7 @@ from typing import Optional
 
 import torch
 import torch.nn as nn
+import numpy as np
 
 from .. import functional as F
 from .module import LipschitzModule
@@ -211,3 +212,55 @@ class LPReLU(nn.PReLU, LipschitzModule):
         layer = LPReLU(num_parameters=self.num_parameters)
         layer.weight.data = self.weight.data
         return layer
+
+
+class HouseHolder(nn.Module, LipschitzModule):
+    def __init__(self, channels, k_coef_lip: float = 1.0, theta_initializer=None):
+        """
+        Householder activation:
+        [this review](https://openreview.net/pdf?id=tD7eCtaSkR)
+        Adapted from [this repository](https://github.com/singlasahil14/SOC)
+        """
+        nn.Module.__init__(self)
+        LipschitzModule.__init__(self, k_coef_lip)
+        assert (channels % 2) == 0
+        eff_channels = channels // 2
+
+        if isinstance(theta_initializer, float):
+            coef_theta = theta_initializer
+        else:
+            coef_theta = 0.5 * np.pi
+        self.theta = nn.Parameter(
+            coef_theta * torch.ones(eff_channels), requires_grad=True
+        )
+        if theta_initializer is not None:
+            if isinstance(theta_initializer, str):
+                name2init = {
+                    "zeros": torch.nn.init.zeros_,
+                    "ones": torch.nn.init.ones_,
+                    "normal": torch.nn.init.normal_,
+                }
+                assert (
+                    theta_initializer in name2init
+                ), f"Unknown initializer {theta_initializer}"
+                name2init[theta_initializer](self.theta)
+            elif isinstance(theta_initializer, float):
+                pass
+            else:
+                raise ValueError(f"Unknown initializer {theta_initializer}")
+
+    def forward(self, z, axis=1):
+        theta_shape = (1, -1) + (1,) * (len(z.shape) - 2)
+        theta = self.theta.view(theta_shape)
+        x, y = z.split(z.shape[axis] // 2, axis)
+        selector = (x * torch.sin(0.5 * theta)) - (y * torch.cos(0.5 * theta))
+
+        a_2 = x * torch.cos(theta) + y * torch.sin(theta)
+        b_2 = x * torch.sin(theta) - y * torch.cos(theta)
+
+        a = x * (selector <= 0) + a_2 * (selector > 0)
+        b = y * (selector <= 0) + b_2 * (selector > 0)
+        return torch.cat([a, b], dim=axis)
+
+    def vanilla_export(self):
+        return self
