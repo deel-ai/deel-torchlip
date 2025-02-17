@@ -66,7 +66,10 @@ def evaluate_lip_const(
 
     """
 
+    # Define a function that computes the model output
     def model_func(x):
+        # using vmap torchfunc method induce a single sample input
+        # so we need to unsqueeze the input
         y = model(torch.unsqueeze(x, dim=0))  # Forward pass
         return y
 
