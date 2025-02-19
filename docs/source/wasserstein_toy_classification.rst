@@ -276,41 +276,41 @@ dataset.
 .. parsed-literal::
 
     Epoch 1/10
-    loss: 0.1045 - KR: 0.0198 - hinge: 0.1362 - accuracy: 0.5065
+    loss: 0.0504 - KR: 0.0614 - hinge: 0.1179 - accuracy: 0.6261
     Epoch 2/10
-    loss: 0.0195 - KR: 0.2597 - hinge: 0.0510 - accuracy: 0.8651
+    loss: 0.0248 - KR: 0.3622 - hinge: 0.0339 - accuracy: 0.8957
 
 
 .. parsed-literal::
 
     Epoch 3/10
-    loss: 0.0021 - KR: 0.4625 - hinge: 0.0193 - accuracy: 0.9495
+    loss: -0.0085 - KR: 0.4284 - hinge: 0.0083 - accuracy: 0.9838
     Epoch 4/10
-    loss: -0.0094 - KR: 0.4755 - hinge: 0.0046 - accuracy: 0.9947
+    loss: -0.0110 - KR: 0.5243 - hinge: 0.0010 - accuracy: 1.0000
 
 
 .. parsed-literal::
 
     Epoch 5/10
-    loss: -0.0107 - KR: 0.5690 - hinge: 0.0014 - accuracy: 0.9996
+    loss: -0.0136 - KR: 0.6442 - hinge: 0.0010 - accuracy: 0.9998
     Epoch 6/10
-    loss: -0.0135 - KR: 0.6430 - hinge: 0.0011 - accuracy: 0.9998
+    loss: -0.0124 - KR: 0.7111 - hinge: 0.0011 - accuracy: 1.0000
 
 
 .. parsed-literal::
 
     Epoch 7/10
-    loss: -0.0129 - KR: 0.6983 - hinge: 0.0014 - accuracy: 0.9990
+    loss: -0.0147 - KR: 0.7326 - hinge: 0.0010 - accuracy: 0.9992
     Epoch 8/10
-    loss: -0.0119 - KR: 0.7164 - hinge: 0.0012 - accuracy: 0.9994
+    loss: -0.0146 - KR: 0.7773 - hinge: 0.0013 - accuracy: 0.9998
 
 
 .. parsed-literal::
 
     Epoch 9/10
-    loss: -0.0149 - KR: 0.7620 - hinge: 0.0014 - accuracy: 0.9994
+    loss: -0.0136 - KR: 0.7876 - hinge: 0.0011 - accuracy: 1.0000
     Epoch 10/10
-    loss: -0.0152 - KR: 0.7569 - hinge: 0.0012 - accuracy: 0.9992
+    loss: -0.0158 - KR: 0.7917 - hinge: 0.0010 - accuracy: 0.9994
 
 
 2.6. Plot output countour line
@@ -358,7 +358,7 @@ draw a countour plot to visualize :math:`F`.
 
 .. parsed-literal::
 
-    <a list of 4 text.Text objects>
+    <a list of 5 text.Text objects>
 
 
 
@@ -369,4 +369,3 @@ draw a countour plot to visualize :math:`F`.
 The ``vanilla_export()`` method allows us to obtain a ``torch`` module
 without the overhead from the 1-Lipschitz constraints after training.
 
-.. container:: alert alert-block alert-danger

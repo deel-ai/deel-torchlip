@@ -41,6 +41,5 @@ Loss functions
 :hidden:`multiclass losses`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autofunction:: kr_multiclass_loss
 .. autofunction:: hinge_multiclass_loss
 .. autofunction:: hkr_multiclass_loss

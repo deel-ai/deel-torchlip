@@ -16,8 +16,9 @@ pytorch_sphinx_theme @git+https://github.com/pytorch/pytorch_sphinx_theme.git
 jupyter
 matplotlib
 tqdm
-sklearn
 torchvision
 seaborn
 foolbox
-bump2version
+scipy
+scikit-learn
+foolbox

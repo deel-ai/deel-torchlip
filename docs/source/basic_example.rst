@@ -72,7 +72,7 @@ The following table indicates which module are safe to use in a Lipschitz networ
      - no
      - :class:`.LayerCentering`
      - This layer apply a bias based on statistics on each sample, but no normalization factor (1-Lipschitz).
-    * - Residual connections 
+   * - Residual connections 
      - no
      - :class:`.LipResidual`
      - Learn a factor for mixing residual and a 1-Lipschitz branch .

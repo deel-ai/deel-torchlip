@@ -242,61 +242,61 @@ convolutional layers.
 .. parsed-literal::
 
     Epoch 1/10
-    loss: -0.0302 - KR: 1.5302 - acc: 0.9242 - val_loss: -0.0375 - val_KR: 2.4426 - val_acc: 0.9923
+    loss: -0.0272 - KR: 1.4492 - acc: 0.9184 - val_loss: -0.0367 - val_KR: 2.3308 - val_acc: 0.9939
 
 
 .. parsed-literal::
 
     Epoch 2/10
-    loss: -0.0479 - KR: 2.8884 - acc: 0.9900 - val_loss: -0.0575 - val_KR: 3.4451 - val_acc: 0.9923
+    loss: -0.0518 - KR: 2.7784 - acc: 0.9926 - val_loss: -0.0574 - val_KR: 3.3190 - val_acc: 0.9939
 
 
 .. parsed-literal::
 
     Epoch 3/10
-    loss: -0.0459 - KR: 3.7795 - acc: 0.9895 - val_loss: -0.0713 - val_KR: 4.1205 - val_acc: 0.9923
+    loss: -0.0782 - KR: 3.6303 - acc: 0.9938 - val_loss: -0.0751 - val_KR: 4.1403 - val_acc: 0.9939
 
 
 .. parsed-literal::
 
     Epoch 4/10
-    loss: -0.0534 - KR: 4.4300 - acc: 0.9898 - val_loss: -0.0829 - val_KR: 4.6154 - val_acc: 0.9923
+    loss: -0.0978 - KR: 4.5607 - acc: 0.9952 - val_loss: -0.0927 - val_KR: 4.9920 - val_acc: 0.9933
 
 
 .. parsed-literal::
 
     Epoch 5/10
-    loss: -0.0940 - KR: 4.9912 - acc: 0.9917 - val_loss: -0.0908 - val_KR: 5.2786 - val_acc: 0.9893
+    loss: -0.0873 - KR: 5.2546 - acc: 0.9958 - val_loss: -0.1037 - val_KR: 5.5868 - val_acc: 0.9944
 
 
 .. parsed-literal::
 
     Epoch 6/10
-    loss: -0.1041 - KR: 5.4511 - acc: 0.9940 - val_loss: -0.1060 - val_KR: 5.7054 - val_acc: 0.9928
+    loss: -0.1186 - KR: 5.7066 - acc: 0.9960 - val_loss: -0.1081 - val_KR: 5.9397 - val_acc: 0.9913
 
 
 .. parsed-literal::
 
     Epoch 7/10
-    loss: -0.1136 - KR: 5.8117 - acc: 0.9947 - val_loss: -0.1105 - val_KR: 5.9891 - val_acc: 0.9918
+    loss: -0.1189 - KR: 6.0129 - acc: 0.9955 - val_loss: -0.1161 - val_KR: 6.1834 - val_acc: 0.9933
 
 
 .. parsed-literal::
 
     Epoch 8/10
-    loss: -0.1200 - KR: 6.0296 - acc: 0.9954 - val_loss: -0.1156 - val_KR: 6.1311 - val_acc: 0.9944
+    loss: -0.1281 - KR: 6.2577 - acc: 0.9958 - val_loss: -0.1151 - val_KR: 6.3653 - val_acc: 0.9923
 
 
 .. parsed-literal::
 
     Epoch 9/10
-    loss: -0.1236 - KR: 6.1587 - acc: 0.9953 - val_loss: -0.1139 - val_KR: 6.2823 - val_acc: 0.9918
+    loss: -0.1292 - KR: 6.4227 - acc: 0.9967 - val_loss: -0.1216 - val_KR: 6.5185 - val_acc: 0.9933
 
 
 .. parsed-literal::
 
     Epoch 10/10
-    loss: -0.1198 - KR: 6.3513 - acc: 0.9964 - val_loss: -0.1207 - val_KR: 6.3622 - val_acc: 0.9944
+    loss: -0.1375 - KR: 6.5687 - acc: 0.9965 - val_loss: -0.1253 - val_KR: 6.6100 - val_acc: 0.9939
 
 
 4. Evaluate the Lipschitz constant of our networks
@@ -340,7 +340,7 @@ for various inputs.
 
 .. parsed-literal::
 
-    tensor(0.1312)
+    tensor(0.1420)
 
 
 .. code:: ipython3
@@ -358,7 +358,7 @@ for various inputs.
 
 .. parsed-literal::
 
-    tensor(0.8606, dtype=torch.float64)
+    tensor(0.8841, dtype=torch.float64)
 
 
 As we can see, using the :math:`\epsilon`-version, we greatly
@@ -396,7 +396,7 @@ are 1.
           (1): _BjorckNorm()
         )
       )
-    ), min=0.9999998807907104, max=1.0
+    ), min=0.9999998211860657, max=1.0
     ParametrizedSpectralLinear(
       in_features=128, out_features=64, bias=True
       (parametrizations): ModuleDict(
@@ -405,7 +405,7 @@ are 1.
           (1): _BjorckNorm()
         )
       )
-    ), min=0.9999998211860657, max=1.000000238418579
+    ), min=1.000001072883606, max=1.000012755393982
     ParametrizedSpectralLinear(
       in_features=64, out_features=32, bias=True
       (parametrizations): ModuleDict(
@@ -422,7 +422,7 @@ are 1.
           (0): _FrobeniusNorm()
         )
       )
-    ), min=0.9999999403953552, max=0.9999999403953552
+    ), min=1.0000001192092896, max=1.0000001192092896
 
 
 4.2 Model export
@@ -474,12 +474,11 @@ torchlip.SpectralConv2d(…), …)
 .. parsed-literal::
 
     === After export ===
-    Linear(in_features=784, out_features=128, bias=True), min=0.9999998807907104, max=1.0
-    Linear(in_features=128, out_features=64, bias=True), min=0.9999998211860657, max=1.000000238418579
+    Linear(in_features=784, out_features=128, bias=True), min=0.9999998211860657, max=1.0
+    Linear(in_features=128, out_features=64, bias=True), min=1.000001072883606, max=1.000012755393982
     Linear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.0
-    Linear(in_features=32, out_features=1, bias=True), min=0.9999999403953552, max=0.9999999403953552
+    Linear(in_features=32, out_features=1, bias=True), min=1.0000001192092896, max=1.0000001192092896
 
 
 As we can see, all our singular values are very close to one.
 
-.. container:: alert alert-block alert-danger
