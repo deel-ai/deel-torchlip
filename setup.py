@@ -75,6 +75,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/deel-ai/deel-torchlip",
     packages=setuptools.find_namespace_packages(include=["deel.*"]),
+    include_package_data=True,
     install_requires=[
         "numpy",
         "torch",
