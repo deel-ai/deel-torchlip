@@ -9,7 +9,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -35,7 +35,7 @@
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
@@ -199,35 +199,34 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <section id="deel-torchlip-utils">
-<h1>deel.torchlip.utils<a class="headerlink" href="#deel-torchlip-utils" title="Permalink to this headline">¶</a></h1>
+<h1>deel.torchlip.utils<a class="headerlink" href="#deel-torchlip-utils" title="Permalink to this heading">¶</a></h1>
 <section id="normalization-hooks">
-<h2>Normalization hooks<a class="headerlink" href="#normalization-hooks" title="Permalink to this headline">¶</a></h2>
+<h2>Normalization hooks<a class="headerlink" href="#normalization-hooks" title="Permalink to this heading">¶</a></h2>
 <section id="bjorck-normalization">
-<h3><span class="hidden-section">Bjorck normalization</span><a class="headerlink" href="#bjorck-normalization" title="Permalink to this headline">¶</a></h3>
+<h3><span class="hidden-section">Bjorck normalization</span><a class="headerlink" href="#bjorck-normalization" title="Permalink to this heading">¶</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.utils.bjorck_norm">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">bjorck_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">deel.torchlip.utils.bjorck_norm.T_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">deel.torchlip.utils.bjorck_norm.T_module</span></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/bjorck_norm.html#bjorck_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.bjorck_norm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">bjorck_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><span class="pre">Module</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><span class="pre">Module</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/bjorck_norm.html#bjorck_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.bjorck_norm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Bjorck normalization to a parameter in the given module.</p>
 <p>Bjorck normalization ensures that all eigen values of a vectors remain close or
 equal to one during training. If the dimension of the weight tensor is greater than
 2, it is reshaped to 2D for iteration.
-This is implemented via a hook that applies Bjorck normalization before every
-<code class="docutils literal notranslate"><span class="pre">forward()</span></code> call.</p>
+This is implemented via a Bjorck normalization parametrization.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>It is recommended to use <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.utils.spectral_norm.html#torch.nn.utils.spectral_norm" title="(in PyTorch v1.11.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.utils.spectral_norm()</span></code></a> before
-this hook to greatly reduce the number of iterations required.</p>
+<p>It is recommended to use <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.utils.parameterize.spectral_norm()</span></code>
+before this hook to greatly reduce the number of iterations required.</p>
 </div>
 <p>See <a class="reference external" href="https://arxiv.org/abs/1811.05381">Sorting out Lipschitz function approximation</a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>module</strong> – Containing module.</p></li>
 <li><p><strong>name</strong> – Name of weight parameter.</p></li>
 <li><p><strong>n_iterations</strong> – Number of iterations for the normalization.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The original module with the Bjorck normalization hook.</p>
 </dd>
 </dl>
@@ -245,10 +244,10 @@ this hook to greatly reduce the number of iterations required.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.utils.remove_bjorck_norm">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">remove_bjorck_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">deel.torchlip.utils.bjorck_norm.T_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">deel.torchlip.utils.bjorck_norm.T_module</span></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/bjorck_norm.html#remove_bjorck_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.remove_bjorck_norm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">remove_bjorck_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><span class="pre">Module</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><span class="pre">Module</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/bjorck_norm.html#remove_bjorck_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.remove_bjorck_norm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the Bjorck normalization reparameterization from a module.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>module</strong> – Containing module.</p></li>
 <li><p><strong>name</strong> – Name of weight parameter.</p></li>
@@ -264,24 +263,25 @@ this hook to greatly reduce the number of iterations required.</p>
 
 </section>
 <section id="frobenius-normalization">
-<h3><span class="hidden-section">Frobenius normalization</span><a class="headerlink" href="#frobenius-normalization" title="Permalink to this headline">¶</a></h3>
+<h3><span class="hidden-section">Frobenius normalization</span><a class="headerlink" href="#frobenius-normalization" title="Permalink to this heading">¶</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.utils.frobenius_norm">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">frobenius_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">deel.torchlip.utils.frobenius_norm.T_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">deel.torchlip.utils.frobenius_norm.T_module</span></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/frobenius_norm.html#frobenius_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.frobenius_norm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">frobenius_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><span class="pre">Module</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">disjoint_neurons</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><span class="pre">Module</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/frobenius_norm.html#frobenius_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.frobenius_norm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Frobenius normalization to a parameter in the given module.</p>
 <div class="math">
 <span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi mathvariant="bold">W</mi><mo>=</mo><mfrac><mi mathvariant="bold">W</mi><mrow><mi mathvariant="normal">∥</mi><mrow></mrow><mi mathvariant="bold">W</mi><mi mathvariant="normal">∥</mi><mrow></mrow></mrow></mfrac></mrow><annotation encoding="application/x-tex">\mathbf{W} = \dfrac{\mathbf{W}}{\Vert{}\mathbf{W}\Vert{}}
 
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6861em;"></span><span class="mord mathbf" style="margin-right:0.01597em;">W</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2991em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3631em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathbf" style="margin-right:0.01597em;">W</span><span class="mord">∥</span><span class="mord"></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathbf" style="margin-right:0.01597em;">W</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div><p>This is implemented via a hook that applies Bjorck normalization before every
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6861em;"></span><span class="mord mathbf" style="margin-right:0.01597em;">W</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2991em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3631em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord"></span><span class="mord mathbf" style="margin-right:0.01597em;">W</span><span class="mord">∥</span><span class="mord"></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathbf" style="margin-right:0.01597em;">W</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div><p>This is implemented via a hook that applies Frobenius normalization before every
 <code class="docutils literal notranslate"><span class="pre">forward()</span></code> call.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>module</strong> – Containing module.</p></li>
 <li><p><strong>name</strong> – Name of weight parameter.</p></li>
+<li><p><strong>disjoint_neurons</strong> – Normalize, independently per neuron or not, the matrix weight.</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The original module with the Frobenius normalization hook.</p>
 </dd>
 </dl>
@@ -295,10 +295,10 @@ this hook to greatly reduce the number of iterations required.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.utils.remove_frobenius_norm">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">remove_frobenius_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">deel.torchlip.utils.frobenius_norm.T_module</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">deel.torchlip.utils.frobenius_norm.T_module</span></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/frobenius_norm.html#remove_frobenius_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.remove_frobenius_norm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">remove_frobenius_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><span class="pre">Module</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.6)"><span class="pre">Module</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/frobenius_norm.html#remove_frobenius_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.remove_frobenius_norm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Removes the Frobenius normalization reparameterization from a module.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>module</strong> – Containing module.</p></li>
 <li><p><strong>name</strong> – Name of weight parameter.</p></li>
@@ -314,20 +314,23 @@ this hook to greatly reduce the number of iterations required.</p>
 
 </section>
 <section id="l-conv-normalization">
-<h3><span class="hidden-section">L-Conv normalization</span><a class="headerlink" href="#l-conv-normalization" title="Permalink to this headline">¶</a></h3>
+<h3><span class="hidden-section">L-Conv normalization</span><a class="headerlink" href="#l-conv-normalization" title="Permalink to this heading">¶</a></h3>
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.utils.lconv_norm">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">lconv_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.modules.conv.Conv2d</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.nn.modules.conv.Conv2d</span></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/lconv_norm.html#lconv_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.lconv_norm" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">lconv_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="(in PyTorch v2.6)"><span class="pre">Conv2d</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html#torch.nn.Conv1d" title="(in PyTorch v2.6)"><span class="pre">Conv1d</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="(in PyTorch v2.6)"><span class="pre">Conv2d</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html#torch.nn.Conv1d" title="(in PyTorch v2.6)"><span class="pre">Conv1d</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/lconv_norm.html#lconv_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.lconv_norm" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Lipschitz normalization to a kernel in the given convolutional.
 This is implemented via a hook that multiplies the kernel by a value computed
 from the input shape before every <code class="docutils literal notranslate"><span class="pre">forward()</span></code> call.</p>
 <p>See <a class="reference external" href="https://arxiv.org/abs/2006.06520">Achieving robustness in classification using optimal transport with hinge
 regularization</a>.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>module</strong> – Containing module.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> – Containing module.</p></li>
+<li><p><strong>name</strong> – Name of weight parameter.</p></li>
+</ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>The original module with the Lipschitz normalization hook.</p>
 </dd>
 </dl>
@@ -341,11 +344,14 @@ regularization</a>.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.utils.remove_lconv_norm">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">remove_lconv_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">torch.nn.modules.conv.Conv2d</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">torch.nn.modules.conv.Conv2d</span></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/lconv_norm.html#remove_lconv_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.remove_lconv_norm" title="Permalink to this definition">¶</a></dt>
-<dd><p>Removes the Lipschitz normalization hook from a module.</p>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">remove_lconv_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="(in PyTorch v2.6)"><span class="pre">Conv2d</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'weight'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="(in PyTorch v2.6)"><span class="pre">Conv2d</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/lconv_norm.html#remove_lconv_norm"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.remove_lconv_norm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes the normalization parametrization for lipschitz convolution from a module.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>module</strong> – Containing module.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>module</strong> – Containing module.</p></li>
+<li><p><strong>name</strong> – Name of weight parameter.</p></li>
+</ul>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -358,15 +364,15 @@ regularization</a>.</p>
 </section>
 </section>
 <section id="utilities">
-<h2>Utilities<a class="headerlink" href="#utilities" title="Permalink to this headline">¶</a></h2>
+<h2>Utilities<a class="headerlink" href="#utilities" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.utils.sqrt_with_gradeps">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">sqrt_with_gradeps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/sqrt_eps.html#sqrt_with_gradeps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.sqrt_with_gradeps" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.utils.</span></span><span class="sig-name descname"><span class="pre">sqrt_with_gradeps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/utils/sqrt_eps.html#sqrt_with_gradeps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.utils.sqrt_with_gradeps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Square-root of input with a “valid” gradient at 0.</p>
 <div class="math">
 <span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mrow><mi mathvariant="normal">∂</mi><mi>f</mi></mrow><mrow><mi mathvariant="normal">∂</mi><mi>x</mi></mrow></mfrac><mo>=</mo><mfrac><mn>1</mn><mrow><mn>2</mn><msqrt><mi>x</mi></msqrt><mo>+</mo><mi>ϵ</mi></mrow></mfrac></mrow><annotation encoding="application/x-tex">\frac{\partial f}{\partial x} = \frac{1}{2\sqrt{x}+\epsilon}
 
-</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.0574em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord mathnormal">x</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2514em;vertical-align:-0.93em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.3097em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8003em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord mathnormal">x</span></span></span><span style="top:-2.7603em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width='400em' height='1.08em' viewBox='0 0 400000 1080' preserveAspectRatio='xMinYMin slice'><path d='M95,702
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.0574em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord mathnormal">x</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord" style="margin-right:0.05556em;">∂</span><span class="mord mathnormal" style="margin-right:0.10764em;">f</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.2514em;vertical-align:-0.93em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.3097em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">2</span><span class="mord sqrt"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8003em;"><span class="svg-align" style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord" style="padding-left:0.833em;"><span class="mord mathnormal">x</span></span></span><span style="top:-2.7603em;"><span class="pstrut" style="height:3em;"></span><span class="hide-tail" style="min-width:0.853em;height:1.08em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="1.08em" viewBox="0 0 400000 1080" preserveAspectRatio="xMinYMin slice"><path d="M95,702
 c-2.7,0,-7.17,-2.7,-13.5,-8c-5.8,-5.3,-9.5,-10,-9.5,-14
 c0,-2,0.3,-3.3,1,-4c1.3,-2.7,23.83,-20.7,67.5,-54
 c44.2,-33.3,65.8,-50.3,66.5,-51c1.3,-1.3,3,-2,5,-2c4.7,0,8.7,3.3,12,10
@@ -377,14 +383,14 @@ c5.3,-9.3,12,-14,20,-14
 H400000v40H845.2724
 s-225.272,467,-225.272,467s-235,486,-235,486c-2.7,4.7,-9,7,-19,7
 c-6,0,-10,-1,-12,-3s-194,-422,-194,-422s-65,47,-65,47z
-M834 80h400000v40h-400000z'/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2397em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">ϵ</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.93em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2397em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord mathnormal">ϵ</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.93em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></div><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>input</strong> – Tensor of arbitrary shape.</p></li>
 <li><p><strong>eps</strong> – Value to add to the input when computing gradient (must be positive).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>A tensor whose value is the square-root of the input but whose associated
 autograd functions is <code class="xref py py-class docutils literal notranslate"><span class="pre">SqrtEpsGrad</span></code>.</p>
 </dd>
@@ -432,12 +438,27 @@ autograd functions is <code class="xref py py-class docutils literal notranslate
               <ul>
 <li><a class="reference internal" href="#">deel.torchlip.utils</a><ul>
 <li><a class="reference internal" href="#normalization-hooks">Normalization hooks</a><ul>
-<li><a class="reference internal" href="#bjorck-normalization"><span class="hidden-section">Bjorck normalization</span></a></li>
-<li><a class="reference internal" href="#frobenius-normalization"><span class="hidden-section">Frobenius normalization</span></a></li>
-<li><a class="reference internal" href="#l-conv-normalization"><span class="hidden-section">L-Conv normalization</span></a></li>
+<li><a class="reference internal" href="#bjorck-normalization"><span class="hidden-section">Bjorck normalization</span></a><ul>
+<li><a class="reference internal" href="#deel.torchlip.utils.bjorck_norm"><code class="docutils literal notranslate"><span class="pre">bjorck_norm()</span></code></a></li>
+<li><a class="reference internal" href="#deel.torchlip.utils.remove_bjorck_norm"><code class="docutils literal notranslate"><span class="pre">remove_bjorck_norm()</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#utilities">Utilities</a></li>
+<li><a class="reference internal" href="#frobenius-normalization"><span class="hidden-section">Frobenius normalization</span></a><ul>
+<li><a class="reference internal" href="#deel.torchlip.utils.frobenius_norm"><code class="docutils literal notranslate"><span class="pre">frobenius_norm()</span></code></a></li>
+<li><a class="reference internal" href="#deel.torchlip.utils.remove_frobenius_norm"><code class="docutils literal notranslate"><span class="pre">remove_frobenius_norm()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#l-conv-normalization"><span class="hidden-section">L-Conv normalization</span></a><ul>
+<li><a class="reference internal" href="#deel.torchlip.utils.lconv_norm"><code class="docutils literal notranslate"><span class="pre">lconv_norm()</span></code></a></li>
+<li><a class="reference internal" href="#deel.torchlip.utils.remove_lconv_norm"><code class="docutils literal notranslate"><span class="pre">remove_lconv_norm()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#utilities">Utilities</a><ul>
+<li><a class="reference internal" href="#deel.torchlip.utils.sqrt_with_gradeps"><code class="docutils literal notranslate"><span class="pre">sqrt_with_gradeps()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -457,9 +478,8 @@ autograd functions is <code class="xref py py-class docutils literal notranslate
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
   <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-  <script src="_static/jquery.js"></script>
-  <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
+  <script src="_static/sphinx_highlight.js"></script>
   
 
   

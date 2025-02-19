@@ -34,7 +34,7 @@
   <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
@@ -226,22 +226,26 @@
 <span class="sd">This module contains computation functions for Bjorck and spectral</span>
 <span class="sd">normalization. This is most for internal use.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
 
-<span class="n">DEFAULT_NITER_BJORCK</span> <span class="o">=</span> <span class="mi">15</span>
-<span class="n">DEFAULT_NITER_SPECTRAL</span> <span class="o">=</span> <span class="mi">3</span>
-<span class="n">DEFAULT_NITER_SPECTRAL_INIT</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">DEFAULT_EPS_SPECTRAL</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="n">DEFAULT_EPS_BJORCK</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="n">DEFAULT_MAXITER_BJORCK</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">DEFAULT_MAXITER_SPECTRAL</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="n">DEFAULT_BETA</span> <span class="o">=</span> <span class="mf">0.5</span>
 
 
-<div class="viewcode-block" id="bjorck_normalization"><a class="viewcode-back" href="../../../deel.torchlip.normalizers.html#deel.torchlip.normalizers.bjorck_normalization">[docs]</a><span class="k">def</span> <span class="nf">bjorck_normalization</span><span class="p">(</span>
-    <span class="n">w</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">niter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_NITER_BJORCK</span><span class="p">,</span> <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_BETA</span>
+<div class="viewcode-block" id="bjorck_normalization"><a class="viewcode-back" href="../../../deel.torchlip.normalizers.html#deel.torchlip.normalizers.bjorck_normalization">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">bjorck_normalization</span><span class="p">(</span>
+    <span class="n">w</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_EPS_BJORCK</span><span class="p">,</span>
+    <span class="n">beta</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_BETA</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_MAXITER_BJORCK</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Apply Bjorck normalization on the kernel as per</span>
 
 <span class="sd">    .. math::</span>
@@ -257,52 +261,107 @@
 <span class="sd">    Args:</span>
 <span class="sd">        w: Weights to normalize. For the normalization to work properly, the greatest</span>
 <span class="sd">            eigen value of ``w`` must be approximately 1.</span>
-<span class="sd">        niter: Number of iterations.</span>
-<span class="sd">        beta: Value of :math:`\beta` to use.</span>
+<span class="sd">        eps (float): epsilon stopping criterion: norm(wt - wt-1) must be less than eps</span>
+<span class="sd">        beta (float): beta used in each iteration, must be in the interval ]0, 0.5]</span>
+<span class="sd">        maxiter (int): maximum number of iterations for the algorithm</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The weights :math:`\overline{W}` after Bjorck normalization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">niter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">cond</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">old_w</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">old_w</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">eps</span>
+
+    <span class="c1"># define the loop body</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">body_cols</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">w</span><span class="p">))</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">body_rows</span><span class="p">(</span><span class="n">w</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">t</span><span class="p">()),</span> <span class="n">w</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">body</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">fct</span><span class="p">):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">fct</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">w</span>
+
     <span class="n">shape</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">cout</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">w_mat</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">cout</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">niter</span><span class="p">):</span>
-        <span class="n">w_mat</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="n">w_mat</span> <span class="o">-</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span>
-            <span class="n">w_mat</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">w_mat</span><span class="o">.</span><span class="n">t</span><span class="p">(),</span> <span class="n">w_mat</span><span class="p">)</span>
-        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">w_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">w_mat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">body_fct</span> <span class="o">=</span> <span class="n">body_cols</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">body_fct</span> <span class="o">=</span> <span class="n">body_rows</span>
+
+    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="nb">iter</span> <span class="o">=</span> <span class="n">maxiter</span>
+
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+        <span class="n">old_w</span> <span class="o">=</span> <span class="n">w_mat</span>
+        <span class="n">w_mat</span> <span class="o">=</span> <span class="n">body</span><span class="p">(</span><span class="n">w_mat</span><span class="p">,</span> <span class="n">body_fct</span><span class="p">)</span>
+        <span class="nb">iter</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">cond</span><span class="p">(</span><span class="n">w_mat</span><span class="p">,</span> <span class="n">old_w</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">iter</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span>
+
     <span class="n">w</span> <span class="o">=</span> <span class="n">w_mat</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">w</span></div>
 
 
-<span class="k">def</span> <span class="nf">_power_iteration</span><span class="p">(</span>
-    <span class="n">w</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">niter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_NITER_SPECTRAL</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_power_iteration</span><span class="p">(</span>
+    <span class="n">linear_operator</span><span class="p">,</span>
+    <span class="n">adjoint_operator</span><span class="p">,</span>
+    <span class="n">u</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
+    <span class="n">eps</span><span class="o">=</span><span class="n">DEFAULT_EPS_SPECTRAL</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="o">=</span><span class="n">DEFAULT_MAXITER_SPECTRAL</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Internal function that performs the power iteration algorithm.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        w: Weights matrix that we want to find eigen vector.</span>
-<span class="sd">        u: Initial singular vector.</span>
-<span class="sd">        niter: Number of iteration, must be greater than 0.</span>
+<span class="sd">        linear_operator (Callable): a callable object that maps a linear operation.</span>
+<span class="sd">        adjoint_operator (Callable): a callable object that maps the adjoint of the</span>
+<span class="sd">            linear operator.</span>
+<span class="sd">        u (tf.Tensor): initialization of the singular vector.</span>
+<span class="sd">        eps (float, optional): stopping criterion of the algorithm, when</span>
+<span class="sd">            norm(u[t] - u[t-1]) is less than eps. Defaults to DEFAULT_EPS_SPECTRAL.</span>
+<span class="sd">        maxiter (int, optional): maximum number of iterations for the algorithm.</span>
+<span class="sd">            Defaults to DEFAULT_MAXITER_SPECTRAL.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">         A tuple (u, v) containing the last singular vectors.</span>
+<span class="sd">         A Tensor containing the maximum singular vector</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">niter</span><span class="p">):</span>
-        <span class="n">v</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">w</span><span class="o">.</span><span class="n">t</span><span class="p">()),</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">u</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span>
+
+    <span class="c1"># Loop stopping condition</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cond</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">old_u</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">old_u</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">eps</span>
+
+    <span class="c1"># Loop body</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">body</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">linear_operator</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">adjoint_operator</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+
+        <span class="n">u</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">u</span>
+
+    <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="nb">iter</span> <span class="o">=</span> <span class="n">maxiter</span>
+
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+        <span class="n">old_u</span> <span class="o">=</span> <span class="n">u</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">body</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+        <span class="nb">iter</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="p">(</span><span class="ow">not</span> <span class="n">cond</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">old_u</span><span class="p">))</span> <span class="ow">or</span> <span class="p">(</span><span class="nb">iter</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">u</span>
 
 
-<div class="viewcode-block" id="spectral_normalization"><a class="viewcode-back" href="../../../deel.torchlip.normalizers.html#deel.torchlip.normalizers.spectral_normalization">[docs]</a><span class="k">def</span> <span class="nf">spectral_normalization</span><span class="p">(</span>
+<div class="viewcode-block" id="spectral_normalization"><a class="viewcode-back" href="../../../deel.torchlip.normalizers.html#deel.torchlip.normalizers.spectral_normalization">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">spectral_normalization</span><span class="p">(</span>
     <span class="n">kernel</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">u</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">niter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_NITER_SPECTRAL</span><span class="p">,</span>
+    <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_EPS_SPECTRAL</span><span class="p">,</span>
+    <span class="n">maxiter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_MAXITER_SPECTRAL</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Apply spectral normalization on the given kernel :math:`W` to set its greatest</span>
 <span class="sd">    eigen value to approximately 1.</span>
 
@@ -315,8 +374,10 @@
 <span class="sd">        u: Initialization for the initial singular vector. If ``None``, it will</span>
 <span class="sd">            be randomly initialized from a normal distribution and twice</span>
 <span class="sd">            as much iterations will be performed.</span>
-<span class="sd">        niter: Number of iteration. If u is not specified, we perform</span>
-<span class="sd">            twice as much iterations.</span>
+<span class="sd">        eps (float, optional): stopping criterion of the algorithm, when</span>
+<span class="sd">            norm(u[t] - u[t-1]) is less than eps. Defaults to DEFAULT_EPS_SPECTRAL.</span>
+<span class="sd">        maxiter (int, optional): maximum number of iterations for the algorithm.</span>
+<span class="sd">            Defaults to DEFAULT_MAXITER_SPECTRAL.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The normalized kernel :math:`\overline{W}`, the right singular vector</span>
@@ -324,24 +385,32 @@
 <span class="sd">        before normalization.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
+    <span class="k">def</span><span class="w"> </span><span class="nf">linear_op</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">u</span> <span class="o">@</span> <span class="n">kernel</span><span class="o">.</span><span class="n">t</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">adjoint_op</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">v</span> <span class="o">@</span> <span class="n">kernel</span>
+
     <span class="c1"># Flatten the Tensor</span>
     <span class="n">W_flat</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">u</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">niter</span> <span class="o">*=</span> <span class="mi">2</span>  <span class="c1"># if u was not double number of iterations for the first run</span>
+        <span class="n">maxiter</span> <span class="o">*=</span> <span class="mi">2</span>  <span class="c1"># if u was not double number of iterations for the first run</span>
         <span class="n">u</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">tuple</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="n">W_flat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]),</span> <span class="n">device</span><span class="o">=</span><span class="n">kernel</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">normal_</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
 
     <span class="c1"># do power iteration</span>
-    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">_power_iteration</span><span class="p">(</span><span class="n">W_flat</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">niter</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">_power_iteration</span><span class="p">(</span><span class="n">linear_op</span><span class="p">,</span> <span class="n">adjoint_op</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="n">maxiter</span><span class="p">)</span>
 
-    <span class="c1"># Calculate sigma (largest singular value).</span>
-    <span class="n">sigma</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">W_flat</span><span class="p">)</span><span class="o">.</span><span class="n">mm</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">t</span><span class="p">())</span>
-
-    <span class="c1"># Normalize W_bar</span>
-    <span class="n">W_bar</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">W_bar</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">sigma</span></div>
+    <span class="c1"># Compute the largest singular value and the normalized kernel.</span>
+    <span class="c1"># We assume that in the worst case we converged to sigma + eps (as u and v are</span>
+    <span class="c1"># normalized after each iteration)</span>
+    <span class="c1"># In order to be sure that operator norm of normalized kernel is strictly less than</span>
+    <span class="c1"># one we use sigma + eps, which ensures stability of Björck algorithm even when</span>
+    <span class="c1"># beta=0.5</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">linear_op</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+    <span class="n">normalized_kernel</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">div</span><span class="p">(</span><span class="n">sigma</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">normalized_kernel</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">sigma</span></div>
 </pre></div>
 
               </article>
@@ -394,9 +463,8 @@
   <script type="text/javascript" id="documentation_options" data-url_root="../../../"
     src="../../../_static/documentation_options.js"></script>
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-  <script src="../../../_static/jquery.js"></script>
-  <script src="../../../_static/underscore.js"></script>
   <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
   
 
   

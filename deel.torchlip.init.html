@@ -9,7 +9,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -35,7 +35,7 @@
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
@@ -199,35 +199,38 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <section id="deel-torchlip-init">
-<h1>deel.torchlip.init<a class="headerlink" href="#deel-torchlip-init" title="Permalink to this headline">¶</a></h1>
+<h1>deel.torchlip.init<a class="headerlink" href="#deel-torchlip-init" title="Permalink to this heading">¶</a></h1>
 <p>The <a class="reference internal" href="#module-deel.torchlip.init" title="deel.torchlip.init"><code class="xref py py-mod docutils literal notranslate"><span class="pre">deel.torchlip.init</span></code></a> contains functions that can be used to
 initialize weights of neural networks layers.
-Similar to the functions from <code class="xref py py-mod docutils literal notranslate"><span class="pre">torch.nn.init</span></code>, these functions
+Similar to the functions from <a class="reference external" href="https://pytorch.org/docs/stable/nn.html#module-torch.nn.init" title="(in PyTorch v2.6)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">torch.nn.init</span></code></a>, these functions
 are in-place functions as indicated by their trailing <code class="docutils literal notranslate"><span class="pre">_</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>These initializers are provided for completeness but we recommend
-using <a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.11.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> to initialize your weights
+using <a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v2.6)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> to initialize your weights
 when training Lipschitz neural networks.</p>
 </div>
 <section id="module-deel.torchlip.init">
-<span id="initializers"></span><h2>Initializers<a class="headerlink" href="#module-deel.torchlip.init" title="Permalink to this headline">¶</a></h2>
+<span id="initializers"></span><h2>Initializers<a class="headerlink" href="#module-deel.torchlip.init" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.init.bjorck_">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.init.</span></span><span class="sig-name descname"><span class="pre">bjorck_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/init.html#bjorck_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.init.bjorck_" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.init.</span></span><span class="sig-name descname"><span class="pre">bjorck_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_spectral</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter_spectral</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_bjorck</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter_bjorck</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">15</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/init.html#bjorck_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.init.bjorck_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply Bjorck normalization on the given tensor in-place.</p>
 <p>See also <code class="xref py py-func docutils literal notranslate"><span class="pre">bjorck_normalization()</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This function is provided for completeness but we recommend using
-<a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.11.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> instead to obtain a proper (semi)
+<a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v2.6)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> instead to obtain a proper (semi)
 orthogonal matrix.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tensor</strong> – A 2-dimensional <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>.</p></li>
-<li><p><strong>n_iterations</strong> – Number of iterations to perform.</p></li>
+<li><p><strong>eps_spectral</strong> (<em>float</em>) – stopping criterion of iterative power method</p></li>
+<li><p><strong>maxiter_spectral</strong> (<em>int</em>) – maximum number of iterations for the power iteration</p></li>
+<li><p><strong>eps_bjorck</strong> (<em>float</em>) – stopping criterion in bjorck algorithm</p></li>
+<li><p><strong>maxiter_bjorck</strong> (<em>int</em>) – maximum number of iterations for bjorck algorithm</p></li>
 <li><p><strong>beta</strong> – Value to use for the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>β</mi></mrow><annotation encoding="application/x-tex">\beta</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.05278em;">β</span></span></span></span></span> parameter.</p></li>
 </ul>
 </dd>
@@ -236,20 +239,21 @@ orthogonal matrix.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="deel.torchlip.init.spectral_">
-<span class="sig-prename descclassname"><span class="pre">deel.torchlip.init.</span></span><span class="sig-name descname"><span class="pre">spectral_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v1.11.0)"><span class="pre">torch.Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_power_iterations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/init.html#spectral_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.init.spectral_" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.init.</span></span><span class="sig-name descname"><span class="pre">spectral_</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_spectral</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxiter_spectral</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/init.html#spectral_"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.init.spectral_" title="Permalink to this definition">¶</a></dt>
 <dd><p>Apply spectral normalization on the given tensor in-place.</p>
 <p>See also <code class="xref py py-func docutils literal notranslate"><span class="pre">spectral_normalization()</span></code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This function is provided for completeness but we recommend using
-<a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v1.11.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> instead to obtain a proper (semi)
+<a class="reference external" href="https://pytorch.org/docs/stable/nn.init.html#torch.nn.init.orthogonal_" title="(in PyTorch v2.6)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.nn.init.orthogonal_()</span></code></a> instead to obtain a proper (semi)
 orthogonal matrix.</p>
 </div>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>tensor</strong> – A 2-dimensional <code class="docutils literal notranslate"><span class="pre">torch.Tensor</span></code>.</p></li>
-<li><p><strong>n_power_iterations</strong> – Number of iterations to perform.</p></li>
+<li><p><strong>eps_spectral</strong> (<em>float</em>) – stopping criterion of iterative power method</p></li>
+<li><p><strong>maxiter_spectral</strong> (<em>int</em>) – maximum number of iterations for the power iteration</p></li>
 </ul>
 </dd>
 </dl>
@@ -295,7 +299,11 @@ orthogonal matrix.</p>
             <div class="pytorch-side-scroll" id="pytorch-side-scroll-right">
               <ul>
 <li><a class="reference internal" href="#">deel.torchlip.init</a><ul>
-<li><a class="reference internal" href="#module-deel.torchlip.init">Initializers</a></li>
+<li><a class="reference internal" href="#module-deel.torchlip.init">Initializers</a><ul>
+<li><a class="reference internal" href="#deel.torchlip.init.bjorck_"><code class="docutils literal notranslate"><span class="pre">bjorck_()</span></code></a></li>
+<li><a class="reference internal" href="#deel.torchlip.init.spectral_"><code class="docutils literal notranslate"><span class="pre">spectral_()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -315,9 +323,8 @@ orthogonal matrix.</p>
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
   <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-  <script src="_static/jquery.js"></script>
-  <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
+  <script src="_static/sphinx_highlight.js"></script>
   
 
   

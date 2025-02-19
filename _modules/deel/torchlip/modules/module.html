@@ -34,7 +34,7 @@
   <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -226,20 +226,71 @@
 <span class="sd">This module contains equivalents for Model and Sequential. These classes add support</span>
 <span class="sd">for condensation and vanilla exportation.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">abc</span>
-<span class="kn">import</span> <span class="nn">copy</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">abc</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">Sequential</span> <span class="k">as</span> <span class="n">TorchSequential</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.utils.parametrize</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">parametrize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="kn">import</span> <span class="n">Sequential</span> <span class="k">as</span> <span class="n">TorchSequential</span>
 
-<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;deel.torchlip&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_supported_1lip_layer</span><span class="p">(</span><span class="n">layer</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Return True if the layer is 1-Lipschitz. Note that in some cases, the layer</span>
+<span class="sd">    is 1-Lipschitz for specific set of parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">supported_1lip_layers</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Softmax</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Identity</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sigmoid</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Tanh</span><span class="p">,</span>
+        <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Unflatten</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">supported_1lip_layers</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">layer</span><span class="o">.</span><span class="n">kernel_size</span> <span class="o">&lt;=</span> <span class="n">layer</span><span class="o">.</span><span class="n">stride</span>
+    <span class="k">return</span> <span class="kc">False</span>
 
 
-<div class="viewcode-block" id="LipschitzModule"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.LipschitzModule">[docs]</a><span class="k">class</span> <span class="nc">LipschitzModule</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">vanilla_model</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert lipschitz modules into their non-lipschitz counterpart (for</span>
+<span class="sd">    instance, SpectralConv2d layers become Conv2d layers).</span>
+
+<span class="sd">    Warning: This function modifies the model in-place.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        model (nn.Module): Lipschitz neural network</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">module</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
+            <span class="c1"># simple module</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">module</span><span class="o">.</span><span class="n">vanilla_export</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">children</span><span class="p">()))</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># compound module, go inside it</span>
+            <span class="n">vanilla_model</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">_LipschitzCoefMultiplication</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parametrization module for lipschitz global coefficient multiplication.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coef</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_coef</span> <span class="o">=</span> <span class="n">coef</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coef</span> <span class="o">*</span> <span class="n">weight</span>
+
+
+<div class="viewcode-block" id="LipschitzModule"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.LipschitzModule">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LipschitzModule</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This class allow to set lipschitz factor of a layer. Lipschitz layer must inherit</span>
 <span class="sd">    this class to allow user to set the lipschitz factor.</span>
 
@@ -252,15 +303,20 @@
     <span class="c1"># The target coefficient:</span>
     <span class="n">_coefficient_lip</span><span class="p">:</span> <span class="nb">float</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coefficient_lip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">coefficient_lip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_coefficient_lip</span> <span class="o">=</span> <span class="n">coefficient_lip</span>
 
-    <span class="k">def</span> <span class="nf">_hook</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">inputs</span><span class="p">):</span>
-        <span class="nb">setattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coefficient_lip</span><span class="p">)</span>
+<div class="viewcode-block" id="LipschitzModule.apply_lipschitz_factor"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.LipschitzModule.apply_lipschitz_factor">[docs]</a>    <span class="k">def</span><span class="w"> </span><span class="nf">apply_lipschitz_factor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Multiply the layer weights by a lipschitz factor.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coefficient_lip</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">_LipschitzCoefMultiplication</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_coefficient_lip</span><span class="p">)</span>
+        <span class="p">)</span></div>
 
 <div class="viewcode-block" id="LipschitzModule.vanilla_export"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.LipschitzModule.vanilla_export">[docs]</a>    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
-    <span class="k">def</span> <span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Convert this layer to a corresponding vanilla torch layer (when possible).</span>
 
 <span class="sd">        Returns:</span>
@@ -269,13 +325,13 @@
         <span class="k">pass</span></div></div>
 
 
-<div class="viewcode-block" id="Sequential"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.Sequential">[docs]</a><span class="k">class</span> <span class="nc">Sequential</span><span class="p">(</span><span class="n">TorchSequential</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="Sequential"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.Sequential">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">Sequential</span><span class="p">(</span><span class="n">TorchSequential</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
         <span class="n">k_coef_lip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Equivalent of torch.Sequential but allow to set k-lip factor globally. Also</span>
 <span class="sd">        support condensation and vanilla exportation.</span>
 <span class="sd">        For now constant repartition is implemented (each layer</span>
@@ -292,20 +348,20 @@
 
         <span class="c1"># Force the Lipschitz coefficient:</span>
         <span class="n">n_layers</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
-            <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">)</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">())</span>
+            <span class="p">[</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">)</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">()]</span>
         <span class="p">)</span>
         <span class="k">for</span> <span class="n">module</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
                 <span class="n">module</span><span class="o">.</span><span class="n">_coefficient_lip</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">pow</span><span class="p">(</span><span class="n">k_coef_lip</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">n_layers</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="k">elif</span> <span class="n">_is_supported_1lip_layer</span><span class="p">(</span><span class="n">module</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                     <span class="s2">&quot;Sequential model contains a layer which is not a Lipschitz layer: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>  <span class="c1"># noqa: E501</span>
                         <span class="n">module</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Exports this model to a vanilla torch Sequential.</span>
 
 <span class="sd">        This method only works for flat sequential. Lipschitz modules are converted</span>
@@ -316,12 +372,12 @@
 <span class="sd">            A Vanilla torch.nn.Sequential model.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layer</span><span class="o">.</span><span class="n">vanilla_export</span><span class="p">())</span>
+                <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">layer</span><span class="o">.</span><span class="n">vanilla_export</span><span class="p">()))</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">layer</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">TorchSequential</span><span class="p">(</span><span class="o">*</span><span class="n">layers</span><span class="p">)</span></div>
+                <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">layer</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">TorchSequential</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span><span class="n">layers</span><span class="p">))</span></div>
 </pre></div>
 
               </article>
@@ -374,9 +430,8 @@
   <script type="text/javascript" id="documentation_options" data-url_root="../../../../"
     src="../../../../_static/documentation_options.js"></script>
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-  <script src="../../../../_static/jquery.js"></script>
-  <script src="../../../../_static/underscore.js"></script>
   <script src="../../../../_static/doctools.js"></script>
+  <script src="../../../../_static/sphinx_highlight.js"></script>
   
 
   

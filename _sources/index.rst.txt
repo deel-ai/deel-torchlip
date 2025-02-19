@@ -16,7 +16,7 @@ This library provides implementation of **k-Lispchitz layers for PyTorch**.
 Content of the library
 ----------------------
 
-* k-Lipschitz variant of PyTorch layers such as ``Linear``, ``Conv2d`` and ``AvgPool2d``,
+* k-Lipschitz variant of PyTorch layers such as ``Linear``, ``Conv2d`` and ``AvgPool2d``, ...
 * activation functions compatible with ``pytorch``,
 * initializers for ``pytorch``,
 * loss functions to work with Wasserstein distance estimations.

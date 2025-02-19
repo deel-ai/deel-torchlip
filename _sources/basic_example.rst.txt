@@ -54,21 +54,32 @@ The following table indicates which module are safe to use in a Lipschitz networ
      -
    * - :class:`torch.nn.AvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`torch.nn.AdaptiveAvgPool2d`
      - no
-     - :class:`.ScaledAvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`.ScaledAdaptiveAvgPool2d` \ :raw-html-m2r:`<br>` \ :class:`.ScaledL2NormPool2d`
+     - :class:`.ScaledAvgPool2d`\ :raw-html-m2r:`<br>`\ :class:`.ScaledAdaptiveAvgPool2d` \ :raw-html-m2r:`<br>` \ :class:`.ScaledL2NormPool2d` \ :raw-html-m2r:`<br>` \ :class:`.ScaledAdaptativeL2NormPool2d`
      - The Lipschitz constant is bounded by ``sqrt(pool_h * pool_w)``.
    * - :class:`Flatten`
      - yes
      - n/a
-     -
+     -   
+   * - :class:`torch.nn.ConvTranspose2d`
+     - no
+     - :class:`.SpectralConvTranspose2d`
+     - :class:`.SpectralConvTranspose2d` also implements Björck normalization.
+   * - :class:`torch.nn.BatchNorm1d` \ :raw-html-m2r:`<br>` \ :class:`torch.nn.BatchNorm2d` \ :raw-html-m2r:`<br>` \ :class:`torch.nn.BatchNorm3d`
+     - no
+     - :class:`.BatchCentering`
+     - This layer apply a bias based on statistics on batch, but no normalization factor (1-Lipschitz).
+   * - :class:`torch.nn.LayerNorm` 
+     - no
+     - :class:`.LayerCentering`
+     - This layer apply a bias based on statistics on each sample, but no normalization factor (1-Lipschitz).
+   * - Residual connections 
+     - no
+     - :class:`.LipResidual`
+     - Learn a factor for mixing residual and a 1-Lipschitz branch .
    * - :class:`torch.nn.Dropout`
      - no
      - None
      - The Lipschitz constant is bounded by the dropout factor.
-   * - :class:`torch.nn.BatchNorm1d` \ :raw-html-m2r:`<br>` \ :class:`torch.nn.BatchNorm2d` \ :raw-html-m2r:`<br>` \ :class:`torch.nn.BatchNorm3d`
-     - no
-     - None
-     - We suspect that layer normalization already limits internal covariate shift.
-
 
 How to use it?
 --------------

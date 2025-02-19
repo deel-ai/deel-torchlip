@@ -56,18 +56,18 @@ The two distributions are
 .. code:: ipython3
 
     from typing import Tuple
-
+    
     import matplotlib.pyplot as plt
     import numpy as np
-
+    
     size = (64, 64)
     frac = 0.3  # proportion of the center square
-
-
+    
+    
     def generate_toy_images(shape: Tuple[int, int], frac: float = 0, value: float = 1):
         """
         Generates a single image.
-
+    
         Args:
             shape: Shape of the output image.
             frac: Proportion of the center rectangle.
@@ -76,42 +76,42 @@ The two distributions are
         img = np.zeros(shape)
         if frac == 0:
             return img
-
+    
         frac = frac ** 0.5
-
+    
         l = int(shape[0] * frac)
         ldec = (shape[0] - l) // 2
         w = int(shape[1] * frac)
         wdec = (shape[1] - w) // 2
-
+    
         img[ldec : ldec + l, wdec : wdec + w] = value
-
+    
         return img
-
-
+    
+    
     def generator(batch_size: int, shape: Tuple[int, int], frac: float):
         """
         Creates an infinite generator that generates batch of images. Half of the batch
         comes from the first distribution (only black images), while the remaining half
         comes from the second distribution.
-
+    
         Args:
             batch_size: Number of images in each batch.
             shape: Shape of the image.
             frac: Fraction of the square to set "white".
-
+    
         Returns:
             An infinite generator that yield batch of the given size.
         """
-
+    
         pwhite = generate_toy_images(shape, frac=frac, value=1)
         nwhite = generate_toy_images(shape, frac=frac, value=-1)
-
+    
         nblack = batch_size // 2
         nsquares = batch_size - nblack
         npwhite = nsquares // 2
         nnwhite = nsquares - npwhite
-
+    
         batch_x = np.concatenate(
             (
                 np.zeros((nblack,) + shape),
@@ -121,11 +121,11 @@ The two distributions are
             axis=0,
         )
         batch_y = np.concatenate((np.zeros((nblack, 1)), np.ones((nsquares, 1))), axis=0)
-
+    
         while True:
             yield batch_x, batch_y
-
-
+    
+    
     def display_image(ax, image, title: str = ""):
         ax.imshow(image, cmap="gray")
         ax.set_xticks([])
@@ -141,13 +141,13 @@ between the two sets.
     img1 = generate_toy_images(size, 0)
     img2 = generate_toy_images(size, frac, value=-1)
     img3 = generate_toy_images(size, frac, value=1)
-
+    
     fig, axs = plt.subplots(1, 3, figsize=(21, 7))
-
+    
     display_image(axs[0], img1, "black (label = -1)")
     display_image(axs[1], img2, "'negative' white (label = 1)")
     display_image(axs[2], img3, "'positive' white (label = 1)")
-
+    
     print("L2-Norm, black vs. 'negative' white -> {}".format(np.linalg.norm(img2 - img1)))
     print("L2-Norm, black vs. 'positive' white -> {}".format(np.linalg.norm(img3 - img1)))
 
@@ -177,7 +177,7 @@ distance is
 
     W_1(\mu, \nu) = \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}}
    \left[f(\textbf{x} )\right] -\underset{\textbf{x} \sim \nu}{\mathbb{E}}
-   \left[f(\textbf{x} )\right].
+   \left[f(\textbf{x} )\right]. 
 
 This states the problem as an optimization problem over the space of
 1-Lipschitz functions. We can estimate this by optimizing over the space
@@ -212,9 +212,9 @@ function:
 
     import torch
     from deel import torchlip
-
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    
     wass = torchlip.Sequential(
         torch.nn.Flatten(),
         torchlip.SpectralLinear(np.prod(size), 128),
@@ -225,13 +225,8 @@ function:
         torchlip.FullSort(),
         torchlip.FrobeniusLinear(32, 1),
     ).to(device)
-
+    
     wass
-
-
-.. parsed-literal::
-
-    Sequential model contains a layer which is not a Lipschitz layer: Flatten(start_dim=1, end_dim=-1)
 
 
 
@@ -240,13 +235,44 @@ function:
 
     Sequential(
       (0): Flatten(start_dim=1, end_dim=-1)
-      (1): SpectralLinear(in_features=4096, out_features=128, bias=True)
+      (1): ParametrizedSpectralLinear(
+        in_features=4096, out_features=128, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (2): FullSort()
-      (3): SpectralLinear(in_features=128, out_features=64, bias=True)
+      (3): ParametrizedSpectralLinear(
+        in_features=128, out_features=64, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (4): FullSort()
-      (5): SpectralLinear(in_features=64, out_features=32, bias=True)
+      (5): ParametrizedSpectralLinear(
+        in_features=64, out_features=32, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _SpectralNorm()
+            (1): _BjorckNorm()
+          )
+        )
+      )
       (6): FullSort()
-      (7): FrobeniusLinear(in_features=32, out_features=1, bias=True)
+      (7): ParametrizedFrobeniusLinear(
+        in_features=32, out_features=1, bias=True
+        (parametrizations): ModuleDict(
+          (weight): ParametrizationList(
+            (0): _FrobeniusNorm()
+          )
+        )
+      )
     )
 
 
@@ -259,22 +285,23 @@ formulation for the Wasserstein distance.
 
 .. code:: ipython3
 
-    from deel.torchlip.functional import kr_loss
+    from deel.torchlip import KRLoss
     from tqdm import trange
-
+    
     batch_size = 16
     n_epochs = 10
     steps_per_epoch = 256
-
+    
     # Create the image generator:
     g = generator(batch_size, size, frac)
-
+    
+    kr_loss = KRLoss()
     optimizer = torch.optim.Adam(lr=0.01, params=wass.parameters())
-
+    
     n_steps = steps_per_epoch // batch_size
-
+    
     for epoch in range(n_epochs):
-
+    
         tsteps = trange(n_steps, desc=f"Epoch {epoch + 1}/{n_epochs}")
         for _ in tsteps:
             data, target = next(g)
@@ -293,20 +320,82 @@ formulation for the Wasserstein distance.
 
 .. parsed-literal::
 
-    Epoch 1/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.40it/s, loss=-29.041878]
-    Epoch 2/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.53it/s, loss=-34.570045]
-    Epoch 3/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.14it/s, loss=-34.912281]
-    Epoch 4/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.11it/s, loss=-34.984196]
-    Epoch 5/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.57it/s, loss=-34.992695]
-    Epoch 6/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.14it/s, loss=-34.993195]
-    Epoch 7/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.36it/s, loss=-34.994316]
-    Epoch 8/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.62it/s, loss=-34.994377]
-    Epoch 9/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.47it/s, loss=-34.993877]
-    Epoch 10/10: 100%|██████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 16.35it/s, loss=-34.994080]
+    Epoch 1/10:   0%|                                                                                                | 0/16 [00:00<?, ?it/s]
+
+.. parsed-literal::
+
+    Epoch 1/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=-0.129946]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▌                                                                   | 1/16 [00:00<00:02,  5.98it/s, loss=-0.129946]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
+
+.. parsed-literal::
+
+    Epoch 1/10: 
 
 
 As we can see the loss converges to the value :math:`35` which is the
 :math:`W_1` distance between the two distributions (with and without
 squares).
 
-.. container:: alert alert-block alert-danger

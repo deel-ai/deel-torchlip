@@ -34,7 +34,7 @@
   <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -222,27 +222,27 @@
 <span class="c1"># rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,</span>
 <span class="c1"># CRIAQ and ANITI - https://www.deel.ai/</span>
 <span class="c1"># =====================================================================================</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">torch.nn.utils</span> <span class="kn">import</span> <span class="n">spectral_norm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn.utils.parametrizations</span><span class="w"> </span><span class="kn">import</span> <span class="n">spectral_norm</span>
 
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">bjorck_norm</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">DEFAULT_NITER_BJORCK</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">DEFAULT_NITER_SPECTRAL</span>
-<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">frobenius_norm</span>
-<span class="kn">from</span> <span class="nn">.module</span> <span class="kn">import</span> <span class="n">LipschitzModule</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">bjorck_norm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..normalizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_EPS_BJORCK</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..normalizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_EPS_SPECTRAL</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">frobenius_norm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.module</span><span class="w"> </span><span class="kn">import</span> <span class="n">LipschitzModule</span>
 
 
-<div class="viewcode-block" id="SpectralLinear"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.SpectralLinear">[docs]</a><span class="k">class</span> <span class="nc">SpectralLinear</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="SpectralLinear"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.SpectralLinear">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SpectralLinear</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">in_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">out_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">k_coef_lip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">niter_spectral</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_NITER_SPECTRAL</span><span class="p">,</span>
-        <span class="n">niter_bjorck</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_NITER_BJORCK</span><span class="p">,</span>
+        <span class="n">eps_spectral</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_EPS_SPECTRAL</span><span class="p">,</span>
+        <span class="n">eps_bjorck</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_EPS_BJORCK</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        This class is a Linear Layer constrained such that all singular of it&#39;s kernel</span>
 <span class="sd">        are 1. The computation based on BjorckNormalizer algorithm.</span>
 <span class="sd">        The computation is done in two steps:</span>
@@ -255,8 +255,8 @@
 <span class="sd">            out_features: Size of each output sample.</span>
 <span class="sd">            bias: If ``False``, the layer will not learn an additive bias.</span>
 <span class="sd">            k_coef_lip: Lipschitz constant to ensure.</span>
-<span class="sd">            niter_spectral: Number of iteration to find the maximum singular value.</span>
-<span class="sd">            niter_bjorck: Number of iteration with BjorckNormalizer algorithm.</span>
+<span class="sd">            eps_spectral: stopping criterion for the iterative power algorithm.</span>
+<span class="sd">            eps_bjorck: stopping criterion Bjorck algorithm.</span>
 
 <span class="sd">        Shape:</span>
 <span class="sd">            - Input: :math:`(N, *, H_{in})` where :math:`*` means any number of</span>
@@ -282,12 +282,12 @@
         <span class="n">spectral_norm</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span>
-            <span class="n">n_power_iterations</span><span class="o">=</span><span class="n">niter_spectral</span><span class="p">,</span>
+            <span class="n">eps</span><span class="o">=</span><span class="n">eps_spectral</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">bjorck_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">n_iterations</span><span class="o">=</span><span class="n">niter_bjorck</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_forward_pre_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hook</span><span class="p">)</span>
+        <span class="n">bjorck_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps_bjorck</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_lipschitz_factor</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">:</span>
         <span class="n">layer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
             <span class="n">in_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">in_features</span><span class="p">,</span>
             <span class="n">out_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_features</span><span class="p">,</span>
@@ -299,16 +299,32 @@
         <span class="k">return</span> <span class="n">layer</span></div>
 
 
-<div class="viewcode-block" id="FrobeniusLinear"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.FrobeniusLinear">[docs]</a><span class="k">class</span> <span class="nc">FrobeniusLinear</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Same a SpectralLinear, but in the case of a single output.</span>
+<div class="viewcode-block" id="FrobeniusLinear"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.FrobeniusLinear">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">FrobeniusLinear</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is a Linear Layer constrained such that the Frobenius norm of the weight</span>
+<span class="sd">    is 1. In the case of a single output neuron, it is equivalent and faster than the</span>
+<span class="sd">    SpectralLinear layer. For multi-neuron case, the &quot;disjoint_neurons&quot; parameter</span>
+<span class="sd">    affects the behaviour:</span>
+
+<span class="sd">    - if ``disjoint_neurons`` is True (default), it corresponds to the stacking of</span>
+<span class="sd">      independent 1-Lipschitz neurons.</span>
+<span class="sd">    - if ``disjoint_neurons`` is False, the matrix weight is normalized by its Frobenius</span>
+<span class="sd">      norm.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        in_features: Size of each input sample.</span>
+<span class="sd">        out_features: Size of each output sample.</span>
+<span class="sd">        bias: If ``False``, the layer will not learn an additive bias.</span>
+<span class="sd">        disjoint_neurons: Normalize, independently per neuron or not, the matrix weight.</span>
+<span class="sd">        k_coef_lip: Lipschitz constant to ensure.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">in_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">out_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
         <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">disjoint_neurons</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
         <span class="n">k_coef_lip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
@@ -323,10 +339,10 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
-        <span class="n">frobenius_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">register_forward_pre_hook</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hook</span><span class="p">)</span>
+        <span class="n">frobenius_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">disjoint_neurons</span><span class="o">=</span><span class="n">disjoint_neurons</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">apply_lipschitz_factor</span><span class="p">()</span>
 
-    <span class="k">def</span> <span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">layer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span>
             <span class="n">in_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">in_features</span><span class="p">,</span>
             <span class="n">out_features</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">out_features</span><span class="p">,</span>
@@ -388,9 +404,8 @@
   <script type="text/javascript" id="documentation_options" data-url_root="../../../../"
     src="../../../../_static/documentation_options.js"></script>
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-  <script src="../../../../_static/jquery.js"></script>
-  <script src="../../../../_static/underscore.js"></script>
   <script src="../../../../_static/doctools.js"></script>
+  <script src="../../../../_static/sphinx_highlight.js"></script>
   
 
   

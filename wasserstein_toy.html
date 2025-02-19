@@ -9,7 +9,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -35,7 +35,7 @@
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
@@ -201,13 +201,13 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <section id="example-1-wasserstein-distance-estimation">
-<h1>Example 1: Wasserstein distance estimation<a class="headerlink" href="#example-1-wasserstein-distance-estimation" title="Permalink to this headline">¶</a></h1>
+<h1>Example 1: Wasserstein distance estimation<a class="headerlink" href="#example-1-wasserstein-distance-estimation" title="Permalink to this heading">¶</a></h1>
 <p><a class="reference external" href="https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_toy.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>In this notebook we estimate the Wasserstein distance through its
 Kantorovich-Rubinstein dual representation by using a 1-Lipschitz neural
 network.</p>
 <section id="wasserstein-distance">
-<h2>1. Wasserstein distance<a class="headerlink" href="#wasserstein-distance" title="Permalink to this headline">¶</a></h2>
+<h2>1. Wasserstein distance<a class="headerlink" href="#wasserstein-distance" title="Permalink to this heading">¶</a></h2>
 <p>The Wasserstein distance measures the distance between two probability
 distributions. The Wikipedia article gives a more intuitive definition:</p>
 <blockquote>
@@ -229,7 +229,7 @@ In most case this equation is not tractable.</p>
 </div>
 </section>
 <section id="parameters-input-images">
-<h2>2. Parameters input images<a class="headerlink" href="#parameters-input-images" title="Permalink to this headline">¶</a></h2>
+<h2>2. Parameters input images<a class="headerlink" href="#parameters-input-images" title="Permalink to this heading">¶</a></h2>
 <p>We illustrate this on a synthetic image dataset where the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">W_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span>
 distance is known.</p>
 <p>Our synthetic dataset contains images with black or white squares,
@@ -240,17 +240,17 @@ The two distributions are</p>
 <li><p>the set of images with a square on it (all 0, with a square of -1 or
 +1 in the middle).</p></li>
 </ul>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
 
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">size</span> <span class="o">=</span> <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
 <span class="n">frac</span> <span class="o">=</span> <span class="mf">0.3</span>  <span class="c1"># proportion of the center square</span>
 
 
-<span class="k">def</span> <span class="nf">generate_toy_images</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">frac</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_toy_images</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">frac</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates a single image.</span>
 
 <span class="sd">    Args:</span>
@@ -274,8 +274,8 @@ The two distributions are</p>
     <span class="k">return</span> <span class="n">img</span>
 
 
-<span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">frac</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">generator</span><span class="p">(</span><span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">frac</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Creates an infinite generator that generates batch of images. Half of the batch</span>
 <span class="sd">    comes from the first distribution (only black images), while the remaining half</span>
 <span class="sd">    comes from the second distribution.</span>
@@ -311,7 +311,7 @@ The two distributions are</p>
         <span class="k">yield</span> <span class="n">batch_x</span><span class="p">,</span> <span class="n">batch_y</span>
 
 
-<span class="k">def</span> <span class="nf">display_image</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">display_image</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">image</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">):</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">([])</span>
@@ -346,7 +346,7 @@ images in our distributions, the <span class="math"><span class="katex"><span cl
 distances is also <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>35</mn></mrow><annotation encoding="application/x-tex">35</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">35</span></span></span></span></span>.</p>
 </section>
 <section id="kantorovich-rubinstein-dual-formulation">
-<h2>3. Kantorovich-Rubinstein dual formulation<a class="headerlink" href="#kantorovich-rubinstein-dual-formulation" title="Permalink to this headline">¶</a></h2>
+<h2>3. Kantorovich-Rubinstein dual formulation<a class="headerlink" href="#kantorovich-rubinstein-dual-formulation" title="Permalink to this heading">¶</a></h2>
 <p>The Kantorovich-Rubinstein (KR) dual formulation of the Wasserstein
 distance is</p>
 <div class="math">
@@ -360,7 +360,7 @@ of 1-Lipschitz neural networks.</p>
 approximation”, arXiv:1811.05381, nov. 2018.</p></li>
 </ul>
 <section id="building-a-1-lipschitz-model">
-<h3>3.1. Building a 1-Lipschitz model<a class="headerlink" href="#building-a-1-lipschitz-model" title="Permalink to this headline">¶</a></h3>
+<h3>3.1. Building a 1-Lipschitz model<a class="headerlink" href="#building-a-1-lipschitz-model" title="Permalink to this heading">¶</a></h3>
 <p>In this section, we use the <code class="docutils literal notranslate"><span class="pre">deel.torchlip</span></code> (short <code class="docutils literal notranslate"><span class="pre">torchlip</span></code>) to
 build a 1-Lipschitz network. The <code class="docutils literal notranslate"><span class="pre">torchlip</span></code> library is the PyTorch
 equivalent of <code class="docutils literal notranslate"><span class="pre">`deel-lip</span></code> &lt;<a class="reference external" href="https://github.com/deel-ai/deel-lip">https://github.com/deel-ai/deel-lip</a>&gt;`__. In
@@ -380,8 +380,8 @@ single output. Similar to <code class="docutils literal notranslate"><span class
 initialized using orthogonal initialization.</p></li>
 <li><p>We use <code class="docutils literal notranslate"><span class="pre">FullSort</span></code> activation, which is a 1-Lipschitz activation.</p></li>
 </ul>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">deel</span> <span class="kn">import</span> <span class="n">torchlip</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">deel</span><span class="w"> </span><span class="kn">import</span> <span class="n">torchlip</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
@@ -399,28 +399,56 @@ initialized using orthogonal initialization.</p></li>
 <span class="n">wass</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span> <span class="n">model</span> <span class="n">contains</span> <span class="n">a</span> <span class="n">layer</span> <span class="n">which</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">a</span> <span class="n">Lipschitz</span> <span class="n">layer</span><span class="p">:</span> <span class="n">Flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end_dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-</pre></div>
-</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span><span class="p">(</span>
   <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">Flatten</span><span class="p">(</span><span class="n">start_dim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end_dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
-  <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">ParametrizedSpectralLinear</span><span class="p">(</span>
+    <span class="n">in_features</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">(</span><span class="n">parametrizations</span><span class="p">):</span> <span class="n">ModuleDict</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">weight</span><span class="p">):</span> <span class="n">ParametrizationList</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">_SpectralNorm</span><span class="p">()</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">_BjorckNorm</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
   <span class="p">(</span><span class="mi">2</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
-  <span class="p">(</span><span class="mi">3</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">3</span><span class="p">):</span> <span class="n">ParametrizedSpectralLinear</span><span class="p">(</span>
+    <span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">(</span><span class="n">parametrizations</span><span class="p">):</span> <span class="n">ModuleDict</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">weight</span><span class="p">):</span> <span class="n">ParametrizationList</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">_SpectralNorm</span><span class="p">()</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">_BjorckNorm</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
   <span class="p">(</span><span class="mi">4</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
-  <span class="p">(</span><span class="mi">5</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">5</span><span class="p">):</span> <span class="n">ParametrizedSpectralLinear</span><span class="p">(</span>
+    <span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">(</span><span class="n">parametrizations</span><span class="p">):</span> <span class="n">ModuleDict</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">weight</span><span class="p">):</span> <span class="n">ParametrizationList</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">_SpectralNorm</span><span class="p">()</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">_BjorckNorm</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
   <span class="p">(</span><span class="mi">6</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
-  <span class="p">(</span><span class="mi">7</span><span class="p">):</span> <span class="n">FrobeniusLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">7</span><span class="p">):</span> <span class="n">ParametrizedFrobeniusLinear</span><span class="p">(</span>
+    <span class="n">in_features</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">(</span><span class="n">parametrizations</span><span class="p">):</span> <span class="n">ModuleDict</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">weight</span><span class="p">):</span> <span class="n">ParametrizationList</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">_FrobeniusNorm</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="training-a-1-lipschitz-network-with-kr-loss">
-<h3>3.2. Training a 1-Lipschitz network with KR loss<a class="headerlink" href="#training-a-1-lipschitz-network-with-kr-loss" title="Permalink to this headline">¶</a></h3>
+<h3>3.2. Training a 1-Lipschitz network with KR loss<a class="headerlink" href="#training-a-1-lipschitz-network-with-kr-loss" title="Permalink to this heading">¶</a></h3>
 <p>We now train this neural network using the Kantorovich-Rubinstein
 formulation for the Wasserstein distance.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deel.torchlip.functional</span> <span class="kn">import</span> <span class="n">kr_loss</span>
-<span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">trange</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">deel.torchlip</span><span class="w"> </span><span class="kn">import</span> <span class="n">KRLoss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">trange</span>
 
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">16</span>
 <span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">10</span>
@@ -429,13 +457,14 @@ formulation for the Wasserstein distance.</p>
 <span class="c1"># Create the image generator:</span>
 <span class="n">g</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span>
 
+<span class="n">kr_loss</span> <span class="o">=</span> <span class="n">KRLoss</span><span class="p">()</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">wass</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
 
 <span class="n">n_steps</span> <span class="o">=</span> <span class="n">steps_per_epoch</span> <span class="o">//</span> <span class="n">batch_size</span>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_epochs</span><span class="p">):</span>
 
-    <span class="n">tsteps</span> <span class="o">=</span> <span class="n">trange</span><span class="p">(</span><span class="n">n_steps</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">tsteps</span> <span class="o">=</span> <span class="n">trange</span><span class="p">(</span><span class="n">n_steps</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">tsteps</span><span class="p">:</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="p">(</span>
@@ -450,16 +479,61 @@ formulation for the Wasserstein distance.</p>
         <span class="n">tsteps</span><span class="o">.</span><span class="n">set_postfix</span><span class="p">({</span><span class="s2">&quot;loss&quot;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="si">{:.6f}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">)})</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.40it/s, loss=-29.041878]
-Epoch 2/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.53it/s, loss=-34.570045]
-Epoch 3/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.14it/s, loss=-34.912281]
-Epoch 4/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.11it/s, loss=-34.984196]
-Epoch 5/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.57it/s, loss=-34.992695]
-Epoch 6/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.14it/s, loss=-34.993195]
-Epoch 7/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.36it/s, loss=-34.994316]
-Epoch 8/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.62it/s, loss=-34.994377]
-Epoch 9/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.47it/s, loss=-34.993877]
-Epoch 10/10: 100%|██████████████████████████████████████████████████████████████████████| 16/16 [00:00&lt;00:00, 16.35it/s, loss=-34.994080]
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   0%|                                                                                                | 0/16 [00:00&lt;?, ?it/s]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   0%|                                                                                | 0/16 [00:00&lt;?, ?it/s, loss=-0.129946]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▌                                                                   | 1/16 [00:00&lt;00:02,  5.98it/s, loss=-0.129946]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00&lt;00:02,  5.98it/s, loss=nan]
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">1</span><span class="o">/</span><span class="mi">10</span><span class="p">:</span>
 </pre></div>
 </div>
 <p>As we can see the loss converges to the value <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>35</mn></mrow><annotation encoding="application/x-tex">35</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">35</span></span></span></span></span> which is the
@@ -541,9 +615,8 @@ squares).</p>
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
   <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-  <script src="_static/jquery.js"></script>
-  <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
+  <script src="_static/sphinx_highlight.js"></script>
   
 
   

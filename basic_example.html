@@ -9,7 +9,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -35,7 +35,7 @@
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
@@ -201,7 +201,7 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <section id="example-and-usage">
-<h1>Example and usage<a class="headerlink" href="#example-and-usage" title="Permalink to this headline">¶</a></h1>
+<h1>Example and usage<a class="headerlink" href="#example-and-usage" title="Permalink to this heading">¶</a></h1>
 <p>In order to make things simple the following rules have been followed during development:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">deel-torchlip</span></code> follows the <code class="docutils literal notranslate"><span class="pre">torch.nn</span></code> package structure.</p></li>
@@ -210,10 +210,10 @@ interface and the same parameters.
 The only difference is a new parameter to control the Lipschitz constant of a layer.</p></li>
 </ul>
 <section id="which-modules-are-safe-to-use">
-<h2>Which modules are safe to use?<a class="headerlink" href="#which-modules-are-safe-to-use" title="Permalink to this headline">¶</a></h2>
+<h2>Which modules are safe to use?<a class="headerlink" href="#which-modules-are-safe-to-use" title="Permalink to this heading">¶</a></h2>
 <p>Modules from <code class="docutils literal notranslate"><span class="pre">deel-torchlip</span></code> are mostly wrappers around initializers and normalization hooks
 that ensure their 1-Lipschitz property.
-For instance, the <code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralLinear</span></code> module is simply a <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code></a> module
+For instance, the <code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralLinear</span></code> module is simply a <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code></a> module
 , with automatic orthogonal initialization and hooks:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># This code is about equivalent to SpectralLinear(16, 32)</span>
 <span class="n">m</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
@@ -226,12 +226,6 @@ For instance, the <code class="xref py py-class docutils literal notranslate"><s
 </div>
 <p>The following table indicates which module are safe to use in a Lipschitz network, and which are not.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-<col style="width: 25%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p><code class="docutils literal notranslate"><span class="pre">torch.nn</span></code></p></th>
 <th class="head"><p>1-Lipschitz?</p></th>
@@ -240,12 +234,12 @@ For instance, the <code class="xref py py-class docutils literal notranslate"><s
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Linear.html#torch.nn.Linear" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code></a></p></td>
 <td><p>no</p></td>
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralLinear" title="deel.torchlip.SpectralLinear"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralLinear</span></code></a> <span class="raw-html-m2r"><br></span><a class="reference internal" href="deel.torchlip.html#deel.torchlip.FrobeniusLinear" title="deel.torchlip.FrobeniusLinear"><code class="xref py py-class docutils literal notranslate"><span class="pre">FrobeniusLinear</span></code></a></p></td>
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralLinear" title="deel.torchlip.SpectralLinear"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralLinear</span></code></a> and <a class="reference internal" href="deel.torchlip.html#deel.torchlip.FrobeniusLinear" title="deel.torchlip.FrobeniusLinear"><code class="xref py py-class docutils literal notranslate"><span class="pre">FrobeniusLinear</span></code></a> are similar when there is a single output.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Conv2d</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv2d.html#torch.nn.Conv2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Conv2d</span></code></a></p></td>
 <td><p>no</p></td>
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConv2d" title="deel.torchlip.SpectralConv2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConv2d</span></code></a> <span class="raw-html-m2r"><br></span><a class="reference internal" href="deel.torchlip.html#deel.torchlip.FrobeniusConv2d" title="deel.torchlip.FrobeniusConv2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">FrobeniusConv2d</span></code></a></p></td>
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConv2d" title="deel.torchlip.SpectralConv2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConv2d</span></code></a> also implements Björck normalization.</p></td>
@@ -255,9 +249,9 @@ For instance, the <code class="xref py py-class docutils literal notranslate"><s
 <td><p>n/a</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html#torch.nn.AvgPool2d" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AvgPool2d</span></code></a><span class="raw-html-m2r"><br></span><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AdaptiveAvgPool2d</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html#torch.nn.AvgPool2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AvgPool2d</span></code></a><span class="raw-html-m2r"><br></span><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AdaptiveAvgPool2d</span></code></a></p></td>
 <td><p>no</p></td>
-<td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledAvgPool2d" title="deel.torchlip.ScaledAvgPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledAvgPool2d</span></code></a><span class="raw-html-m2r"><br></span><a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledAdaptiveAvgPool2d" title="deel.torchlip.ScaledAdaptiveAvgPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledAdaptiveAvgPool2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledL2NormPool2d" title="deel.torchlip.ScaledL2NormPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledL2NormPool2d</span></code></a></p></td>
+<td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledAvgPool2d" title="deel.torchlip.ScaledAvgPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledAvgPool2d</span></code></a><span class="raw-html-m2r"><br></span><a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledAdaptiveAvgPool2d" title="deel.torchlip.ScaledAdaptiveAvgPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledAdaptiveAvgPool2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledL2NormPool2d" title="deel.torchlip.ScaledL2NormPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledL2NormPool2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledAdaptativeL2NormPool2d" title="deel.torchlip.ScaledAdaptativeL2NormPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledAdaptativeL2NormPool2d</span></code></a></p></td>
 <td><p>The Lipschitz constant is bounded by <code class="docutils literal notranslate"><span class="pre">sqrt(pool_h</span> <span class="pre">*</span> <span class="pre">pool_w)</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Flatten</span></code></p></td>
@@ -265,24 +259,39 @@ For instance, the <code class="xref py py-class docutils literal notranslate"><s
 <td><p>n/a</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html#torch.nn.Dropout" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Dropout</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html#torch.nn.ConvTranspose2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.ConvTranspose2d</span></code></a></p></td>
+<td><p>no</p></td>
+<td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConvTranspose2d" title="deel.torchlip.SpectralConvTranspose2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConvTranspose2d</span></code></a></p></td>
+<td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConvTranspose2d" title="deel.torchlip.SpectralConvTranspose2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConvTranspose2d</span></code></a> also implements Björck normalization.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm1d.html#torch.nn.BatchNorm1d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm1d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm3d.html#torch.nn.BatchNorm3d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm3d</span></code></a></p></td>
+<td><p>no</p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">BatchCentering</span></code></p></td>
+<td><p>This layer apply a bias based on statistics on batch, but no normalization factor (1-Lipschitz).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html#torch.nn.LayerNorm" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.LayerNorm</span></code></a></p></td>
+<td><p>no</p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">LayerCentering</span></code></p></td>
+<td><p>This layer apply a bias based on statistics on each sample, but no normalization factor (1-Lipschitz).</p></td>
+</tr>
+<tr class="row-even"><td><p>Residual connections</p></td>
+<td><p>no</p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">LipResidual</span></code></p></td>
+<td><p>Learn a factor for mixing residual and a 1-Lipschitz branch .</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html#torch.nn.Dropout" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Dropout</span></code></a></p></td>
 <td><p>no</p></td>
 <td><p>None</p></td>
 <td><p>The Lipschitz constant is bounded by the dropout factor.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm1d.html#torch.nn.BatchNorm1d" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm1d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm3d.html#torch.nn.BatchNorm3d" title="(in PyTorch v1.11.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm3d</span></code></a></p></td>
-<td><p>no</p></td>
-<td><p>None</p></td>
-<td><p>We suspect that layer normalization already limits internal covariate shift.</p></td>
 </tr>
 </tbody>
 </table>
 </section>
 <section id="how-to-use-it">
-<h2>How to use it?<a class="headerlink" href="#how-to-use-it" title="Permalink to this headline">¶</a></h2>
+<h2>How to use it?<a class="headerlink" href="#how-to-use-it" title="Permalink to this heading">¶</a></h2>
 <p>Here is a simple example showing how to build a 1-Lipschitz network:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">deel</span> <span class="kn">import</span> <span class="n">torchlip</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">deel</span><span class="w"> </span><span class="kn">import</span> <span class="n">torchlip</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
@@ -384,9 +393,8 @@ For instance, the <code class="xref py py-class docutils literal notranslate"><s
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
   <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-  <script src="_static/jquery.js"></script>
-  <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
+  <script src="_static/sphinx_highlight.js"></script>
   
 
   

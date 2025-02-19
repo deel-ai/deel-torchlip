@@ -9,7 +9,7 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
@@ -35,7 +35,7 @@
   <!-- <link rel="stylesheet" href="_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="genindex.html" />
@@ -201,7 +201,7 @@
               <article itemprop="articleBody" id="pytorch-article" class="pytorch-article">
                 
   <section id="example-2-hkr-classifier-on-toy-dataset">
-<h1>Example 2: HKR classifier on toy dataset<a class="headerlink" href="#example-2-hkr-classifier-on-toy-dataset" title="Permalink to this headline">¶</a></h1>
+<h1>Example 2: HKR classifier on toy dataset<a class="headerlink" href="#example-2-hkr-classifier-on-toy-dataset" title="Permalink to this heading">¶</a></h1>
 <p><a class="reference external" href="https://colab.research.google.com/github/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_toy_classification.ipynb"><img alt="Open in Colab" src="https://colab.research.google.com/assets/colab-badge.svg" /></a></p>
 <p>In this notebook, we show how to build a robust classifier based on the
 regularized version of the Kantorovitch-Rubinstein duality. We use the
@@ -211,9 +211,9 @@ regularized version of the Kantorovitch-Rubinstein duality. We use the
 </pre></div>
 </div>
 <section id="two-moons-dataset">
-<h2>1. Two moons dataset<a class="headerlink" href="#two-moons-dataset" title="Permalink to this headline">¶</a></h2>
+<h2>1. Two moons dataset<a class="headerlink" href="#two-moons-dataset" title="Permalink to this heading">¶</a></h2>
 <p>We first build our two moons dataset.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_moons</span><span class="p">,</span> <span class="n">make_circles</span>  <span class="c1"># the synthetic dataset</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.datasets</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_moons</span><span class="p">,</span> <span class="n">make_circles</span>  <span class="c1"># the synthetic dataset</span>
 
 <span class="n">circle_or_moons</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># 0 for circle, 1 for moons</span>
 <span class="n">n_samples</span> <span class="o">=</span> <span class="mi">5000</span>  <span class="c1"># number of sample in the dataset</span>
@@ -232,7 +232,7 @@ regularized version of the Kantorovitch-Rubinstein duality. We use the
 <span class="n">Y</span><span class="p">[</span><span class="n">Y</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
 </pre></div>
 </div>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">seaborn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">sns</span>
 
 <span class="n">X1</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">Y</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
 <span class="n">X2</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">Y</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -240,13 +240,13 @@ regularized version of the Kantorovitch-Rubinstein duality. We use the
 <span class="n">sns</span><span class="o">.</span><span class="n">scatterplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">X2</span><span class="p">[:</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="o">=</span><span class="n">X2</span><span class="p">[:</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">AxesSubplot</span><span class="p">:</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">Axes</span><span class="p">:</span> <span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/wasserstein_toy_classification_5_1.png" src="_images/wasserstein_toy_classification_5_1.png" />
 </section>
 <section id="relation-with-optimal-transport">
-<h2>2. Relation with optimal transport<a class="headerlink" href="#relation-with-optimal-transport" title="Permalink to this headline">¶</a></h2>
+<h2>2. Relation with optimal transport<a class="headerlink" href="#relation-with-optimal-transport" title="Permalink to this heading">¶</a></h2>
 <p>In this setup we can solve the optimal transport problem between the
 distribution of <code class="docutils literal notranslate"><span class="pre">X[Y==1]</span></code> and <code class="docutils literal notranslate"><span class="pre">X[Y==-1]</span></code>. This usually requires to
 match each element of the first distribution with an element of the
@@ -255,7 +255,7 @@ this cost is the <span class="math"><span class="katex"><span class="katex-mathm
 of the KR dual formulation. The overall cost is then the <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">W_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span>
 distance.</p>
 <section id="wasserstein-distance">
-<h3>2.1. Wasserstein distance<a class="headerlink" href="#wasserstein-distance" title="Permalink to this headline">¶</a></h3>
+<h3>2.1. Wasserstein distance<a class="headerlink" href="#wasserstein-distance" title="Permalink to this heading">¶</a></h3>
 <p>The wasserstein distance measures the distance between two probability
 distributions. The Wikipedia article gives a more intuitive definition
 of it:</p>
@@ -274,7 +274,7 @@ science as the earth mover’s distance.</p>
 In most cases, this equation is not tractable.</p>
 </section>
 <section id="kr-dual-formulation">
-<h3>2.2. KR dual formulation<a class="headerlink" href="#kr-dual-formulation" title="Permalink to this headline">¶</a></h3>
+<h3>2.2. KR dual formulation<a class="headerlink" href="#kr-dual-formulation" title="Permalink to this heading">¶</a></h3>
 <p>The Kantorovich-Rubinstein (KR) dual formulation of the Wasserstein
 distance is</p>
 <div class="math">
@@ -285,7 +285,7 @@ distance is</p>
 of 1-Lipschitz neural networks.</p>
 </section>
 <section id="hinge-kr-loss">
-<h3>2.3. Hinge-KR loss<a class="headerlink" href="#hinge-kr-loss" title="Permalink to this headline">¶</a></h3>
+<h3>2.3. Hinge-KR loss<a class="headerlink" href="#hinge-kr-loss" title="Permalink to this heading">¶</a></h3>
 <p>When dealing with <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>W</mi><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">W_1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8333em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.13889em;">W</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.1389em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span>, we usually try to optimize the
 maximization problem above without taking into account the actual
 classification task at hand. To improve robustness for our task, we want
@@ -298,7 +298,7 @@ been shown that this new problem is still a optimal transport problem
 and that this problem admit a meaningfull optimal solution.</p>
 </section>
 <section id="hkr-classifier">
-<h3>2.4. HKR classifier<a class="headerlink" href="#hkr-classifier" title="Permalink to this headline">¶</a></h3>
+<h3>2.4. HKR classifier<a class="headerlink" href="#hkr-classifier" title="Permalink to this heading">¶</a></h3>
 <p>Now we will show how to build a binary classifier based on the
 regularized version of the KR dual problem.</p>
 <p>In order to ensure the 1-Lipschitz constraint, <code class="docutils literal notranslate"><span class="pre">torchlip</span></code> uses
@@ -306,8 +306,8 @@ spectral normalization. These layers can also use Björk
 orthonormalization to ensure that the gradient of the layer is 1 almost
 everywhere. Experiment shows that the optimal solution lies in this
 sub-class of functions.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">from</span> <span class="nn">deel</span> <span class="kn">import</span> <span class="n">torchlip</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">deel</span><span class="w"> </span><span class="kn">import</span> <span class="n">torchlip</span>
 
 <span class="n">device</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&quot;cpu&quot;</span><span class="p">)</span>
 
@@ -326,13 +326,44 @@ sub-class of functions.</p>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Sequential</span><span class="p">(</span>
-  <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">ParametrizedSpectralLinear</span><span class="p">(</span>
+    <span class="n">in_features</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">(</span><span class="n">parametrizations</span><span class="p">):</span> <span class="n">ModuleDict</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">weight</span><span class="p">):</span> <span class="n">ParametrizationList</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">_SpectralNorm</span><span class="p">()</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">_BjorckNorm</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
   <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
-  <span class="p">(</span><span class="mi">2</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">2</span><span class="p">):</span> <span class="n">ParametrizedSpectralLinear</span><span class="p">(</span>
+    <span class="n">in_features</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">(</span><span class="n">parametrizations</span><span class="p">):</span> <span class="n">ModuleDict</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">weight</span><span class="p">):</span> <span class="n">ParametrizationList</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">_SpectralNorm</span><span class="p">()</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">_BjorckNorm</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
   <span class="p">(</span><span class="mi">3</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
-  <span class="p">(</span><span class="mi">4</span><span class="p">):</span> <span class="n">SpectralLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">4</span><span class="p">):</span> <span class="n">ParametrizedSpectralLinear</span><span class="p">(</span>
+    <span class="n">in_features</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">(</span><span class="n">parametrizations</span><span class="p">):</span> <span class="n">ModuleDict</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">weight</span><span class="p">):</span> <span class="n">ParametrizationList</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">_SpectralNorm</span><span class="p">()</span>
+        <span class="p">(</span><span class="mi">1</span><span class="p">):</span> <span class="n">_BjorckNorm</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
   <span class="p">(</span><span class="mi">5</span><span class="p">):</span> <span class="n">FullSort</span><span class="p">()</span>
-  <span class="p">(</span><span class="mi">6</span><span class="p">):</span> <span class="n">FrobeniusLinear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+  <span class="p">(</span><span class="mi">6</span><span class="p">):</span> <span class="n">ParametrizedFrobeniusLinear</span><span class="p">(</span>
+    <span class="n">in_features</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">(</span><span class="n">parametrizations</span><span class="p">):</span> <span class="n">ModuleDict</span><span class="p">(</span>
+      <span class="p">(</span><span class="n">weight</span><span class="p">):</span> <span class="n">ParametrizationList</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">0</span><span class="p">):</span> <span class="n">_FrobeniusNorm</span><span class="p">()</span>
+      <span class="p">)</span>
+    <span class="p">)</span>
+  <span class="p">)</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -343,17 +374,20 @@ with a single output, it becomes equivalent to normalize the Frobenius
 norm and the spectral norm (as we only have a single singular value).</p>
 </section>
 <section id="learn-classification-on-toy-dataset">
-<h3>2.5. Learn classification on toy dataset<a class="headerlink" href="#learn-classification-on-toy-dataset" title="Permalink to this headline">¶</a></h3>
+<h3>2.5. Learn classification on toy dataset<a class="headerlink" href="#learn-classification-on-toy-dataset" title="Permalink to this heading">¶</a></h3>
 <p>Now we are ready to learn the classification task on the two moons
 dataset.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">deel.torchlip.functional</span> <span class="kn">import</span> <span class="n">kr_loss</span><span class="p">,</span> <span class="n">hkr_loss</span><span class="p">,</span> <span class="n">hinge_margin_loss</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">deel.torchlip</span><span class="w"> </span><span class="kn">import</span> <span class="n">KRLoss</span><span class="p">,</span> <span class="n">HKRLoss</span><span class="p">,</span> <span class="n">HingeMarginLoss</span>
 
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">256</span>
 <span class="n">n_epochs</span> <span class="o">=</span> <span class="mi">10</span>
 
-<span class="n">alpha</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.98</span>
 <span class="n">min_margin</span> <span class="o">=</span> <span class="mf">0.29</span>  <span class="c1"># minimum margin to enforce between the values of F for each class</span>
 
+<span class="n">kr_loss</span> <span class="o">=</span> <span class="n">KRLoss</span><span class="p">()</span>
+<span class="n">hkr_loss</span> <span class="o">=</span> <span class="n">HKRLoss</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span><span class="p">)</span>
+<span class="n">hinge_margin_loss</span> <span class="o">=</span><span class="n">HingeMarginLoss</span><span class="p">(</span><span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span><span class="p">)</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">wass</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
 
 <span class="n">loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span>
@@ -370,55 +404,63 @@ dataset.</p>
         <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
         <span class="n">output</span> <span class="o">=</span> <span class="n">wass</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="n">min_margin</span><span class="p">)</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
         <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 
-        <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-        <span class="n">m_hm</span> <span class="o">+=</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span>
+        <span class="n">m_kr</span> <span class="o">+=</span> <span class="n">kr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">m_hm</span> <span class="o">+=</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
         <span class="n">m_acc</span> <span class="o">+=</span> <span class="p">(</span>
             <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Epoch </span><span class="si">{</span><span class="n">epoch</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_epochs</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;loss: </span><span class="si">{</span><span class="n">loss</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2"> - &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;KR: </span><span class="si">{</span><span class="n">m_kr</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2"> - &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;hinge: </span><span class="si">{</span><span class="n">m_hm</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2"> - &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;accuracy: </span><span class="si">{</span><span class="n">m_acc</span> <span class="o">/</span> <span class="p">(</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;KR: </span><span class="si">{</span><span class="n">m_kr</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2"> - &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;hinge: </span><span class="si">{</span><span class="n">m_hm</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2"> - &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;accuracy: </span><span class="si">{</span><span class="n">m_acc</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">step</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="si">:</span><span class="s2">.04f</span><span class="si">}</span><span class="s2">&quot;</span>
     <span class="p">)</span>
 </pre></div>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">1</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="mf">1.7240</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.0837</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.2519</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.5387</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">0.0504</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.0614</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.1179</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.6261</span>
 <span class="n">Epoch</span> <span class="mi">2</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.3211</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.5286</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0969</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.8665</span>
-<span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.7250</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.8928</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0484</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9253</span>
+<span class="n">loss</span><span class="p">:</span> <span class="mf">0.0248</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.3622</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0339</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.8957</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">3</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0085</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.4284</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0083</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9838</span>
 <span class="n">Epoch</span> <span class="mi">4</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.6545</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9257</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0328</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9552</span>
-<span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5023</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9287</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0262</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9696</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0110</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.5243</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0010</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">1.0000</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">5</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0136</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.6442</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0010</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9998</span>
 <span class="n">Epoch</span> <span class="mi">6</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5727</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9217</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0223</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9785</span>
-<span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.6651</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9306</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0202</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9862</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0124</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.7111</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0011</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">1.0000</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">7</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0147</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.7326</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0010</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9992</span>
 <span class="n">Epoch</span> <span class="mi">8</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.5247</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9454</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0208</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9810</span>
-<span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.6442</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9496</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0205</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9811</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0146</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.7773</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0013</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9998</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Epoch</span> <span class="mi">9</span><span class="o">/</span><span class="mi">10</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0136</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.7876</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0011</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">1.0000</span>
 <span class="n">Epoch</span> <span class="mi">10</span><span class="o">/</span><span class="mi">10</span>
-<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.7998</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.9713</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0211</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9791</span>
+<span class="n">loss</span><span class="p">:</span> <span class="o">-</span><span class="mf">0.0158</span> <span class="o">-</span> <span class="n">KR</span><span class="p">:</span> <span class="mf">0.7917</span> <span class="o">-</span> <span class="n">hinge</span><span class="p">:</span> <span class="mf">0.0010</span> <span class="o">-</span> <span class="n">accuracy</span><span class="p">:</span> <span class="mf">0.9994</span>
 </pre></div>
 </div>
 </section>
 <section id="plot-output-countour-line">
-<h3>2.6. Plot output countour line<a class="headerlink" href="#plot-output-countour-line" title="Permalink to this headline">¶</a></h3>
+<h3>2.6. Plot output countour line<a class="headerlink" href="#plot-output-countour-line" title="Permalink to this heading">¶</a></h3>
 <p>As we can see, the classifier gets a pretty good accuracy. We now look
 at the actual function. Since we are in a two-dimensional space, we can
 draw a countour plot to visualize <span class="math"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>F</mi></mrow><annotation encoding="application/x-tex">F</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.13889em;">F</span></span></span></span></span>.</p>
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">-</span> <span class="mf">0.2</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">+</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">120</span><span class="p">)</span>
@@ -431,6 +473,7 @@ draw a countour plot to visualize <span class="math"><span class="katex"><span c
 
 <span class="c1"># We are also going to check the exported version:</span>
 <span class="n">vwass</span> <span class="o">=</span> <span class="n">wass</span><span class="o">.</span><span class="n">vanilla_export</span><span class="p">()</span>
+
 <span class="n">Y_predv</span> <span class="o">=</span> <span class="n">vwass</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X_pred</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">))</span>
 <span class="n">Y_predv</span> <span class="o">=</span> <span class="n">Y_predv</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 
@@ -448,7 +491,7 @@ draw a countour plot to visualize <span class="math"><span class="katex"><span c
 <span class="n">ax2</span><span class="o">.</span><span class="n">clabel</span><span class="p">(</span><span class="n">cset</span><span class="p">,</span> <span class="n">inline</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="mi">6</span> <span class="n">text</span><span class="o">.</span><span class="n">Text</span> <span class="n">objects</span><span class="o">&gt;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&lt;</span><span class="n">a</span> <span class="nb">list</span> <span class="n">of</span> <span class="mi">5</span> <span class="n">text</span><span class="o">.</span><span class="n">Text</span> <span class="n">objects</span><span class="o">&gt;</span>
 </pre></div>
 </div>
 <img alt="_images/wasserstein_toy_classification_12_1.png" src="_images/wasserstein_toy_classification_12_1.png" />
@@ -533,9 +576,8 @@ without the overhead from the 1-Lipschitz constraints after training.</p>
   <script type="text/javascript" id="documentation_options" data-url_root="./"
     src="_static/documentation_options.js"></script>
   <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-  <script src="_static/jquery.js"></script>
-  <script src="_static/underscore.js"></script>
   <script src="_static/doctools.js"></script>
+  <script src="_static/sphinx_highlight.js"></script>
   
 
   

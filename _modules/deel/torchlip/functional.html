@@ -34,7 +34,7 @@
   <!-- <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="../../../genindex.html" />
@@ -222,21 +222,21 @@
 <span class="c1"># rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,</span>
 <span class="c1"># CRIAQ and ANITI - https://www.deel.ai/</span>
 <span class="c1"># =====================================================================================</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">torch</span>
-<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
 
 <span class="c1"># Up / Down sampling</span>
 
 
-<div class="viewcode-block" id="invertible_downsample"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.invertible_downsample">[docs]</a><span class="k">def</span> <span class="nf">invertible_downsample</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">invertible_downsample</span><span class="p">(</span>
     <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Downsamples the input in an invertible way.</span>
 
 <span class="sd">    The number of elements in the output tensor is the same as the</span>
@@ -278,8 +278,8 @@
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ndims</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input for kernel size </span><span class="si">{</span><span class="n">ks</span><span class="si">}</span><span class="s2">, but &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">ndims</span> <span class="o">+</span> <span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input of size </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> instead&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input for kernel size </span><span class="si">{</span><span class="n">ks</span><span class="si">}</span><span class="s2">, but &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">ndims</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input of size </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> instead&quot;</span>
         <span class="p">)</span>
 
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">):</span>
@@ -297,13 +297,13 @@
     <span class="p">)</span>
     <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="o">*</span><span class="n">perm</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="n">ndims</span><span class="p">:])</span></div>
+    <span class="k">return</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="n">ndims</span><span class="p">:])</span>
 
 
-<div class="viewcode-block" id="invertible_upsample"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.invertible_upsample">[docs]</a><span class="k">def</span> <span class="nf">invertible_upsample</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">invertible_upsample</span><span class="p">(</span>
     <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Upsamples the input in an invertible way. The number of elements in the</span>
 <span class="sd">    output tensor is the same as the number of elements in the input tensor.</span>
 
@@ -351,8 +351,8 @@
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ndims</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input for kernel size </span><span class="si">{</span><span class="n">ks</span><span class="si">}</span><span class="s2">, but &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">ndims</span> <span class="o">+</span> <span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input of size </span><span class="si">{</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> instead&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input for kernel size </span><span class="si">{</span><span class="n">ks</span><span class="si">}</span><span class="s2">, but &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">ndims</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input of size </span><span class="si">{</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> instead&quot;</span>
         <span class="p">)</span>
 
     <span class="n">ncout</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span>
@@ -367,14 +367,14 @@
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">):</span>
         <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">:])</span>
 
-    <span class="k">return</span> <span class="nb">input</span></div>
+    <span class="k">return</span> <span class="nb">input</span>
 
 
 <span class="c1"># Activations</span>
 
 
-<div class="viewcode-block" id="max_min"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.max_min">[docs]</a><span class="k">def</span> <span class="nf">max_min</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="max_min"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.max_min">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">max_min</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Applies max-min activation on the given tensor.</span>
 
 <span class="sd">    If ``input`` is a tensor of shape :math:`(N, C)` and ``dim`` is</span>
@@ -410,34 +410,42 @@
     <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="o">-</span><span class="nb">input</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="group_sort"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.group_sort">[docs]</a><span class="k">def</span> <span class="nf">group_sort</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">group_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="group_sort"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.group_sort">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">group_sort</span><span class="p">(</span>
+    <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">group_size</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Applies GroupSort activation on the given tensor.</span>
 
 <span class="sd">    See Also:</span>
 <span class="sd">        :py:func:`group_sort_2`</span>
 <span class="sd">        :py:func:`full_sort`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">group_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">group_size</span> <span class="o">&gt;</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
-        <span class="n">group_size</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-    <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">%</span> <span class="n">group_size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">group_size</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">group_size</span> <span class="o">&gt;</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]:</span>
+        <span class="n">group_size</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">%</span> <span class="n">group_size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The input size must be a multiple of the group size.&quot;</span><span class="p">)</span>
 
-    <span class="n">fv</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">group_size</span><span class="p">])</span>
+    <span class="n">new_shape</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="n">dim</span><span class="p">]</span>
+        <span class="o">+</span> <span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span> <span class="o">//</span> <span class="n">group_size</span><span class="p">,</span> <span class="n">group_size</span><span class="p">)</span>
+        <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">dim</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
+    <span class="p">)</span>
     <span class="k">if</span> <span class="n">group_size</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="n">sfv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">chunk</span><span class="p">(</span><span class="n">fv</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="n">b</span> <span class="o">=</span> <span class="n">sfv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">c</span> <span class="o">=</span> <span class="n">sfv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="n">newv</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">newv</span> <span class="o">=</span> <span class="n">newv</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">newv</span>
+        <span class="n">resh_input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">resh_input</span><span class="p">,</span> <span class="n">dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">resh_input</span><span class="p">,</span> <span class="n">dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">fv</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">fv</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">fv</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="group_sort_2"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.group_sort_2">[docs]</a><span class="k">def</span> <span class="nf">group_sort_2</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="group_sort_2"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.group_sort_2">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">group_sort_2</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Applies GroupSort-2 activation on the given tensor. This function is equivalent</span>
 <span class="sd">    to ``group_sort(input, 2)``.</span>
 
@@ -447,8 +455,8 @@
     <span class="k">return</span> <span class="n">group_sort</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="full_sort"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.full_sort">[docs]</a><span class="k">def</span> <span class="nf">full_sort</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="full_sort"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.full_sort">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">full_sort</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Applies FullSort activation on the given tensor. This function is equivalent</span>
 <span class="sd">    to ``group_sort(input, None)``.</span>
 
@@ -458,10 +466,10 @@
     <span class="k">return</span> <span class="n">group_sort</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="lipschitz_prelu"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.lipschitz_prelu">[docs]</a><span class="k">def</span> <span class="nf">lipschitz_prelu</span><span class="p">(</span>
+<div class="viewcode-block" id="lipschitz_prelu"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.lipschitz_prelu">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">lipschitz_prelu</span><span class="p">(</span>
     <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">k_coef_lip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Applies k-Lipschitz version of PReLU by clamping the weights</span>
 
 <span class="sd">    .. math::</span>
@@ -476,14 +484,17 @@
 
 
 <span class="c1"># Losses</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">apply_reduction</span><span class="p">(</span><span class="n">val</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">reduction</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+        <span class="n">reduction</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span>
+    <span class="n">red</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="p">,</span> <span class="n">reduction</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">red</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">val</span>
+    <span class="k">return</span> <span class="n">red</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="kr_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.kr_loss">[docs]</a><span class="k">def</span> <span class="nf">kr_loss</span><span class="p">(</span>
-    <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="kr_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.kr_loss">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">kr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss to estimate the Wasserstein-1 distance using Kantorovich-Rubinstein duality,</span>
 <span class="sd">    as per</span>
 
@@ -493,35 +504,105 @@
 <span class="sd">            - \underset{\mathbf{x}\sim{}\nu}{\mathbb{E}}[f(\mathbf{x})]</span>
 
 <span class="sd">    where :math:`\mu` and :math:`\nu` are the distributions corresponding to the</span>
-<span class="sd">    two possible labels as specific by ``true_values``.</span>
+<span class="sd">    two possible labels as specific by their sign.</span>
+
+<span class="sd">    `target` accepts label values in (0, 1), (-1, 1), or pre-processed with the</span>
+<span class="sd">    `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">    Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to</span>
+<span class="sd">    pre-process the labels `target` with the</span>
+<span class="sd">    `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        input: Tensor of arbitrary shape.</span>
 <span class="sd">        target: Tensor of the same shape as input.</span>
-<span class="sd">        true_values: Tuple containing the two label for the predicted class.</span>
+<span class="sd">        multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The Wasserstein-1 loss between ``input`` and ``target``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">multi_gpu</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">kr_loss_multi_gpu</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">kr_loss_standard</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">kr_loss_standard</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loss to estimate the Wasserstein-1 distance using Kantorovich-Rubinstein duality,</span>
+<span class="sd">    as per</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \mathcal{W}(\mu, \nu) = \sup\limits_{f\in{}Lip_1(\Omega)}</span>
+<span class="sd">            \underset{\mathbf{x}\sim{}\mu}{\mathbb{E}}[f(\mathbf{x})]</span>
+<span class="sd">            - \underset{\mathbf{x}\sim{}\nu}{\mathbb{E}}[f(\mathbf{x})]</span>
+
+<span class="sd">    where :math:`\mu` and :math:`\nu` are the distributions corresponding to the</span>
+<span class="sd">    two possible labels as specific by their sign.</span>
+
+<span class="sd">    `target` accepts label values in (0, 1), (-1, 1)</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input: Tensor of arbitrary shape.</span>
+<span class="sd">        target: Tensor of the same shape as input.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The Wasserstein-1 loss between ``input`` and ``target``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="n">v0</span><span class="p">,</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">true_values</span>
     <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="n">target</span> <span class="o">==</span> <span class="n">v0</span><span class="p">])</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="n">target</span> <span class="o">==</span> <span class="n">v1</span><span class="p">])</span></div>
+    <span class="n">pos_target</span> <span class="o">=</span> <span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">mean_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pos_target</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># pos factor = batch_size/number of positive samples</span>
+    <span class="n">pos_factor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">mean_pos</span><span class="p">)</span>
+    <span class="c1"># neg factor = batch_size/number of negative samples</span>
+    <span class="n">neg_factor</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">mean_pos</span><span class="p">))</span>
+
+    <span class="n">weighted_input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pos_factor</span><span class="p">,</span> <span class="n">neg_factor</span><span class="p">)</span> <span class="o">*</span> <span class="nb">input</span>
+    <span class="c1"># Since element-wise KR terms are averaged by loss reduction later on, it is needed</span>
+    <span class="c1"># to multiply by batch_size here.</span>
+    <span class="c1"># In binary case (`y_true` of shape (batch_size, 1)), `tf.reduce_mean(axis=-1)`</span>
+    <span class="c1"># behaves like `tf.squeeze()` to return element-wise loss of shape (batch_size, ).</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">weighted_input</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="neg_kr_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.neg_kr_loss">[docs]</a><span class="k">def</span> <span class="nf">neg_kr_loss</span><span class="p">(</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">kr_loss_multi_gpu</span><span class="p">(</span><span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Returns the element-wise KR loss when computing with a multi-GPU/TPU strategy.</span>
+
+<span class="sd">    `target` and `input` can be either of shape (batch_size, 1) or</span>
+<span class="sd">    (batch_size, # classes).</span>
+
+<span class="sd">    When using this loss function, the labels `target` must be pre-processed with the</span>
+<span class="sd">    `process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input: Tensor of arbitrary shape.</span>
+<span class="sd">        target: pre-processed Tensor of the same shape as input.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The Wasserstein-1 loss between ``input`` and ``target``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="c1"># Since the information of batch size was included in `target` by</span>
+    <span class="c1"># `process_labels_for_multi_gpu()`, there is no need here to multiply by batch size.</span>
+    <span class="c1"># In binary case (`target` of shape (batch_size, 1)), `torch.mean(dim=-1)`</span>
+    <span class="c1"># behaves like `torch.squeeze()` to return element-wise loss of shape (batch_size,)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="nb">input</span> <span class="o">*</span> <span class="n">target</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="neg_kr_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.neg_kr_loss">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">neg_kr_loss</span><span class="p">(</span>
     <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss to estimate the negative wasserstein-1 distance using Kantorovich-Rubinstein</span>
 <span class="sd">    duality.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        input: Tensor of arbitrary shape.</span>
 <span class="sd">        target: Tensor of the same shape as input.</span>
-<span class="sd">        true_values: Tuple containing the two label for the predicted classes.</span>
+<span class="sd">        multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The negative Wasserstein-1 loss between ``input`` and ``target``.</span>
@@ -529,15 +610,15 @@
 <span class="sd">    See Also:</span>
 <span class="sd">        :py:func:`kr_loss`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="o">-</span><span class="n">kr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">true_values</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="o">-</span><span class="n">kr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="n">multi_gpu</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="hinge_margin_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.hinge_margin_loss">[docs]</a><span class="k">def</span> <span class="nf">hinge_margin_loss</span><span class="p">(</span>
+<div class="viewcode-block" id="hinge_margin_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.hinge_margin_loss">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">hinge_margin_loss</span><span class="p">(</span>
     <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute the hinge margin loss as per</span>
 
 <span class="sd">    .. math::</span>
@@ -554,31 +635,28 @@
 <span class="sd">        The hinge margin loss.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
-        <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span>
-            <span class="n">torch</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span>
-            <span class="n">min_margin</span> <span class="o">-</span> <span class="n">torch</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">target</span><span class="p">)</span> <span class="o">*</span> <span class="nb">input</span><span class="p">,</span>
-        <span class="p">)</span>
-    <span class="p">)</span></div>
+    <span class="n">sign_target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">hinge</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">min_margin</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">sign_target</span> <span class="o">*</span> <span class="nb">input</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">hinge</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="hkr_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.hkr_loss">[docs]</a><span class="k">def</span> <span class="nf">hkr_loss</span><span class="p">(</span>
+<div class="viewcode-block" id="hkr_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.hkr_loss">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">hkr_loss</span><span class="p">(</span>
     <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss to estimate the wasserstein-1 distance with a hinge regularization using</span>
 <span class="sd">    Kantorovich-Rubinstein duality.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        input: Tensor of arbitrary shape.</span>
 <span class="sd">        target: Tensor of the same shape as input.</span>
-<span class="sd">        alpha: Regularization factor between the hinge and the KR loss.</span>
+<span class="sd">        alpha: Regularization factor ([0,1]) between the hinge and the KR loss.</span>
 <span class="sd">        min_margin: Minimal margin for the hinge loss.</span>
-<span class="sd">        true_values: tuple containing the two label for each predicted class.</span>
+<span class="sd">        multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The regularized Wasserstein-1 loss.</span>
@@ -587,48 +665,28 @@
 <span class="sd">        :py:func:`hinge_margin_loss`</span>
 <span class="sd">        :py:func:`kr_loss`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>  <span class="c1"># alpha negative hinge only</span>
+    <span class="n">kr_loss_fct</span> <span class="o">=</span> <span class="n">kr_loss_multi_gpu</span> <span class="k">if</span> <span class="n">multi_gpu</span> <span class="k">else</span> <span class="n">kr_loss</span>
+    <span class="k">assert</span> <span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mf">1.0</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>  <span class="c1"># alpha for  hinge only</span>
         <span class="k">return</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span>
-
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">kr_loss_fct</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
     <span class="c1"># true value: positive value should be the first to be coherent with the</span>
     <span class="c1"># hinge loss (positive y_pred)</span>
-    <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span> <span class="o">-</span> <span class="n">kr_loss</span><span class="p">(</span>
-        <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="p">(</span><span class="n">true_values</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">true_values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">hinge_margin_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span>
+        <span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span>
+    <span class="p">)</span> <span class="o">*</span> <span class="n">kr_loss_fct</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="kr_multiclass_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.kr_multiclass_loss">[docs]</a><span class="k">def</span> <span class="nf">kr_multiclass_loss</span><span class="p">(</span>
-    <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-    <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loss to estimate average of W1 distance using Kantorovich-Rubinstein</span>
-<span class="sd">    duality over outputs. In this multiclass setup thr KR term is computed</span>
-<span class="sd">    for each class and then averaged.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        input: Tensor of arbitrary shape.</span>
-<span class="sd">        target: Tensor of the same shape as input.</span>
-<span class="sd">                target has to be one hot encoded (labels being 1s and 0s ).</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        The Wasserstein multiclass loss between ``input`` and ``target``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">esp_true_true</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="nb">input</span> <span class="o">*</span> <span class="n">target</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-    <span class="n">esp_false_true</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="nb">input</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">target</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span> <span class="o">/</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">target</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">esp_true_true</span> <span class="o">-</span> <span class="n">esp_false_true</span><span class="p">)</span></div>
-
-
-<div class="viewcode-block" id="hinge_multiclass_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.hinge_multiclass_loss">[docs]</a><span class="k">def</span> <span class="nf">hinge_multiclass_loss</span><span class="p">(</span>
+<div class="viewcode-block" id="hinge_multiclass_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.hinge_multiclass_loss">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">hinge_multiclass_loss</span><span class="p">(</span>
     <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss to estimate the Hinge loss in a multiclass setup. It compute the</span>
 <span class="sd">    elementwise hinge term. Note that this formulation differs from the</span>
-<span class="sd">    one commonly found in tensorflow/pytorch (with marximise the difference</span>
+<span class="sd">    one commonly found in tensorflow/pytorch (with maximise the difference</span>
 <span class="sd">    between the two largest logits). This formulation is consistent with the</span>
 <span class="sd">    binary classification loss used in a multiclass fashion.</span>
 
@@ -643,28 +701,31 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        The hinge margin multiclass loss.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
-        <span class="p">((</span><span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">target</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
-        <span class="o">*</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">min_margin</span> <span class="o">-</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">target</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="nb">input</span><span class="p">)</span>
-    <span class="p">)</span></div>
+    <span class="n">sign_target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">hinge</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">min_margin</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">sign_target</span> <span class="o">*</span> <span class="nb">input</span><span class="p">)</span>
+    <span class="c1"># reweight positive elements</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1.0</span>
+    <span class="n">hinge</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">hinge</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="n">hinge</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">hinge</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="hkr_multiclass_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.hkr_multiclass_loss">[docs]</a><span class="k">def</span> <span class="nf">hkr_multiclass_loss</span><span class="p">(</span>
+<div class="viewcode-block" id="hkr_multiclass_loss"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.hkr_multiclass_loss">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">hkr_multiclass_loss</span><span class="p">(</span>
     <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span>
     <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
     <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Loss to estimate the wasserstein-1 distance with a hinge regularization using</span>
 <span class="sd">    Kantorovich-Rubinstein duality.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        input: Tensor of arbitrary shape.</span>
 <span class="sd">        target: Tensor of the same shape as input.</span>
-<span class="sd">        alpha: Regularization factor between the hinge and the KR loss.</span>
+<span class="sd">        alpha: Regularization factor ([0,1]) between the hinge and the KR loss.</span>
 <span class="sd">        min_margin: Minimal margin for the hinge loss.</span>
-<span class="sd">        true_values: tuple containing the two label for each predicted class.</span>
+<span class="sd">        multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The regularized Wasserstein-1 loss.</span>
@@ -674,14 +735,84 @@
 <span class="sd">        :py:func:`kr_loss`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">:</span>  <span class="c1"># alpha negative hinge only</span>
+    <span class="k">assert</span> <span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mf">1.0</span>
+    <span class="n">kr_loss_fct</span> <span class="o">=</span> <span class="n">kr_loss_multi_gpu</span> <span class="k">if</span> <span class="n">multi_gpu</span> <span class="k">else</span> <span class="n">kr_loss</span>
+    <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>  <span class="c1"># alpha  hinge only</span>
         <span class="k">return</span> <span class="n">hinge_multiclass_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># alpha = 0 =&gt; KR only</span>
-        <span class="k">return</span> <span class="o">-</span><span class="n">kr_multiclass_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">kr_loss_fct</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="o">-</span><span class="n">kr_multiclass_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">hinge_multiclass_loss</span><span class="p">(</span>
-            <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span>
-        <span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">hinge_multiclass_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">-</span> <span class="n">alpha</span>
+        <span class="p">)</span> <span class="o">*</span> <span class="n">kr_loss_fct</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span></div>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">process_labels_for_multi_gpu</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Process labels to be fed to any loss based on KR estimation with a multi-GPU/TPU</span>
+<span class="sd">    strategy.</span>
+
+<span class="sd">    When using a multi-GPU/TPU strategy, the flag `multi_gpu` in KR-based losses must be</span>
+<span class="sd">    set to True and the labels have to be pre-processed with this function.</span>
+
+<span class="sd">    For binary classification, the labels should be of shape [batch_size, 1].</span>
+<span class="sd">    For multiclass problems, the labels must be one-hot encoded (1 or 0) with shape</span>
+<span class="sd">    [batch_size, number of classes].</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        labels (torch.Tensor): tensor containing the labels</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        torch.Tensor: labels processed for KR-based losses with multi-GPU/TPU strategy.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pos_labels</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">labels</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="n">mean_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pos_labels</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># pos factor = batch_size/number of positive samples</span>
+    <span class="n">pos_factor</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">mean_pos</span><span class="p">)</span>
+    <span class="c1"># neg factor = batch_size/number of negative samples</span>
+    <span class="n">neg_factor</span> <span class="o">=</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">mean_pos</span><span class="p">))</span>
+
+    <span class="c1"># Since element-wise KR terms are averaged by loss reduction later on, it is needed</span>
+    <span class="c1"># to multiply by batch_size here.</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pos_factor</span><span class="p">,</span> <span class="n">neg_factor</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">SymmetricPad</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Pads a 2D tensor symmetrically.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pad (tuple): A tuple (pad_left, pad_right, pad_top, pad_bottom) specifying</span>
+<span class="sd">                 the number of pixels to pad on each side. (or single int if</span>
+<span class="sd">                 common padding).</span>
+
+<span class="sd">        onedim: False for conv2d, True for conv1d.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pad</span><span class="p">,</span> <span class="n">onedim</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">onedim</span> <span class="o">=</span> <span class="n">onedim</span>
+        <span class="n">num_dim</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">onedim</span> <span class="k">else</span> <span class="mi">4</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pad</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="o">=</span> <span class="p">(</span><span class="n">pad</span><span class="p">,)</span> <span class="o">*</span> <span class="n">num_dim</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">modules</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">_reverse_repeat_tuple</span><span class="p">(</span><span class="n">pad</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_dim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Pad must be a tuple of </span><span class="si">{</span><span class="n">num_dim</span><span class="si">}</span><span class="s2"> integers&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+        <span class="c1"># Horizontal padding</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">left</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">right</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">onedim</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">x</span>
+        <span class="c1"># Vertical padding</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="p">:]</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">top</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bottom</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span>
 </pre></div>
 
               </article>
@@ -734,9 +865,8 @@
   <script type="text/javascript" id="documentation_options" data-url_root="../../../"
     src="../../../_static/documentation_options.js"></script>
   <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
-  <script src="../../../_static/jquery.js"></script>
-  <script src="../../../_static/underscore.js"></script>
   <script src="../../../_static/doctools.js"></script>
+  <script src="../../../_static/sphinx_highlight.js"></script>
   
 
   

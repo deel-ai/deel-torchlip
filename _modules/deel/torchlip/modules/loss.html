@@ -34,7 +34,7 @@
   <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -222,143 +222,516 @@
 <span class="c1"># rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,</span>
 <span class="c1"># CRIAQ and ANITI - https://www.deel.ai/</span>
 <span class="c1"># =====================================================================================</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="kn">import</span> <span class="n">CrossEntropyLoss</span><span class="p">,</span> <span class="n">BCEWithLogitsLoss</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">torch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tensor</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
 
-<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+<div class="viewcode-block" id="KRLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.KRLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">KRLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">true_values</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein</span>
+<span class="sd">        duality.</span>
+<span class="sd">        The Kantorovich-Rubinstein duality is formulated as following:</span>
 
+<span class="sd">        $$</span>
+<span class="sd">        W_1(\mu, \nu) =</span>
+<span class="sd">        \sup_{f \in Lip_1(\Omega)} \underset{\textbf{x} \sim \mu}{\mathbb{E}}</span>
+<span class="sd">        \left[f(\textbf{x} )\right] -</span>
+<span class="sd">        \underset{\textbf{x}  \sim \nu}{\mathbb{E}} \left[f(\textbf{x} )\right]</span>
+<span class="sd">        $$</span>
 
-<div class="viewcode-block" id="KRLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.KRLoss">[docs]</a><span class="k">class</span> <span class="nc">KRLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein</span>
-<span class="sd">    duality.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">        Where mu and nu stands for the two distributions, the distribution where the</span>
+<span class="sd">        label is 1 and the rest.</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Note that `input` and `target` must be of rank 2: (batch_size, 1) or</span>
+<span class="sd">        (batch_size, C) for multilabel classification (with C categories).</span>
+<span class="sd">        `target` accepts label values in (0, 1), (-1, 1), or pre-processed with the</span>
+<span class="sd">        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">        Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to</span>
+<span class="sd">        pre-process the labels `target` with the</span>
+<span class="sd">        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            true_values: tuple containing the two label for each predicted class.</span>
+<span class="sd">            multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
+<span class="sd">            true_values: depreciated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">true_values</span> <span class="o">=</span> <span class="n">true_values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span> <span class="o">=</span> <span class="n">multi_gpu</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">true_values</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;depreciated true_values should be None (use target&gt;0)&quot;</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">kr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_values</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">kr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="NegKRLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.NegKRLoss">[docs]</a><span class="k">class</span> <span class="nc">NegKRLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loss that estimates the negative of the Wasserstein-1 distance using</span>
-<span class="sd">    the Kantorovich-Rubinstein duality.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="NegKRLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.NegKRLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">NegKRLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="n">true_values</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loss that estimates the negative of the Wasserstein-1 distance using</span>
+<span class="sd">        the Kantorovich-Rubinstein duality. See `KRLoss` for more details.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            true_values: tuple containing the two label for each predicted class.</span>
+<span class="sd">            multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
+<span class="sd">            true_values: depreciated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">true_values</span> <span class="o">=</span> <span class="n">true_values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span> <span class="o">=</span> <span class="n">multi_gpu</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">true_values</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;depreciated true_values should be None (use target&gt;0)&quot;</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">neg_kr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_values</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">neg_kr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="HingeMarginLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.HingeMarginLoss">[docs]</a><span class="k">class</span> <span class="nc">HingeMarginLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Hinge margin loss.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="HingeMarginLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.HingeMarginLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">HingeMarginLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Hinge margin loss.</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Args:</span>
 <span class="sd">            min_margin: The minimal margin to enforce.</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span> <span class="o">=</span> <span class="n">min_margin</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hinge_margin_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">)</span></div>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">hinge_margin_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="HKRLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.HKRLoss">[docs]</a><span class="k">class</span> <span class="nc">HKRLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein</span>
-<span class="sd">    duality with a hinge regularization.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="HKRLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.HKRLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">HKRLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
-        <span class="n">true_values</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="n">true_values</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein</span>
+<span class="sd">        duality with a hinge regularization.</span>
+
+<span class="sd">        [1] M. Serrurier, F. Mamalet, et al. «Achieving robustness in classification</span>
+<span class="sd">        using optimal transport with hinge regularization», 2021.</span>
+
+<span class="sd">        Note that `input` and `target` must be of rank 2: (batch_size, 1) or</span>
+<span class="sd">        (batch_size, C) for multilabel classification (with C categories).</span>
+<span class="sd">        `target` accepts label values in (0, 1), (-1, 1), or pre-processed with the</span>
+<span class="sd">        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">        Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to</span>
+<span class="sd">        pre-process the labels `target` with the</span>
+<span class="sd">        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">        the regularization factor `alpha` is a value between 0 and 1. It controls the</span>
+<span class="sd">        trade-off between the hinge and the KR loss. When `alpha` is 0, the loss is</span>
+<span class="sd">        equivalent to the KR loss, and when `alpha` is 1, the loss is equivalent to the</span>
+<span class="sd">        hinge loss.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            alpha: Regularization factor between the hinge and the KR loss.</span>
+<span class="sd">            alpha: Regularization factor ([0,1]) between the hinge and the KR loss.</span>
 <span class="sd">            min_margin: Minimal margin for the hinge loss.</span>
-<span class="sd">            true_values: tuple containing the two label for each predicted class.</span>
+<span class="sd">            multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
+<span class="sd">            true_values: depreciated.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span> <span class="o">=</span> <span class="n">multi_gpu</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Depreciated alpha should be between 0 and 1 replaced by </span><span class="se">\</span>
+<span class="s2">                    </span><span class="si">{</span><span class="n">alpha</span><span class="o">/</span><span class="p">(</span><span class="n">alpha</span><span class="o">+</span><span class="mf">1.0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span> <span class="o">=</span> <span class="n">min_margin</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">true_values</span> <span class="o">=</span> <span class="n">true_values</span>
+        <span class="k">assert</span> <span class="p">(</span>
+            <span class="n">true_values</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">),</span> <span class="s2">&quot;depreciated true_values should be None (use target&gt;0)&quot;</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hkr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">true_values</span><span class="p">)</span></div>
-
-
-<span class="k">class</span> <span class="nc">KRMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    The Wasserstein multiclass loss between ``input`` and ``target``.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">kr_multiclass_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">hkr_loss</span><span class="p">(</span>
+            <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
-<span class="k">class</span> <span class="nc">HingeMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loss to estimate the Hinge loss in a multiclass setup. It computes the</span>
-<span class="sd">    element-wise hinge term. This class use pytorch implementation:</span>
-<span class="sd">    torch.nn.functional.hinge_embedding_loss</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">KRMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loss to estimate average of Wasserstein-1 distance using Kantorovich-Rubinstein</span>
+<span class="sd">        duality over outputs. In this multiclass setup, the KR term is computed for each</span>
+<span class="sd">        class and then averaged.</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Note that`target` should be one-hot encoded or pre-processed with the</span>
+<span class="sd">        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">        Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to</span>
+<span class="sd">        pre-process the labels `target` with the</span>
+<span class="sd">        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span> <span class="o">=</span> <span class="n">multi_gpu</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">kr_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
+
+
+<span class="k">class</span><span class="w"> </span><span class="nc">HingeMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loss to estimate the Hinge loss in a multiclass setup. It computes the</span>
+<span class="sd">        element-wise hinge term. Note that this formulation differs from the</span>
+<span class="sd">        one commonly found in tensorflow/pytorch (with maximise the difference</span>
+<span class="sd">        between the two largest logits). This formulation is consistent with the</span>
+<span class="sd">        binary classification loss used in a multiclass fashion.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            min_margin: The minimal margin to enforce.</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span> <span class="o">=</span> <span class="n">min_margin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hinge_multiclass_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">hinge_multiclass_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
 
 
-<span class="k">class</span> <span class="nc">HKRMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein</span>
-<span class="sd">    duality with a hinge regularization.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+<div class="viewcode-block" id="HKRMulticlassLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.HKRMulticlassLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">HKRMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
         <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">multi_gpu</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
     <span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein</span>
+<span class="sd">        duality with a hinge regularization.</span>
+
+<span class="sd">        [1] M. Serrurier, F. Mamalet, et al. «Achieving robustness in classification</span>
+<span class="sd">        using optimal transport with hinge regularization», 2021.</span>
+
+<span class="sd">        Note that`target` should be one-hot encoded or pre-processed with the</span>
+<span class="sd">        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">        Using a multi-GPU/TPU strategy requires to set `multi_gpu` to True and to</span>
+<span class="sd">        pre-process the labels `target` with the</span>
+<span class="sd">        `deel.torchlip.functional.process_labels_for_multi_gpu()` function.</span>
+
+<span class="sd">        the regularization factor `alpha` is a value between 0 and 1. It controls the</span>
+<span class="sd">        trade-off between the hinge and the KR loss. When `alpha` is 0, the loss is</span>
+<span class="sd">        equivalent to the KR loss, and when `alpha` is 1, the loss is equivalent to the</span>
+<span class="sd">        hinge loss.</span>
+
 <span class="sd">        Args:</span>
-<span class="sd">            alpha: Regularization factor between the hinge and the KR loss.</span>
+<span class="sd">            alpha: Regularization factor ([0,1]) between the hinge and the KR loss.</span>
 <span class="sd">            min_margin: Minimal margin for the hinge loss.</span>
+<span class="sd">            multi_gpu (bool): set to True when running on multi-GPU/TPU</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Depreciated alpha should be between 0 and 1 replaced by </span><span class="se">\</span>
+<span class="s2">                    </span><span class="si">{</span><span class="n">alpha</span><span class="o">/</span><span class="p">(</span><span class="n">alpha</span><span class="o">+</span><span class="mf">1.0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span> <span class="o">=</span> <span class="n">min_margin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span> <span class="o">=</span> <span class="n">multi_gpu</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">hkr_multiclass_loss</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">hkr_multiclass_loss</span><span class="p">(</span>
+            <span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">,</span> <span class="n">multi_gpu</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">multi_gpu</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SoftHKRMulticlassLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.SoftHKRMulticlassLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SoftHKRMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+        <span class="n">min_margin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">alpha_mean</span><span class="o">=</span><span class="mf">0.99</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The multiclass version of HKR with softmax. This is done by computing</span>
+<span class="sd">        the HKR term over each class and averaging the results.</span>
+
+<span class="sd">        [2] M. Serrurier, F. Mamalet, T. Fel et al. &quot;On the explainable properties</span>
+<span class="sd">        of 1-Lipschitz Neural Networks: An Optimal Transport Perspective.&quot;, 2024</span>
+
+<span class="sd">        Note that`target` should be one-hot encoded, +/-1 values.</span>
+
+<span class="sd">        the regularization factor `alpha` is a value between 0 and 1. It controls the</span>
+<span class="sd">        trade-off between the hinge and the KR loss. When `alpha` is 0, the loss is</span>
+<span class="sd">        equivalent to the KR loss, and when `alpha` is 1, the loss is equivalent to the</span>
+<span class="sd">        hinge loss.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            alpha (float): regularization factor (0 &lt;= alpha &lt;= 1),</span>
+<span class="sd">            min_margin (float): margin to enforce.</span>
+<span class="sd">            alpha_mean (float): geometric mean factor</span>
+<span class="sd">            temperature (float): factor for softmax  temperature</span>
+<span class="sd">                (higher value increases the weight of the highest non y_true logits)</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Depreciated alpha should be between 0 and 1 replaced by </span><span class="se">\</span>
+<span class="s2">                    </span><span class="si">{</span><span class="n">alpha</span><span class="o">/</span><span class="p">(</span><span class="n">alpha</span><span class="o">+</span><span class="mf">1.0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_margin_v</span> <span class="o">=</span> <span class="n">min_margin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_mean</span> <span class="o">=</span> <span class="n">alpha_mean</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">min_margin_v</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;    constraint=lambda x: torch.clamp(x, 0.005, 1000),</span>
+<span class="sd">            name=&quot;current_mean&quot;,</span>
+<span class="sd">        )&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin_v</span>
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>  <span class="c1"># alpha = 1.0 =&gt; hinge only</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_hinge_soft</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># alpha = 0.0 =&gt; KR only</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kr_soft</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hkr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">SoftHKRMulticlassLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">clamp_current_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">,</span> <span class="mi">1000</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_update_mean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">current_global_mean</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y_pred</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+            <span class="n">dtype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="p">)</span>
+        <span class="n">current_global_mean</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha_mean</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span>
+            <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha_mean</span><span class="p">)</span> <span class="o">*</span> <span class="n">current_global_mean</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamp_current_mean</span><span class="p">(</span><span class="n">current_global_mean</span><span class="p">)</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="n">total_mean</span> <span class="o">=</span> <span class="n">current_global_mean</span>
+        <span class="n">total_mean</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="n">total_mean</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin_v</span><span class="p">,</span> <span class="mi">20000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total_mean</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">computeTemperatureSoftMax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+        <span class="n">total_mean</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_mean</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">current_temperature</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">clamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">/</span> <span class="n">total_mean</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">,</span> <span class="mi">250</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">detach</span><span class="p">()</span>
+        <span class="p">)</span>
+        <span class="n">min_value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span>
+            <span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span>
+        <span class="p">)</span>
+        <span class="n">opposite_values</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+            <span class="n">y_true</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">min_value</span><span class="p">,</span> <span class="n">current_temperature</span> <span class="o">*</span> <span class="n">y_pred</span>
+        <span class="p">)</span>
+        <span class="n">F_soft_KR</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">opposite_values</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">one_value</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">F_soft_KR</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="n">F_soft_KR</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">y_true</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">one_value</span><span class="p">,</span> <span class="n">F_soft_KR</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F_soft_KR</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">signed_y_pred</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return for each item sign(y_true)*y_pred.&quot;&quot;&quot;</span>
+        <span class="n">sign_y_true</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">y_true</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># switch to +/-1</span>
+        <span class="n">sign_y_true</span> <span class="o">=</span> <span class="n">sign_y_true</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">y_pred</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">y_pred</span> <span class="o">*</span> <span class="n">sign_y_true</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">multiclass_hinge_preproc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signed_y_pred</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;From multiclass_hinge(y_true, y_pred, min_margin)</span>
+<span class="sd">        simplified to use precalculated signed_y_pred&quot;&quot;&quot;</span>
+        <span class="c1"># compute the elementwise hinge term</span>
+        <span class="n">hinge</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">min_margin</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">signed_y_pred</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hinge</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">multiclass_hinge_soft_preproc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signed_y_pred</span><span class="p">,</span> <span class="n">F_soft_KR</span><span class="p">):</span>
+        <span class="n">hinge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_hinge_preproc</span><span class="p">(</span><span class="n">signed_y_pred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin_v</span><span class="p">)</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">hinge</span> <span class="o">*</span> <span class="n">F_soft_KR</span>
+        <span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">b</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">multiclass_hinge_soft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+        <span class="n">F_soft_KR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeTemperatureSoftMax</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">signed_y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">signed_y_pred</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_hinge_soft_preproc</span><span class="p">(</span><span class="n">signed_y_pred</span><span class="p">,</span> <span class="n">F_soft_KR</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">kr_soft_preproc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signed_y_pred</span><span class="p">,</span> <span class="n">F_soft_KR</span><span class="p">):</span>
+        <span class="n">kr</span> <span class="o">=</span> <span class="o">-</span><span class="n">signed_y_pred</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">kr</span> <span class="o">*</span> <span class="n">F_soft_KR</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">kr_soft</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+        <span class="n">F_soft_KR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeTemperatureSoftMax</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">signed_y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">signed_y_pred</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">kr_soft_preproc</span><span class="p">(</span><span class="n">signed_y_pred</span><span class="p">,</span> <span class="n">F_soft_KR</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">hkr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+        <span class="n">F_soft_KR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">computeTemperatureSoftMax</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">signed_y_pred</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">signed_y_pred</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+
+        <span class="n">loss_softkr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kr_soft_preproc</span><span class="p">(</span><span class="n">signed_y_pred</span><span class="p">,</span> <span class="n">F_soft_KR</span><span class="p">)</span>
+
+        <span class="n">loss_softhinge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiclass_hinge_soft_preproc</span><span class="p">(</span><span class="n">signed_y_pred</span><span class="p">,</span> <span class="n">F_soft_KR</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">loss_softkr</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">loss_softhinge</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>  <span class="c1"># required for dtype.max</span>
+            <span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fct</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TauCrossEntropyLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.TauCrossEntropyLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TauCrossEntropyLoss</span><span class="p">(</span><span class="n">CrossEntropyLoss</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">size_average</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ignore_index</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">100</span><span class="p">,</span>
+        <span class="n">reduce</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="n">label_smoothing</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The loss add a temperature (tau) factor to the CrossEntropyLoss</span>
+<span class="sd">        CrossEntropyLoss(tau * input, target)</span>
+<span class="sd">        See `CrossEntropyLoss` for more details on arguments.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tau (float): factor for  temperature</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span>
+            <span class="n">size_average</span><span class="o">=</span><span class="n">size_average</span><span class="p">,</span>
+            <span class="n">ignore_index</span><span class="o">=</span><span class="n">ignore_index</span><span class="p">,</span>
+            <span class="n">reduce</span><span class="o">=</span><span class="n">reduce</span><span class="p">,</span>
+            <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">,</span>
+            <span class="n">label_smoothing</span><span class="o">=</span><span class="n">label_smoothing</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">target</span><span class="o">.</span><span class="n">shape</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">double</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span></div>
+
+
+<div class="viewcode-block" id="TauBCEWithLogitsLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.TauBCEWithLogitsLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TauBCEWithLogitsLoss</span><span class="p">(</span><span class="n">BCEWithLogitsLoss</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">tau</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tensor</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">size_average</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">reduce</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+        <span class="n">pos_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The loss add a temperature (tau) factor to the BCEWithLogitsLoss</span>
+<span class="sd">        BCEWithLogitsLoss(tau * input, target)</span>
+<span class="sd">        See `BCEWithLogitsLoss` for more details on arguments.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tau (float): factor for  temperature</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span>
+            <span class="n">size_average</span><span class="o">=</span><span class="n">size_average</span><span class="p">,</span>
+            <span class="n">reduce</span><span class="o">=</span><span class="n">reduce</span><span class="p">,</span>
+            <span class="n">reduction</span><span class="o">=</span><span class="n">reduction</span><span class="p">,</span>
+            <span class="n">pos_weight</span><span class="o">=</span><span class="n">pos_weight</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau</span> <span class="o">=</span> <span class="n">tau</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">true_target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span><span class="p">,</span> <span class="n">true_target</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau</span></div>
+
+
+<div class="viewcode-block" id="CategoricalHingeLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.CategoricalHingeLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">CategoricalHingeLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">min_margin</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This implementation is sligthly different from the pytorch MultiMarginLoss.</span>
+
+<span class="sd">        `target` and `input` must be of shape (batch_size, # classes).</span>
+<span class="sd">        Note that `target` should be one-hot encoded, +/-1 values.</span>
+<span class="sd">        ReLU(min_margin - (input[target&gt;0] - max(input[target&lt;=0])))</span>
+<span class="sd">        is computed element-wise and averaged over the batch.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            min_margin (float): margin parameter.</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span> <span class="o">=</span> <span class="n">min_margin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="n">mask</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">mask</span> <span class="o">*</span> <span class="nb">input</span><span class="p">,</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span>
+            <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">target</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">input</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span><span class="p">,</span> <span class="nb">input</span><span class="p">),</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">1</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">values</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">min_margin</span> <span class="o">-</span> <span class="p">(</span><span class="n">pos</span> <span class="o">-</span> <span class="n">neg</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
 </pre></div>
 
               </article>
@@ -411,9 +784,8 @@
   <script type="text/javascript" id="documentation_options" data-url_root="../../../../"
     src="../../../../_static/documentation_options.js"></script>
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-  <script src="../../../../_static/jquery.js"></script>
-  <script src="../../../../_static/underscore.js"></script>
   <script src="../../../../_static/doctools.js"></script>
+  <script src="../../../../_static/sphinx_highlight.js"></script>
   
 
   

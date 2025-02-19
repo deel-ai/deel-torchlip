@@ -34,7 +34,7 @@
   <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.11/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -222,53 +222,43 @@
 <span class="c1"># rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry,</span>
 <span class="c1"># CRIAQ and ANITI - https://www.deel.ai/</span>
 <span class="c1"># =====================================================================================</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">nn</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.utils.parametrize</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">parametrize</span>
 
-<span class="kn">import</span> <span class="nn">torch</span>
-
-<span class="kn">from</span> <span class="nn">..normalizers</span> <span class="kn">import</span> <span class="n">bjorck_normalization</span>
-<span class="kn">from</span> <span class="nn">..normalizers</span> <span class="kn">import</span> <span class="n">DEFAULT_NITER_BJORCK</span>
-<span class="kn">from</span> <span class="nn">.hook_norm</span> <span class="kn">import</span> <span class="n">HookNorm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..normalizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">bjorck_normalization</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">..normalizers</span><span class="w"> </span><span class="kn">import</span> <span class="n">DEFAULT_EPS_BJORCK</span>
 
 
-<span class="k">class</span> <span class="nc">BjorckNorm</span><span class="p">(</span><span class="n">HookNorm</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Bjorck Normalization from https://arxiv.org/abs/1811.05381</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">_BjorckNorm</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">eps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s2">&quot;_w_bjorck&quot;</span><span class="p">,</span> <span class="n">weight</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
 
-    <span class="n">n_iterations</span><span class="p">:</span> <span class="nb">int</span>
-
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span> <span class="o">=</span> <span class="n">n_iterations</span>
-
-    <span class="k">def</span> <span class="nf">compute_weight</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">bjorck_normalization</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">(</span><span class="n">module</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_iterations</span><span class="p">)</span>
-
-    <span class="nd">@staticmethod</span>
-    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">n_iterations</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;BjorckNorm&quot;</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">BjorckNorm</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">n_iterations</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weight</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">:</span>
+            <span class="n">w_bjorck</span> <span class="o">=</span> <span class="n">bjorck_normalization</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_w_bjorck</span> <span class="o">=</span> <span class="n">w_bjorck</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">w_bjorck</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_w_bjorck</span>
+        <span class="k">return</span> <span class="n">w_bjorck</span>
 
 
-<span class="n">T_module</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T_module&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)</span>
-
-
-<div class="viewcode-block" id="bjorck_norm"><a class="viewcode-back" href="../../../../deel.torchlip.utils.html#deel.torchlip.utils.bjorck_norm">[docs]</a><span class="k">def</span> <span class="nf">bjorck_norm</span><span class="p">(</span>
-    <span class="n">module</span><span class="p">:</span> <span class="n">T_module</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">n_iterations</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">DEFAULT_NITER_BJORCK</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_module</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="bjorck_norm"><a class="viewcode-back" href="../../../../deel.torchlip.utils.html#deel.torchlip.utils.bjorck_norm">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">bjorck_norm</span><span class="p">(</span>
+    <span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_EPS_BJORCK</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Applies Bjorck normalization to a parameter in the given module.</span>
 
 <span class="sd">    Bjorck normalization ensures that all eigen values of a vectors remain close or</span>
 <span class="sd">    equal to one during training. If the dimension of the weight tensor is greater than</span>
 <span class="sd">    2, it is reshaped to 2D for iteration.</span>
-<span class="sd">    This is implemented via a hook that applies Bjorck normalization before every</span>
-<span class="sd">    ``forward()`` call.</span>
+<span class="sd">    This is implemented via a Bjorck normalization parametrization.</span>
 
 <span class="sd">    .. note::</span>
-<span class="sd">        It is recommended to use :py:func:`torch.nn.utils.spectral_norm` before</span>
-<span class="sd">        this hook to greatly reduce the number of iterations required.</span>
+<span class="sd">        It is recommended to use :py:func:`torch.nn.utils.parameterize.spectral_norm`</span>
+<span class="sd">        before this hook to greatly reduce the number of iterations required.</span>
 
 <span class="sd">    See `Sorting out Lipschitz function approximation</span>
 <span class="sd">    &lt;https://arxiv.org/abs/1811.05381&gt;`_.</span>
@@ -290,12 +280,13 @@
 <span class="sd">    See Also:</span>
 <span class="sd">        :py:func:`deel.torchlip.normalizers.bjorck_normalization`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">BjorckNorm</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">n_iterations</span><span class="p">)</span>
+    <span class="n">weight</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">parametrize</span><span class="o">.</span><span class="n">register_parametrization</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">_BjorckNorm</span><span class="p">(</span><span class="n">weight</span><span class="p">,</span> <span class="n">eps</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">module</span></div>
 
 
-<div class="viewcode-block" id="remove_bjorck_norm"><a class="viewcode-back" href="../../../../deel.torchlip.utils.html#deel.torchlip.utils.remove_bjorck_norm">[docs]</a><span class="k">def</span> <span class="nf">remove_bjorck_norm</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">T_module</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;weight&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T_module</span><span class="p">:</span>
-    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="remove_bjorck_norm"><a class="viewcode-back" href="../../../../deel.torchlip.utils.html#deel.torchlip.utils.remove_bjorck_norm">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">remove_bjorck_norm</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;weight&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Removes the Bjorck normalization reparameterization from a module.</span>
 
 <span class="sd">    Args:</span>
@@ -306,13 +297,12 @@
 <span class="sd">        &gt;&gt;&gt; m = bjorck_norm(nn.Linear(20, 40))</span>
 <span class="sd">        &gt;&gt;&gt; remove_bjorck_norm(m)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">hook</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">_forward_pre_hooks</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hook</span><span class="p">,</span> <span class="n">BjorckNorm</span><span class="p">)</span> <span class="ow">and</span> <span class="n">hook</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
-            <span class="n">hook</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
-            <span class="k">del</span> <span class="n">module</span><span class="o">.</span><span class="n">_forward_pre_hooks</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
-            <span class="k">return</span> <span class="n">module</span>
-
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;bjorck_norm of &#39;</span><span class="si">{}</span><span class="s2">&#39; not found in </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">module</span><span class="p">))</span></div>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">module</span><span class="o">.</span><span class="n">parametrizations</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">_modules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">_BjorckNorm</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">parametrizations</span><span class="p">[</span><span class="s2">&quot;weight&quot;</span><span class="p">])</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">parametrize</span><span class="o">.</span><span class="n">remove_parametrizations</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">module</span><span class="o">.</span><span class="n">parametrizations</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">_modules</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
 </pre></div>
 
               </article>
@@ -365,9 +355,8 @@
   <script type="text/javascript" id="documentation_options" data-url_root="../../../../"
     src="../../../../_static/documentation_options.js"></script>
   <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
-  <script src="../../../../_static/jquery.js"></script>
-  <script src="../../../../_static/underscore.js"></script>
   <script src="../../../../_static/doctools.js"></script>
+  <script src="../../../../_static/sphinx_highlight.js"></script>
   
 
   
