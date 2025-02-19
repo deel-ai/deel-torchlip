@@ -320,780 +320,82 @@ formulation for the Wasserstein distance.
 
 .. parsed-literal::
 
-    Epoch 1/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
+    Epoch 1/10:   0%|                                                                                                | 0/16 [00:00<?, ?it/s]
 
 .. parsed-literal::
 
-    Epoch 1/10:   0%|                                                                           | 0/16 [00:00<?, ?it/s, loss=-0.617423]
+    Epoch 1/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=-0.129946]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▏                                                              | 1/16 [00:00<00:03,  4.88it/s, loss=-0.617423]
+    Epoch 1/10:   6%|████▌                                                                   | 1/16 [00:00<00:02,  5.98it/s, loss=-0.129946]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10:   6%|████▌                                                                    | 1/16 [00:00<00:03,  4.88it/s, loss=nan]
+    Epoch 1/10:   6%|████▉                                                                         | 1/16 [00:00<00:02,  5.98it/s, loss=nan]
 
 .. parsed-literal::
 
-    Epoch 1/10: 100%|████████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 57.33it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 2/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 216.95it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 3/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 216.21it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 4/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 216.52it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 5/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 216.75it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 6/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 216.49it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 7/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 216.35it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 8/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 211.42it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                           | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10:   0%|                                                                                 | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 9/10: 100%|███████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 216.58it/s, loss=nan]
-
-.. parsed-literal::
-
-    
-
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                          | 0/16 [00:00<?, ?it/s]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10:   0%|                                                                                | 0/16 [00:00<?, ?it/s, loss=nan]
-
-.. parsed-literal::
-
-    Epoch 10/10: 100%|██████████████████████████████████████████████████████████████████████| 16/16 [00:00<00:00, 214.09it/s, loss=nan]
-
-.. parsed-literal::
-
-    
+    Epoch 1/10: 
 
 
 As we can see the loss converges to the value :math:`35` which is the
 :math:`W_1` distance between the two distributions (with and without
 squares).
 
-.. container:: alert alert-block alert-danger
