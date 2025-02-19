@@ -46,7 +46,6 @@ extensions = [
     "sphinx.ext.todo",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "sphinx.ext.intersphinx",
     "sphinxcontrib.katex",
     "nbsphinx",
 ]
@@ -86,7 +85,6 @@ pygments_style = "sphinx"
 
 html_theme = "pytorch_sphinx_theme"
 html_theme_path = [pytorch_sphinx_theme.get_html_theme_path()]
-
 html_theme_options = {
     "collapse_navigation": False,
     "display_version": True,

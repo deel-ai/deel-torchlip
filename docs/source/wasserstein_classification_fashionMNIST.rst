@@ -131,7 +131,7 @@ implemented in ``torchlip``.
         )
       )
       (1): GroupSort2()
-      (2): ScaledL2NormPool2d(kernel_size=(2, 2), stride=(2, 2), padding=0)
+      (2): ScaledL2NormPool2d(norm_type=2, kernel_size=(2, 2), stride=None, ceil_mode=False)
       (3): ParametrizedSpectralConv2d(
         16, 32, kernel_size=(3, 3), stride=(1, 1), padding=same
         (parametrizations): ModuleDict(
@@ -143,7 +143,7 @@ implemented in ``torchlip``.
         )
       )
       (4): GroupSort2()
-      (5): ScaledL2NormPool2d(kernel_size=(2, 2), stride=(2, 2), padding=0)
+      (5): ScaledL2NormPool2d(norm_type=2, kernel_size=(2, 2), stride=None, ceil_mode=False)
       (6): Flatten(start_dim=1, end_dim=-1)
       (7): ParametrizedSpectralLinear(
         in_features=1568, out_features=64, bias=True
@@ -268,301 +268,301 @@ network (proxy of the average certificate).
 .. parsed-literal::
 
     Epoch 1/50
-    loss: 0.0193 - acc: 0.7896 - KR: 0.8442 - val_loss: 0.0213 - val_acc: 0.8244 - val_KR: 1.2169
+    loss: 0.0161 - acc: 0.7948 - KR: 0.8425 - val_loss: 0.0234 - val_acc: 0.8237 - val_KR: 1.1728
 
 
 .. parsed-literal::
 
     Epoch 2/50
-    loss: 0.0124 - acc: 0.8482 - KR: 1.4474 - val_loss: 0.0186 - val_acc: 0.8342 - val_KR: 1.6805
+    loss: 0.0144 - acc: 0.8425 - KR: 1.3253 - val_loss: 0.0181 - val_acc: 0.8474 - val_KR: 1.4679
 
 
 .. parsed-literal::
 
     Epoch 3/50
-    loss: 0.0109 - acc: 0.8542 - KR: 1.8511 - val_loss: 0.0118 - val_acc: 0.8538 - val_KR: 2.0030
+    loss: 0.0040 - acc: 0.8522 - KR: 1.6386 - val_loss: 0.0191 - val_acc: 0.8214 - val_KR: 1.7816
 
 
 .. parsed-literal::
 
     Epoch 4/50
-    loss: 0.0060 - acc: 0.8587 - KR: 2.1384 - val_loss: 0.0072 - val_acc: 0.8534 - val_KR: 2.2039
+    loss: 0.0046 - acc: 0.8574 - KR: 1.9427 - val_loss: 0.0098 - val_acc: 0.8596 - val_KR: 2.0056
 
 
 .. parsed-literal::
 
     Epoch 5/50
-    loss: 0.0019 - acc: 0.8619 - KR: 2.2898 - val_loss: 0.0088 - val_acc: 0.8419 - val_KR: 2.3712
+    loss: 0.0000 - acc: 0.8605 - KR: 2.1595 - val_loss: 0.0079 - val_acc: 0.8680 - val_KR: 2.1441
 
 
 .. parsed-literal::
 
     Epoch 6/50
-    loss: 0.0062 - acc: 0.8658 - KR: 2.3825 - val_loss: 0.0049 - val_acc: 0.8675 - val_KR: 2.4397
+    loss: 0.0049 - acc: 0.8642 - KR: 2.2765 - val_loss: 0.0063 - val_acc: 0.8634 - val_KR: 2.3429
 
 
 .. parsed-literal::
 
     Epoch 7/50
-    loss: 0.0162 - acc: 0.8681 - KR: 2.4547 - val_loss: 0.0041 - val_acc: 0.8647 - val_KR: 2.4717
+    loss: -0.0053 - acc: 0.8670 - KR: 2.3516 - val_loss: 0.0051 - val_acc: 0.8664 - val_KR: 2.3691
 
 
 .. parsed-literal::
 
     Epoch 8/50
-    loss: 0.0046 - acc: 0.8709 - KR: 2.4912 - val_loss: 0.0042 - val_acc: 0.8645 - val_KR: 2.4645
+    loss: -0.0021 - acc: 0.8708 - KR: 2.4078 - val_loss: 0.0031 - val_acc: 0.8698 - val_KR: 2.4568
 
 
 .. parsed-literal::
 
     Epoch 9/50
-    loss: -0.0095 - acc: 0.8717 - KR: 2.5289 - val_loss: 0.0027 - val_acc: 0.8713 - val_KR: 2.5118
+    loss: -0.0072 - acc: 0.8731 - KR: 2.4747 - val_loss: 0.0031 - val_acc: 0.8688 - val_KR: 2.5106
 
 
 .. parsed-literal::
 
     Epoch 10/50
-    loss: 0.0066 - acc: 0.8751 - KR: 2.5463 - val_loss: 0.0048 - val_acc: 0.8578 - val_KR: 2.6126
+    loss: 0.0009 - acc: 0.8726 - KR: 2.5210 - val_loss: 0.0026 - val_acc: 0.8685 - val_KR: 2.5051
 
 
 .. parsed-literal::
 
     Epoch 11/50
-    loss: 0.0102 - acc: 0.8746 - KR: 2.5673 - val_loss: 0.0039 - val_acc: 0.8673 - val_KR: 2.5540
+    loss: -0.0028 - acc: 0.8751 - KR: 2.5462 - val_loss: 0.0022 - val_acc: 0.8730 - val_KR: 2.5741
 
 
 .. parsed-literal::
 
     Epoch 12/50
-    loss: -0.0033 - acc: 0.8756 - KR: 2.5913 - val_loss: 0.0020 - val_acc: 0.8648 - val_KR: 2.5890
+    loss: -0.0035 - acc: 0.8751 - KR: 2.5864 - val_loss: 0.0025 - val_acc: 0.8707 - val_KR: 2.5648
 
 
 .. parsed-literal::
 
     Epoch 13/50
-    loss: -0.0091 - acc: 0.8775 - KR: 2.6237 - val_loss: 0.0025 - val_acc: 0.8708 - val_KR: 2.5836
+    loss: -0.0027 - acc: 0.8764 - KR: 2.5977 - val_loss: 0.0019 - val_acc: 0.8718 - val_KR: 2.6368
 
 
 .. parsed-literal::
 
     Epoch 14/50
-    loss: -0.0021 - acc: 0.8780 - KR: 2.6263 - val_loss: 0.0030 - val_acc: 0.8583 - val_KR: 2.6685
+    loss: -0.0047 - acc: 0.8789 - KR: 2.6347 - val_loss: 0.0044 - val_acc: 0.8539 - val_KR: 2.6234
 
 
 .. parsed-literal::
 
     Epoch 15/50
-    loss: 0.0211 - acc: 0.8785 - KR: 2.6446 - val_loss: 0.0027 - val_acc: 0.8595 - val_KR: 2.6300
+    loss: 0.0189 - acc: 0.8788 - KR: 2.6543 - val_loss: 0.0003 - val_acc: 0.8723 - val_KR: 2.5902
 
 
 .. parsed-literal::
 
     Epoch 16/50
-    loss: 0.0062 - acc: 0.8789 - KR: 2.6743 - val_loss: 0.0016 - val_acc: 0.8634 - val_KR: 2.6763
+    loss: 0.0142 - acc: 0.8793 - KR: 2.6534 - val_loss: 0.0006 - val_acc: 0.8673 - val_KR: 2.6843
 
 
 .. parsed-literal::
 
     Epoch 17/50
-    loss: -0.0101 - acc: 0.8805 - KR: 2.7005 - val_loss: -0.0009 - val_acc: 0.8766 - val_KR: 2.6881
+    loss: -0.0018 - acc: 0.8809 - KR: 2.6729 - val_loss: 0.0014 - val_acc: 0.8670 - val_KR: 2.7061
 
 
 .. parsed-literal::
 
     Epoch 18/50
-    loss: 0.0014 - acc: 0.8831 - KR: 2.7211 - val_loss: -0.0007 - val_acc: 0.8783 - val_KR: 2.7363
+    loss: 0.0005 - acc: 0.8805 - KR: 2.6892 - val_loss: 0.0002 - val_acc: 0.8692 - val_KR: 2.6683
 
 
 .. parsed-literal::
 
     Epoch 19/50
-    loss: -0.0027 - acc: 0.8812 - KR: 2.7439 - val_loss: -0.0001 - val_acc: 0.8708 - val_KR: 2.7713
+    loss: 0.0144 - acc: 0.8814 - KR: 2.7032 - val_loss: 0.0006 - val_acc: 0.8754 - val_KR: 2.6909
 
 
 .. parsed-literal::
 
     Epoch 20/50
-    loss: -0.0044 - acc: 0.8835 - KR: 2.7603 - val_loss: -0.0002 - val_acc: 0.8716 - val_KR: 2.7494
+    loss: 0.0095 - acc: 0.8827 - KR: 2.7164 - val_loss: 0.0001 - val_acc: 0.8707 - val_KR: 2.7713
 
 
 .. parsed-literal::
 
     Epoch 21/50
-    loss: -0.0117 - acc: 0.8837 - KR: 2.7681 - val_loss: 0.0012 - val_acc: 0.8702 - val_KR: 2.7200
+    loss: -0.0062 - acc: 0.8815 - KR: 2.7312 - val_loss: -0.0008 - val_acc: 0.8776 - val_KR: 2.7397
 
 
 .. parsed-literal::
 
     Epoch 22/50
-    loss: -0.0140 - acc: 0.8844 - KR: 2.7766 - val_loss: -0.0014 - val_acc: 0.8782 - val_KR: 2.8377
+    loss: -0.0057 - acc: 0.8834 - KR: 2.7449 - val_loss: -0.0002 - val_acc: 0.8638 - val_KR: 2.7346
 
 
 .. parsed-literal::
 
     Epoch 23/50
-    loss: -0.0074 - acc: 0.8863 - KR: 2.7910 - val_loss: 0.0004 - val_acc: 0.8747 - val_KR: 2.7969
+    loss: -0.0109 - acc: 0.8844 - KR: 2.7543 - val_loss: -0.0016 - val_acc: 0.8781 - val_KR: 2.7080
 
 
 .. parsed-literal::
 
     Epoch 24/50
-    loss: -0.0056 - acc: 0.8868 - KR: 2.7963 - val_loss: -0.0002 - val_acc: 0.8682 - val_KR: 2.7982
+    loss: -0.0091 - acc: 0.8844 - KR: 2.7597 - val_loss: -0.0006 - val_acc: 0.8731 - val_KR: 2.7509
 
 
 .. parsed-literal::
 
     Epoch 25/50
-    loss: -0.0092 - acc: 0.8870 - KR: 2.7979 - val_loss: -0.0025 - val_acc: 0.8808 - val_KR: 2.8081
+    loss: 0.0054 - acc: 0.8839 - KR: 2.7827 - val_loss: -0.0021 - val_acc: 0.8789 - val_KR: 2.7414
 
 
 .. parsed-literal::
 
     Epoch 26/50
-    loss: 0.0144 - acc: 0.8869 - KR: 2.8073 - val_loss: -0.0016 - val_acc: 0.8783 - val_KR: 2.8037
+    loss: -0.0093 - acc: 0.8865 - KR: 2.7827 - val_loss: -0.0024 - val_acc: 0.8815 - val_KR: 2.7571
 
 
 .. parsed-literal::
 
     Epoch 27/50
-    loss: -0.0063 - acc: 0.8887 - KR: 2.8083 - val_loss: -0.0020 - val_acc: 0.8793 - val_KR: 2.7780
+    loss: -0.0028 - acc: 0.8854 - KR: 2.7891 - val_loss: -0.0007 - val_acc: 0.8671 - val_KR: 2.8054
 
 
 .. parsed-literal::
 
     Epoch 28/50
-    loss: -0.0097 - acc: 0.8886 - KR: 2.8210 - val_loss: -0.0003 - val_acc: 0.8742 - val_KR: 2.7555
+    loss: 0.0045 - acc: 0.8848 - KR: 2.8087 - val_loss: -0.0005 - val_acc: 0.8765 - val_KR: 2.7992
 
 
 .. parsed-literal::
 
     Epoch 29/50
-    loss: -0.0036 - acc: 0.8873 - KR: 2.8288 - val_loss: -0.0017 - val_acc: 0.8802 - val_KR: 2.8015
+    loss: -0.0050 - acc: 0.8855 - KR: 2.8126 - val_loss: -0.0003 - val_acc: 0.8716 - val_KR: 2.7960
 
 
 .. parsed-literal::
 
     Epoch 30/50
-    loss: -0.0130 - acc: 0.8888 - KR: 2.8301 - val_loss: -0.0019 - val_acc: 0.8792 - val_KR: 2.8037
+    loss: -0.0090 - acc: 0.8858 - KR: 2.8186 - val_loss: -0.0015 - val_acc: 0.8727 - val_KR: 2.7698
 
 
 .. parsed-literal::
 
     Epoch 31/50
-    loss: -0.0001 - acc: 0.8898 - KR: 2.8378 - val_loss: -0.0025 - val_acc: 0.8800 - val_KR: 2.7789
+    loss: -0.0086 - acc: 0.8882 - KR: 2.8209 - val_loss: -0.0029 - val_acc: 0.8752 - val_KR: 2.8335
 
 
 .. parsed-literal::
 
     Epoch 32/50
-    loss: -0.0027 - acc: 0.8893 - KR: 2.8273 - val_loss: -0.0017 - val_acc: 0.8735 - val_KR: 2.8077
+    loss: -0.0064 - acc: 0.8871 - KR: 2.8258 - val_loss: -0.0030 - val_acc: 0.8820 - val_KR: 2.8266
 
 
 .. parsed-literal::
 
     Epoch 33/50
-    loss: 0.0239 - acc: 0.8908 - KR: 2.8385 - val_loss: -0.0013 - val_acc: 0.8770 - val_KR: 2.8136
+    loss: -0.0086 - acc: 0.8882 - KR: 2.8410 - val_loss: -0.0025 - val_acc: 0.8742 - val_KR: 2.8252
 
 
 .. parsed-literal::
 
     Epoch 34/50
-    loss: -0.0139 - acc: 0.8910 - KR: 2.8461 - val_loss: -0.0029 - val_acc: 0.8792 - val_KR: 2.8236
+    loss: -0.0157 - acc: 0.8873 - KR: 2.8518 - val_loss: -0.0021 - val_acc: 0.8736 - val_KR: 2.7995
 
 
 .. parsed-literal::
 
     Epoch 35/50
-    loss: -0.0040 - acc: 0.8901 - KR: 2.8543 - val_loss: -0.0013 - val_acc: 0.8740 - val_KR: 2.8225
+    loss: 0.0009 - acc: 0.8877 - KR: 2.8418 - val_loss: -0.0028 - val_acc: 0.8739 - val_KR: 2.8467
 
 
 .. parsed-literal::
 
     Epoch 36/50
-    loss: -0.0020 - acc: 0.8919 - KR: 2.8619 - val_loss: -0.0025 - val_acc: 0.8800 - val_KR: 2.8071
+    loss: -0.0137 - acc: 0.8882 - KR: 2.8552 - val_loss: -0.0023 - val_acc: 0.8778 - val_KR: 2.8063
 
 
 .. parsed-literal::
 
     Epoch 37/50
-    loss: -0.0067 - acc: 0.8925 - KR: 2.8522 - val_loss: -0.0032 - val_acc: 0.8812 - val_KR: 2.8336
+    loss: -0.0103 - acc: 0.8881 - KR: 2.8597 - val_loss: -0.0023 - val_acc: 0.8720 - val_KR: 2.8331
 
 
 .. parsed-literal::
 
     Epoch 38/50
-    loss: -0.0063 - acc: 0.8916 - KR: 2.8582 - val_loss: -0.0036 - val_acc: 0.8812 - val_KR: 2.8604
+    loss: -0.0100 - acc: 0.8897 - KR: 2.8594 - val_loss: -0.0033 - val_acc: 0.8811 - val_KR: 2.8638
 
 
 .. parsed-literal::
 
     Epoch 39/50
-    loss: -0.0087 - acc: 0.8927 - KR: 2.8672 - val_loss: -0.0033 - val_acc: 0.8846 - val_KR: 2.8692
+    loss: -0.0047 - acc: 0.8887 - KR: 2.8630 - val_loss: -0.0035 - val_acc: 0.8801 - val_KR: 2.8755
 
 
 .. parsed-literal::
 
     Epoch 40/50
-    loss: -0.0147 - acc: 0.8942 - KR: 2.8641 - val_loss: -0.0014 - val_acc: 0.8832 - val_KR: 2.8150
+    loss: -0.0047 - acc: 0.8902 - KR: 2.8691 - val_loss: -0.0023 - val_acc: 0.8752 - val_KR: 2.8752
 
 
 .. parsed-literal::
 
     Epoch 41/50
-    loss: 0.0033 - acc: 0.8928 - KR: 2.8696 - val_loss: -0.0033 - val_acc: 0.8830 - val_KR: 2.8585
+    loss: -0.0085 - acc: 0.8897 - KR: 2.8753 - val_loss: -0.0018 - val_acc: 0.8756 - val_KR: 2.8190
 
 
 .. parsed-literal::
 
     Epoch 42/50
-    loss: -0.0066 - acc: 0.8934 - KR: 2.8735 - val_loss: -0.0030 - val_acc: 0.8809 - val_KR: 2.8260
+    loss: -0.0170 - acc: 0.8892 - KR: 2.8745 - val_loss: -0.0034 - val_acc: 0.8807 - val_KR: 2.8524
 
 
 .. parsed-literal::
 
     Epoch 43/50
-    loss: -0.0146 - acc: 0.8952 - KR: 2.8766 - val_loss: -0.0031 - val_acc: 0.8852 - val_KR: 2.8403
+    loss: -0.0025 - acc: 0.8909 - KR: 2.8805 - val_loss: -0.0030 - val_acc: 0.8811 - val_KR: 2.8388
 
 
 .. parsed-literal::
 
     Epoch 44/50
-    loss: -0.0086 - acc: 0.8950 - KR: 2.8773 - val_loss: -0.0018 - val_acc: 0.8787 - val_KR: 2.9115
+    loss: -0.0093 - acc: 0.8922 - KR: 2.8824 - val_loss: -0.0034 - val_acc: 0.8805 - val_KR: 2.8573
 
 
 .. parsed-literal::
 
     Epoch 45/50
-    loss: -0.0000 - acc: 0.8957 - KR: 2.8799 - val_loss: -0.0040 - val_acc: 0.8863 - val_KR: 2.8622
+    loss: -0.0065 - acc: 0.8898 - KR: 2.8861 - val_loss: -0.0027 - val_acc: 0.8763 - val_KR: 2.8508
 
 
 .. parsed-literal::
 
     Epoch 46/50
-    loss: -0.0104 - acc: 0.8961 - KR: 2.8910 - val_loss: -0.0038 - val_acc: 0.8843 - val_KR: 2.8445
+    loss: -0.0046 - acc: 0.8908 - KR: 2.8799 - val_loss: -0.0038 - val_acc: 0.8808 - val_KR: 2.8540
 
 
 .. parsed-literal::
 
     Epoch 47/50
-    loss: -0.0022 - acc: 0.8953 - KR: 2.8878 - val_loss: -0.0036 - val_acc: 0.8823 - val_KR: 2.8444
+    loss: -0.0141 - acc: 0.8902 - KR: 2.8932 - val_loss: -0.0037 - val_acc: 0.8794 - val_KR: 2.8714
 
 
 .. parsed-literal::
 
     Epoch 48/50
-    loss: -0.0157 - acc: 0.8951 - KR: 2.8893 - val_loss: -0.0044 - val_acc: 0.8867 - val_KR: 2.8650
+    loss: -0.0101 - acc: 0.8912 - KR: 2.8959 - val_loss: -0.0033 - val_acc: 0.8789 - val_KR: 2.8827
 
 
 .. parsed-literal::
 
     Epoch 49/50
-    loss: -0.0080 - acc: 0.8945 - KR: 2.8897 - val_loss: -0.0042 - val_acc: 0.8851 - val_KR: 2.8629
+    loss: -0.0111 - acc: 0.8918 - KR: 2.8873 - val_loss: -0.0040 - val_acc: 0.8859 - val_KR: 2.9193
 
 
 .. parsed-literal::
 
     Epoch 50/50
-    loss: -0.0060 - acc: 0.8966 - KR: 2.8937 - val_loss: -0.0038 - val_acc: 0.8845 - val_KR: 2.8673
+    loss: -0.0008 - acc: 0.8933 - KR: 2.9104 - val_loss: -0.0041 - val_acc: 0.8818 - val_KR: 2.8705
 
 
 4. Model export
@@ -613,10 +613,10 @@ torchlip.SpectralConv2d(…), …)
     Sequential(
       (0): Conv2d(1, 16, kernel_size=(3, 3), stride=(1, 1), padding=same)
       (1): GroupSort2()
-      (2): ScaledL2NormPool2d(kernel_size=(2, 2), stride=(2, 2), padding=0)
+      (2): LPPool2d(norm_type=2, kernel_size=(2, 2), stride=None, ceil_mode=False)
       (3): Conv2d(16, 32, kernel_size=(3, 3), stride=(1, 1), padding=same)
       (4): GroupSort2()
-      (5): ScaledL2NormPool2d(kernel_size=(2, 2), stride=(2, 2), padding=0)
+      (5): LPPool2d(norm_type=2, kernel_size=(2, 2), stride=None, ceil_mode=False)
       (6): Flatten(start_dim=1, end_dim=-1)
       (7): Linear(in_features=1568, out_features=64, bias=True)
       (8): GroupSort2()
@@ -710,16 +710,16 @@ gradient norm preserving, other attacks gives very similar results.
 
     Image #     Certificate     Distance to adversarial
     ---------------------------------------------------
-    Image 0        0.246                1.04
-    Image 1        1.863                4.57
-    Image 2        0.475                1.78
-    Image 3        0.601                2.71
-    Image 4        0.108                0.43
-    Image 5        0.214                0.83
-    Image 6        0.104                0.45
-    Image 7        0.447                1.61
-    Image 8        1.564                3.89
-    Image 9        0.135                0.59
+    Image 0        0.309                1.29
+    Image 1        1.864                4.65
+    Image 2        0.397                1.56
+    Image 3        0.527                2.81
+    Image 4        0.105                0.44
+    Image 5        0.188                0.82
+    Image 6        0.053                0.26
+    Image 7        0.450                1.62
+    Image 8        1.488                3.91
+    Image 9        0.161                0.69
 
 
 Finally, we can take a visual look at the obtained images. When looking
