@@ -25,7 +25,10 @@ Non-linear activation functions
 ~~~~~~~~~~~~~~~~
 
 .. autofunction:: lipschitz_prelu
-
+    
+Padding functions
+-------------------------------
+.. autoclass:: SymmetricPad
 
 Loss functions
 --------------
@@ -43,3 +46,8 @@ Loss functions
 
 .. autofunction:: hinge_multiclass_loss
 .. autofunction:: hkr_multiclass_loss
+
+:hidden:`others`
+~~~~~~~~~~~~~~~~
+
+.. autofunction:: process_labels_for_multi_gpu
