@@ -25,10 +25,7 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 from typing import Optional
-from typing import Tuple
-from typing import Union
 
-import numpy as np
 import torch
 import torch.nn.functional as F
 
