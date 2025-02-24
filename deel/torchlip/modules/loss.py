@@ -447,7 +447,8 @@ class TauCrossEntropyLoss(CrossEntropyLoss):
     ) -> None:
         """
         The loss add a temperature (tau) factor to the CrossEntropyLoss
-        CrossEntropyLoss(tau * input, target)
+        CrossEntropyLoss(tau * input, target).
+
         See `CrossEntropyLoss` for more details on arguments.
 
         Args:
@@ -483,7 +484,8 @@ class TauBCEWithLogitsLoss(BCEWithLogitsLoss):
     ) -> None:
         """
         The loss add a temperature (tau) factor to the BCEWithLogitsLoss
-        BCEWithLogitsLoss(tau * input, target)
+        BCEWithLogitsLoss(tau * input, target).
+
         See `BCEWithLogitsLoss` for more details on arguments.
 
         Args:
@@ -514,7 +516,8 @@ class CategoricalHingeLoss(torch.nn.Module):
 
         `target` and `input` must be of shape (batch_size, # classes).
         Note that `target` should be one-hot encoded, +/-1 values.
-        ReLU(min_margin - (input[target>0] - max(input[target<=0])))
+        :math:`\\text{ReLU}(\\text{min\\_margin} - (\\text{input}[\\text{target}>0]
+        - \\text{max}(\\text{input}[\\text{target}<=0])))`
         is computed element-wise and averaged over the batch.
 
         Args:
