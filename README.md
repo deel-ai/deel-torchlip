@@ -1,16 +1,51 @@
-<img src="docs/source/logo.svg#gh-light-mode-only" alt="logo deel-torchlip" style="width:500px;"/>
-<img src="docs/source/logo_white.svg#gh-dark-mode-only" alt="logo deel-torchlip" style="width:500px;"/>
+<!-- Banner section -->
+<div align="center">
+        <picture>
+                <source media="(prefers-color-scheme: dark)" srcset="./docs/assets/banner_dark_torchlip.png">
+                <source media="(prefers-color-scheme: light)" srcset="./docs/assets/banner_light_torchlip.png">
+                <img alt="DEEL-TORCHLIP Banner" src="./docs/assets/banner_light_torchlip.png">
+        </picture>
+</div>
+<br>
 
-[![PyPI](https://img.shields.io/pypi/v/deel-torchlip.svg)](https://pypi.org/project/deel-torchlip)
-[![Python](https://img.shields.io/pypi/pyversions/deel-torchlip.svg)](https://pypi.org/project/deel-torchlip)
-[![Documentation](https://img.shields.io/badge/doc-url-blue.svg)](https://deel-ai.github.io/deel-torchlip)
-[![arXiv](https://img.shields.io/badge/arXiv-2006.06520-b31b1b.svg)](https://arxiv.org/abs/2006.06520)
-[![Tests](https://github.com/deel-ai/deel-torchlip/actions/workflows/python-tests.yml/badge.svg?branch=master)](https://github.com/deel-ai/deel-torchlip/actions/workflows/python-tests.yml)
-[![Linters](https://github.com/deel-ai/deel-torchlip/actions/workflows/python-lints.yml/badge.svg?branch=master)](https://github.com/deel-ai/deel-torchlip/actions/workflows/python-lints.yml)
-[![License](https://img.shields.io/github/license/deel-ai/deel-torchlip.svg)](https://github.com/deel-ai/deel-torchlip/blob/master/LICENSE)
+<!-- Badge section -->
+<div align="center">
+    <a href="https://pypi.org/project/deel-torchlip">
+        <img src="https://img.shields.io/pypi/v/deel-torchlip.svg" alt="PyPI">
+    </a>
+    <a href="https://pypi.org/project/deel-torchlip">
+        <img src="https://img.shields.io/pypi/pyversions/deel-torchlip.svg" alt="Python">
+    </a>
+    <a href="https://deel-ai.github.io/deel-torchlip">
+        <img src="https://img.shields.io/badge/doc-url-blue.svg" alt="Documentation">
+    </a>
+    <a href="https://arxiv.org/abs/2006.06520">
+        <img src="https://img.shields.io/badge/arXiv-2006.06520-b31b1b.svg" alt="arXiv">
+    </a>
+    <a href="https://github.com/deel-ai/deel-torchlip/actions/workflows/python-tests.yml">
+        <img src="https://github.com/deel-ai/deel-torchlip/actions/workflows/python-tests.yml/badge.svg?branch=master" alt="Tests">
+    </a>
+    <a href="https://github.com/deel-ai/deel-torchlip/actions/workflows/python-lints.yml">
+        <img src="https://github.com/deel-ai/deel-torchlip/actions/workflows/python-lints.yml/badge.svg?branch=master" alt="Linters">
+    </a>
+    <a href="https://github.com/deel-ai/deel-torchlip/blob/master/LICENSE">
+        <img src="https://img.shields.io/github/license/deel-ai/deel-torchlip.svg" alt="License">
+    </a>
+</div>
+<br>
 
-[deel-torchlip](https://deel-ai.github.io/deel-torchlip) is an open source Python API to
+
+<!-- Short description of your library -->
+<p align="center">
+  <b>deel-torchlip</b> is an open source Python API to
 build and train Lipschitz neural networks. It is built on top of PyTorch.
+
+  <!-- Link to the documentation -->
+  <br>
+  <a href="https://deel-ai.github.io/deel-torchlip"><strong>Explore deel-torchlip docs »</strong></a>
+  <br>
+
+</p>
 
 deel-torchlip provides:
 
@@ -27,7 +62,33 @@ For TensorFlow/Keras users, we released the
 [deel-lip](https://deel-lip.readthedocs.io/en/latest/) package offering a similar
 implementation based on Keras.
 
-## Install
+## 📚 Table of contents
+
+- [📚 Table of contents](#-table-of-contents)
+- [🔥 Tutorials](#-tutorials)
+- [🚀 Quick Start](#-quick-start)
+- [📦 What's Included](#-whats-included)
+- [👍 Contributing](#-contributing)
+- [👀 See Also](#-see-also)
+- [🙏 Acknowledgments](#-acknowledgments)
+- [👨‍🎓 Creator](#-creator)
+- [🗞️ Citation](#-citation)
+- [📝 License](#-license)
+
+## 🔥 Tutorials
+
+We propose some tutorials to get familiar with the library and its API:
+
+
+| Tutorial | Description | Link |
+|----------|-------------|------|
+| **Wasserstein Tutorial** | Get started with the basics of *torchlip* to compute wasserstein distance. | [![Open In Github](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](docs/notebooks/wasserstein_toy.ipynb)  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://githubtocolab.com/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_toy.ipynb) |
+| **Binary classification** | Learning binary robust classifier with *deel-torchlip*'s API. | [![Open In Github](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](docs/notebooks/wasserstein_classification_MNIST08.ipynb)  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://githubtocolab.com/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_classification_MNIST08.ipynb) |
+| **Tutorial Multiclass classification** | Learning multiclass robust classifier with *deel-torchlip*'s API. | [![Open In Github](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](deel-torchlip/blob/master/docs/notebooks/wasserstein_classification_fashionMNIST.ipynb)  [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://githubtocolab.com/deel-ai/deel-torchlip/blob/master/docs/notebooks/wasserstein_classification_fashionMNIST.ipynb) |
+
+
+
+## 🚀 Quick Start
 
 The latest release can be installed using `pip`. The `torch` package will also be
 installed as a dependency. If `torch` is already present, be sure that the version is
@@ -37,7 +98,7 @@ compatible with the deel-torchlip version.
 $ pip install deel-torchlip
 ```
 
-## Usage
+### Usage
 
 Creating a Lipschitz network is similar to building a PyTorch model: standard layers are
 replaced with their Lipschitz counterparts from deel-torchlip. PyTorch layers that are
@@ -60,25 +121,35 @@ model = torchlip.Sequential(
 )
 ```
 
-See the [full documentation](https://deel-ai.github.io/deel-torchlip) for a complete API
-description and for our tutorials to get started.
 
-## Citation
+## 📦 What's Included
 
-This library was built to support the work presented in our CVPR 2021 paper
-[_Achieving robustness in classification using optimal transport with Hinge regularization_](https://arxiv.org/abs/2006.06520).
-If you use our library for your work, please cite our paper :wink:
+The `deel-torchlip` library proposes a list of 1-Lipschitz layers equivalent to `torch.nn`  ones.
 
-```latex
-@misc{2006.06520,
-Author = {Mathieu Serrurier and Franck Mamalet and Alberto González-Sanz and Thibaut Boissin and Jean-Michel Loubes and Eustasio del Barrio},
-Title = {Achieving robustness in classification using optimal transport with hinge regularization},
-Year = {2020},
-Eprint = {arXiv:2006.06520},
-}
-```
+| `torch.nn`  | 1-Lipschitz? | `deel-torchlip` equivalent  | comments   |
+|------------------------------------------------------|-------------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `torch.nn.Linear`                             | no          | `.SpectralLinear`<br>`.FrobeniusLinear`                                           | `.SpectralLinear` and `.FrobeniusLinear` are similar when there is a single output.                         |
+| `torch.nn.Conv2d`                             | no          | `.SpectralConv2d`<br>`.FrobeniusConv2d`                                           | `.SpectralConv2d` also implements Björck normalization.                                                            |
+| `torch.nn.Conv1d`                             | no          | `.SpectralConv1d`                                                                        | `.SpectralConv1d` also implements Björck normalization.                                                            |
+| `MaxPooling`<br>`GlobalMaxPooling`      | yes         | n/a                                                                                             |                                                                                                                            |
+| `torch.nn.AvgPool2d`<br>`torch.nn.AdaptiveAvgPool2d` | no          | `.ScaledAvgPool2d`<br>`.ScaledAdaptiveAvgPool2d`<br>`.ScaledL2NormPool2d`<br>`.ScaledAdaptativeL2NormPool2d` | The Lipschitz constant is bounded by `sqrt(pool_h * pool_w)`.                                                             |
+| `Flatten`                                      | yes         | n/a                                                                                             |                                                                                                                            |
+| `torch.nn.ConvTranspose2d`                    | no          | `.SpectralConvTranspose2d`                                                               | `.SpectralConvTranspose2d` also implements Björck normalization.                                                   |
+| `torch.nn.BatchNorm1d`<br>`torch.nn.BatchNorm2d`<br>`torch.nn.BatchNorm3d` | no          | `.BatchCentering`                                                                        | This layer apply a bias based on statistics on batch, but no normalization factor (1-Lipschitz).                          |
+| `torch.nn.LayerNorm`                           | no          | `.LayerCentering`                                                                        | This layer apply a bias based on statistics on each sample, but no normalization factor (1-Lipschitz).                    |
+| Residual connections                                  | no          | `.LipResidual`                                                                           | Learn a factor for mixing residual and a 1-Lipschitz branch.                                                              |
+| `torch.nn.Dropout`                             | no          | None                                                                                            | The Lipschitz constant is bounded by the dropout factor.                                                                  |
 
-## Contributions
+The `deel-torchlip` library proposes a list of classification losses
+
+
+| Type | `torch.nn`  |  `deel-torchlip` equivalent  | comments   |
+|------------------------------------------------------|-------------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
+| Binary classification          |`torch.nn.BCEWithLogitsLoss`                             |  `.HKRLoss`   | alpha: Regularization factor ([0,1]) between the hinge and the KR loss;   min_margin: Minimal margin for the hinge loss.                    |
+| Multiclass classification          |`torch.nn.CrossEntropyLoss`                             |  `.HKRMulticlassLoss`<br>`.SoftHKRMulticlassLoss`                                           |   alpha: Regularization factor ([0,1]) between the hinge and the KR loss;   min_margin: Minimal margin for the hinge loss.     <br> temperature for the softmax calculation    |
+
+## 👍 Contributing
+
 
 Contributions are welcome! You can open an
 [issue](https://github.com/deel-ai/deel-torchlip/issues) or fork this repository and
@@ -103,31 +174,58 @@ accepted, you can run the following target:
 $ make check_all
 ```
 
-## License
+## 👀 See Also
 
-Copyright IRT Antoine de Saint Exupéry et Université Paul Sabatier Toulouse III - All
-rights reserved. DEEL is a research program operated by IVADO, IRT Saint Exupéry, CRIAQ
-and ANITI - https://www.deel.ai/
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this
-software and associated documentation files (the "Software"), to deal in the Software
-without restriction, including without limitation the rights to use, copy, modify,
-merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to the following
-conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or
-substantial portions of the Software.
+More from the DEEL project:
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
-PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT
-OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+- [Xplique](https://github.com/deel-ai/xplique) a Python library exclusively dedicated to explaining neural networks.
+- [deel-lip](https://github.com/deel-ai/deel-lip) a Python library for training k-Lipschitz neural networks on TF.
+- [Influenciae](https://github.com/deel-ai/influenciae) Python toolkit dedicated to computing influence values for the discovery of potentially problematic samples in a dataset.
+- [oodeel](https://github.com/deel-ai/oodeel) a Python library for post-hoc deep OOD (Out-of-Distribution) detection on already trained neural network image classifiers
+- [DEEL White paper](https://arxiv.org/abs/2103.10529) a summary of the DEEL team on the challenges of certifiable AI and the role of data quality, representativity and explainability for this purpose.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-This project received funding from the French "Investing for the Future – PIA3" program
-within the Artiﬁcial and Natural Intelligence Toulouse Institute (ANITI). The authors
-gratefully acknowledge the support of the [DEEL project](https://www.deel.ai/).
+<div align="right">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://share.deel.ai/apps/theming/image/logo?useSvg=1&v=10"  width="25%" align="right">
+    <source media="(prefers-color-scheme: light)" srcset="https://www.deel.ai/wp-content/uploads/2021/05/logo-DEEL.png"  width="25%" align="right">
+    <img alt="DEEL Logo" src="https://www.deel.ai/wp-content/uploads/2021/05/logo-DEEL.png" width="25%" align="right">
+  </picture>
+</div>
+This project received funding from the French ”Investing for the Future – PIA3” program within the Artificial and Natural Intelligence Toulouse Institute (ANITI). The authors gratefully acknowledge the support of the <a href="https://www.deel.ai/"> DEEL </a> project.
+
+## 👨‍🎓 Creators
+
+
+Main contributors of the deel-torchlip library are:
+
+- [Franck Mamalet](mailto:franck.mamalet@irt-saintexupery.com)
+- [Corentin Friedrich](mailto:corentin.friedrich@irt-saintexupery.com)
+- [Justin Plakoo](mailto:justin.plakoo@irt-saintexupery.com)
+- [Thibaut Boissin](mailto:thibaut.boissin@irt-saintexupery.com)
+- [Mikael Capelle](mailto:capelle.mikael@gmail.com)
+- [Mathieu Serrurier](mailto:mathieu.serrurier@irt-saintexupery.com)
+
+## 🗞️ Citation
+
+
+This library was built to support the work presented in our CVPR 2021 paper
+[_Achieving robustness in classification using optimal transport with Hinge regularization_](https://arxiv.org/abs/2006.06520).
+If you use our library for your work, please cite our paper :wink:
+
+```latex
+@misc{2006.06520,
+Author = {Mathieu Serrurier and Franck Mamalet and Alberto González-Sanz and Thibaut Boissin and Jean-Michel Loubes and Eustasio del Barrio},
+Title = {Achieving robustness in classification using optimal transport with hinge regularization},
+Year = {2020},
+Eprint = {arXiv:2006.06520},
+}
+```
+
+
+## 📝 License
+
+The package is released under [MIT license](LICENSE).

@@ -85,10 +85,6 @@ class SpectralConv1d(PadConv1d, LipschitzModule):
 
         This documentation reuse the body of the original torch.nn.Conv1D doc.
         """
-        # if not ((dilation == (1, 1)) or (dilation == [1, 1]) or (dilation == 1)):
-        #     raise RuntimeError("NormalizedConv does not support dilation rate")
-        # if padding_mode != "same":
-        #     raise RuntimeError("NormalizedConv only support padding='same'")
 
         PadConv1d.__init__(
             self,
@@ -156,7 +152,8 @@ class SpectralConv2d(PadConv2d, LipschitzModule):
             padding (int or tuple, optional): Zero-padding added to both sides of
                 the input.
             padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
-                ``'replicate'`` or ``'circular'``. Default: ``'zeros'``
+                ``'replicate'``, ``'symmetric'``  or ``'circular'``.
+                Default: ``'zeros'``
             dilation (int or tuple, optional): Spacing between kernel elements.
                 Has to be one
             groups (int, optional): Number of blocked connections from input
@@ -169,10 +166,6 @@ class SpectralConv2d(PadConv2d, LipschitzModule):
 
         This documentation reuse the body of the original torch.nn.Conv2D doc.
         """
-        # if not ((dilation == (1, 1)) or (dilation == [1, 1]) or (dilation == 1)):
-        #     raise RuntimeError("NormalizedConv does not support dilation rate")
-        # if padding_mode != "same":
-        #     raise RuntimeError("NormalizedConv only support padding='same'")
 
         PadConv2d.__init__(
             self,
@@ -225,8 +218,6 @@ class FrobeniusConv2d(PadConv2d, LipschitzModule):
     ):
         if np.prod([stride]) != 1:
             raise RuntimeError("FrobeniusConv2d does not support strides")
-        # if padding_mode != "same":
-        #     raise RuntimeError("NormalizedConv only support padding='same'")
 
         PadConv2d.__init__(
             self,

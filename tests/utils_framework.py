@@ -68,8 +68,6 @@ from deel.torchlip.normalizers import spectral_normalization
 from deel.torchlip.normalizers import bjorck_normalization
 from deel.torchlip.normalizers import DEFAULT_EPS_SPECTRAL
 from deel.torchlip.modules import vanilla_model
-from deel.torchlip.functional import invertible_downsample
-from deel.torchlip.functional import invertible_upsample
 from deel.torchlip.functional import process_labels_for_multi_gpu
 from deel.torchlip.functional import SymmetricPad
 
@@ -112,8 +110,6 @@ __all__ = [
     "BatchCentering",
     "evaluate_lip_const",
     "DEFAULT_EPS_SPECTRAL",
-    "invertible_downsample",
-    "invertible_upsample",
     "bjorck_norm",
     "remove_bjorck_norm",
     "frobenius_norm",
