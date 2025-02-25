@@ -55,7 +55,7 @@ class PadConv1d(torch.nn.Conv1d):
             padding (int or tuple, optional): Zero-padding added to both sides of
                 the input.
             padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
-                ``'replicate'``,``'symmetric'``  or ``'circular'``.
+                ``'replicate'``, ``'symmetric'``  or ``'circular'``.
                 Default: ``'zeros'``
             dilation (int or tuple, optional): Spacing between kernel elements.
                 Has to be one
@@ -140,7 +140,7 @@ class PadConv2d(torch.nn.Conv2d):
             padding (int or tuple, optional): Zero-padding added to both sides of
                 the input.
             padding_mode (string, optional): ``'zeros'``, ``'reflect'``,
-                ``'replicate'``,``'symmetric'``  or ``'circular'``.
+                ``'replicate'``, ``'symmetric'``  or ``'circular'``.
                 Default: ``'zeros'``
             dilation (int or tuple, optional): Spacing between kernel elements.
                 Has to be one

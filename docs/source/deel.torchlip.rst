@@ -10,13 +10,7 @@ deel.torchlip
 
 .. currentmodule:: deel.torchlip
 
-.. toctree::
-   :maxdepth: 4
 
-   deel.torchlip.utils
-   deel.torchlip.functional
-   deel.torchlip.init
-   deel.torchlip.normalizers
 
 Containers
 ----------
@@ -26,9 +20,16 @@ Containers
 .. autoclass:: Sequential
 
 
+Linear Layers
+-------------
+
+.. autoclass:: SpectralLinear
+.. autoclass:: FrobeniusLinear
+
 Convolution Layers
 ------------------
 
+.. autoclass:: SpectralConv1d
 .. autoclass:: SpectralConv2d
 .. autoclass:: FrobeniusConv2d
 .. autoclass:: SpectralConvTranspose2d
@@ -36,9 +37,9 @@ Convolution Layers
 Pooling Layers
 --------------
 
-.. autoclass:: ScaledAdaptiveAvgPool2d
 .. autoclass:: ScaledAvgPool2d
 .. autoclass:: ScaledL2NormPool2d
+.. autoclass:: ScaledAdaptiveAvgPool2d
 .. autoclass:: ScaledAdaptativeL2NormPool2d
 .. autoclass:: InvertibleDownSampling
 .. autoclass:: InvertibleUpSampling
@@ -51,12 +52,8 @@ Non-linear Activations
 .. autoclass:: GroupSort2
 .. autoclass:: FullSort
 .. autoclass:: LPReLU
+.. autoclass:: HouseHolder
 
-Linear Layers
--------------
-
-.. autoclass:: SpectralLinear
-.. autoclass:: FrobeniusLinear
 
 Loss Functions
 --------------
@@ -70,3 +67,11 @@ Loss Functions
 .. autoclass:: TauCrossEntropyLoss
 .. autoclass:: TauBCEWithLogitsLoss
 .. autoclass:: CategoricalHingeLoss
+
+
+.. toctree::
+   :maxdepth: 4
+   
+   deel.torchlip.utils
+   deel.torchlip.functional
+   deel.torchlip.normalizers

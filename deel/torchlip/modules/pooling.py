@@ -108,7 +108,7 @@ class ScaledAdaptiveAvgPool2d(torch.nn.AdaptiveAvgPool2d, LipschitzModule):
         k_coef_lip: float = 1.0,
     ):
         """
-        Applies a 2D adaptive max pooling over an input signal composed of several
+        Applies a 2D adaptive average pooling over an input signal composed of several
         input planes.
 
         The output is of size H x W, for any input size.

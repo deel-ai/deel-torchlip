@@ -31,6 +31,13 @@ from .module import LipschitzModule
 
 
 class InvertibleUpSampling(torch.nn.PixelShuffle, LipschitzModule):
+    """
+    A combination of torch.nn.PixelShuffle and LipschitzModule.
+    This module is used to upsample the input tensor by a factor of kernel_size.
+    The resulting output tensor has kernel_size^2 times less channels
+    than the input tensor.
+    """
+
     def __init__(self, kernel_size: int, k_coef_lip: float = 1.0):
         torch.nn.PixelShuffle.__init__(self, upscale_factor=kernel_size)
         LipschitzModule.__init__(self, k_coef_lip)

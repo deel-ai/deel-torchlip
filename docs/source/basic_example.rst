@@ -24,8 +24,8 @@ For instance, the :class:`SpectralLinear` module is simply a :class:`torch.nn.Li
     torch.nn.init.orthogonal_(m.weight)
     m.bias.data.fill_(0.0)
 
-    torch.nn.utils.spectral_norm(m, "weight", 3)
-    torchlip.utils.bjorck_norm(m, "weight", 15)
+    torch.nn.utils.spectral_norm(m, "weight", eps=1e-3)
+    torchlip.utils.bjorck_norm(m, "weight", eps=1e-3)
 
 
 The following table indicates which module are safe to use in a Lipschitz network, and which are not.
@@ -48,6 +48,10 @@ The following table indicates which module are safe to use in a Lipschitz networ
      - no
      - :class:`.SpectralConv2d` \ :raw-html-m2r:`<br>`\ :class:`.FrobeniusConv2d`
      - :class:`.SpectralConv2d` also implements Björck normalization.
+   * - :class:`torch.nn.Conv1d`
+     - no
+     - :class:`.SpectralConv1d`
+     - :class:`.SpectralConv1d` also implements Björck normalization.
    * - :class:`MaxPooling`\ :raw-html-m2r:`<br>`\ :class:`GlobalMaxPooling`
      - yes
      - n/a
@@ -111,11 +115,12 @@ Here is a simple example showing how to build a 1-Lipschitz network:
     # binary classification with -1 and +1 labels to the target
     # must be fixed from the dataset.
     optimizer = torch.optim.Adam(lr=0.01, params=model.parameters())
+    hkr_loss = HKRLoss(alpha=10, min_margin=1)
     for data, target in mnist_08:
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
-        loss = torchlip.functional.hkr_loss(output, target, alpha=10, min_margin=1)
+        loss = hkr_loss(output, target)
         loss.backward()
         optimizer.step()
 
