@@ -236,7 +236,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.module</span><span class="w"> </span><span class="kn">import</span> <span class="n">LipschitzModule</span>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">SpectralConv1d</span><span class="p">(</span><span class="n">PadConv1d</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
+<div class="viewcode-block" id="SpectralConv1d"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.SpectralConv1d">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SpectralConv1d</span><span class="p">(</span><span class="n">PadConv1d</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">in_channels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
@@ -283,10 +283,6 @@
 
 <span class="sd">        This documentation reuse the body of the original torch.nn.Conv1D doc.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># if not ((dilation == (1, 1)) or (dilation == [1, 1]) or (dilation == 1)):</span>
-        <span class="c1">#     raise RuntimeError(&quot;NormalizedConv does not support dilation rate&quot;)</span>
-        <span class="c1"># if padding_mode != &quot;same&quot;:</span>
-        <span class="c1">#     raise RuntimeError(&quot;NormalizedConv only support padding=&#39;same&#39;&quot;)</span>
 
         <span class="n">PadConv1d</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -316,7 +312,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">apply_lipschitz_factor</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">PadConv1d</span><span class="o">.</span><span class="n">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">PadConv1d</span><span class="o">.</span><span class="n">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="SpectralConv2d"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.SpectralConv2d">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SpectralConv2d</span><span class="p">(</span><span class="n">PadConv2d</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
@@ -354,7 +350,8 @@
 <span class="sd">            padding (int or tuple, optional): Zero-padding added to both sides of</span>
 <span class="sd">                the input.</span>
 <span class="sd">            padding_mode (string, optional): ``&#39;zeros&#39;``, ``&#39;reflect&#39;``,</span>
-<span class="sd">                ``&#39;replicate&#39;`` or ``&#39;circular&#39;``. Default: ``&#39;zeros&#39;``</span>
+<span class="sd">                ``&#39;replicate&#39;``, ``&#39;symmetric&#39;``  or ``&#39;circular&#39;``.</span>
+<span class="sd">                Default: ``&#39;zeros&#39;``</span>
 <span class="sd">            dilation (int or tuple, optional): Spacing between kernel elements.</span>
 <span class="sd">                Has to be one</span>
 <span class="sd">            groups (int, optional): Number of blocked connections from input</span>
@@ -367,10 +364,6 @@
 
 <span class="sd">        This documentation reuse the body of the original torch.nn.Conv2D doc.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># if not ((dilation == (1, 1)) or (dilation == [1, 1]) or (dilation == 1)):</span>
-        <span class="c1">#     raise RuntimeError(&quot;NormalizedConv does not support dilation rate&quot;)</span>
-        <span class="c1"># if padding_mode != &quot;same&quot;:</span>
-        <span class="c1">#     raise RuntimeError(&quot;NormalizedConv only support padding=&#39;same&#39;&quot;)</span>
 
         <span class="n">PadConv2d</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>
@@ -423,8 +416,6 @@
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">([</span><span class="n">stride</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;FrobeniusConv2d does not support strides&quot;</span><span class="p">)</span>
-        <span class="c1"># if padding_mode != &quot;same&quot;:</span>
-        <span class="c1">#     raise RuntimeError(&quot;NormalizedConv only support padding=&#39;same&#39;&quot;)</span>
 
         <span class="n">PadConv2d</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="bp">self</span><span class="p">,</span>

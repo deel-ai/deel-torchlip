@@ -223,151 +223,9 @@
 <span class="c1"># CRIAQ and ANITI - https://www.deel.ai/</span>
 <span class="c1"># =====================================================================================</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
-
-<span class="c1"># Up / Down sampling</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">invertible_downsample</span><span class="p">(</span>
-    <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Downsamples the input in an invertible way.</span>
-
-<span class="sd">    The number of elements in the output tensor is the same as the</span>
-<span class="sd">    number of elements in the input tensor.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        input: A tensor of shape :math:`(N, C, W)`, :math:`(N, C, W, H)` or</span>
-<span class="sd">            :math:`(N, C, D, W, H)` to downsample.</span>
-<span class="sd">        kernel_size: The downsample scale. If a single-value is passed, the</span>
-<span class="sd">            same value will be used alongside all dimensions, otherwise the</span>
-<span class="sd">            length of ``kernel_size`` must match the number of dimensions</span>
-<span class="sd">            of the input (1, 2 or 3).</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If there is a mismatch between ``kernel_size`` and the input</span>
-<span class="sd">            shape.</span>
-
-<span class="sd">    Examples:</span>
-
-<span class="sd">        &gt;&gt;&gt; x = torch.rand(16, 16, 32, 32)</span>
-<span class="sd">        &gt;&gt;&gt; x.shape</span>
-<span class="sd">        (16, 16, 32, 32)</span>
-<span class="sd">        &gt;&gt;&gt; y = invertible_downsample(x, (2, 4))</span>
-<span class="sd">        &gt;&gt;&gt; y.shape</span>
-<span class="sd">        (16, 128, 16, 8)</span>
-
-<span class="sd">    See Also:</span>
-<span class="sd">        :py:func:`invertible_upsample`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># number of dimensions</span>
-    <span class="n">shape</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
-    <span class="n">ndims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
-    <span class="n">ks</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">ks</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel_size</span><span class="p">,)</span> <span class="o">*</span> <span class="n">ndims</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">ks</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ndims</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input for kernel size </span><span class="si">{</span><span class="n">ks</span><span class="si">}</span><span class="s2">, but &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">ndims</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input of size </span><span class="si">{</span><span class="n">shape</span><span class="si">}</span><span class="s2"> instead&quot;</span>
-        <span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">):</span>
-        <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
-            <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span><span class="p">]</span>
-            <span class="o">+</span> <span class="p">(</span><span class="n">ks</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">shape</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span> <span class="o">//</span> <span class="n">ks</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
-            <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span>
-        <span class="p">)</span>
-
-    <span class="c1"># order of the permutation</span>
-    <span class="n">perm</span> <span class="o">=</span> <span class="p">(</span>
-        <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-        <span class="o">+</span> <span class="p">[</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">)]</span>
-        <span class="o">+</span> <span class="p">[</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">)]</span>
-    <span class="p">)</span>
-    <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="o">*</span><span class="n">perm</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="n">ndims</span><span class="p">:])</span>
-
-
-<span class="k">def</span><span class="w"> </span><span class="nf">invertible_upsample</span><span class="p">(</span>
-    <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
-<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Upsamples the input in an invertible way. The number of elements in the</span>
-<span class="sd">    output tensor is the same as the number of elements in the input tensor.</span>
-
-<span class="sd">    The number of input channels must be a multiple of the product of the</span>
-<span class="sd">    kernel sizes, i.e.</span>
-
-<span class="sd">    .. math::</span>
-<span class="sd">        C \equiv 0 \mod (k_1 * \ldots{} * k_l)</span>
-
-<span class="sd">    where :math:`C` is the number of inputs channels and :math:`k_i` the kernel</span>
-<span class="sd">    size for dimension :math:`i` and :math:`l` the number of dimensions.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        input: A tensor of shape :math:`(N, C, W)`, :math:`(N, C, W, H)` or</span>
-<span class="sd">            :math:`(N, C, D, W, H)` to upsample.</span>
-<span class="sd">        kernel_size: The upsample scale. If a single-value is passed, the</span>
-<span class="sd">            same value will be used alongside all dimensions, otherwise the</span>
-<span class="sd">            length of ``kernel_size`` must match the number of dimensions</span>
-<span class="sd">            of the input (1, 2 or 3).</span>
-
-<span class="sd">    Raises:</span>
-<span class="sd">        ValueError: If there is a mismatch between ``kernel_size`` and the input</span>
-<span class="sd">            shape.</span>
-
-<span class="sd">    Examples:</span>
-
-<span class="sd">        &gt;&gt;&gt; x = torch.rand(16, 128, 16, 8)</span>
-<span class="sd">        &gt;&gt;&gt; x.shape</span>
-<span class="sd">        (16, 128, 16, 8)</span>
-<span class="sd">        &gt;&gt;&gt; y = invertible_upsample(x, (2, 4))</span>
-<span class="sd">        &gt;&gt;&gt; y.shape</span>
-<span class="sd">        (16, 16, 32, 32)</span>
-
-<span class="sd">    See Also:</span>
-<span class="sd">        :py:func:`invertible_downsample`</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># number of dimensions</span>
-    <span class="n">ndims</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
-    <span class="n">ks</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-        <span class="n">ks</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernel_size</span><span class="p">,)</span> <span class="o">*</span> <span class="n">ndims</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">ks</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">kernel_size</span><span class="p">)</span>
-
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ndims</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input for kernel size </span><span class="si">{</span><span class="n">ks</span><span class="si">}</span><span class="s2">, but &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;got </span><span class="si">{</span><span class="n">ndims</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="si">}</span><span class="s2">-dimensional input of size </span><span class="si">{</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2"> instead&quot;</span>
-        <span class="p">)</span>
-
-    <span class="n">ncout</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">//</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">ks</span><span class="p">)</span>
-    <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncout</span><span class="p">)</span> <span class="o">+</span> <span class="n">ks</span> <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="n">ndims</span><span class="p">:])</span>
-
-    <span class="c1"># order of the permutation</span>
-    <span class="n">perm</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">):</span>
-        <span class="n">perm</span> <span class="o">+=</span> <span class="p">[</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="n">ndims</span><span class="p">]</span>
-    <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">permute</span><span class="p">(</span><span class="o">*</span><span class="n">perm</span><span class="p">)</span>
-
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ndims</span><span class="p">):</span>
-        <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,)</span> <span class="o">+</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span> <span class="p">:])</span>
-
-    <span class="k">return</span> <span class="nb">input</span>
 
 
 <span class="c1"># Activations</span>
@@ -747,7 +605,7 @@
         <span class="p">)</span> <span class="o">*</span> <span class="n">kr_loss_fct</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span></div>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">process_labels_for_multi_gpu</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<div class="viewcode-block" id="process_labels_for_multi_gpu"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.process_labels_for_multi_gpu">[docs]</a><span class="k">def</span><span class="w"> </span><span class="nf">process_labels_for_multi_gpu</span><span class="p">(</span><span class="n">labels</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Process labels to be fed to any loss based on KR estimation with a multi-GPU/TPU</span>
 <span class="sd">    strategy.</span>
 
@@ -773,10 +631,10 @@
 
     <span class="c1"># Since element-wise KR terms are averaged by loss reduction later on, it is needed</span>
     <span class="c1"># to multiply by batch_size here.</span>
-    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pos_factor</span><span class="p">,</span> <span class="n">neg_factor</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">labels</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">pos_factor</span><span class="p">,</span> <span class="n">neg_factor</span><span class="p">)</span></div>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">SymmetricPad</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="SymmetricPad"><a class="viewcode-back" href="../../../deel.torchlip.functional.html#deel.torchlip.functional.SymmetricPad">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">SymmetricPad</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Pads a 2D tensor symmetrically.</span>
 
@@ -812,7 +670,7 @@
         <span class="n">bottom</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="p">:,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">top</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">bottom</span><span class="p">],</span> <span class="n">dim</span><span class="o">=-</span><span class="mi">2</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">x</span>
+        <span class="k">return</span> <span class="n">x</span></div>
 </pre></div>
 
               </article>

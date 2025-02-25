@@ -229,6 +229,13 @@
 
 
 <div class="viewcode-block" id="InvertibleUpSampling"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.InvertibleUpSampling">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">InvertibleUpSampling</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">PixelShuffle</span><span class="p">,</span> <span class="n">LipschitzModule</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A combination of torch.nn.PixelShuffle and LipschitzModule.</span>
+<span class="sd">    This module is used to upsample the input tensor by a factor of kernel_size.</span>
+<span class="sd">    The resulting output tensor has kernel_size^2 times less channels</span>
+<span class="sd">    than the input tensor.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">k_coef_lip</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
         <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">PixelShuffle</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">upscale_factor</span><span class="o">=</span><span class="n">kernel_size</span><span class="p">)</span>
         <span class="n">LipschitzModule</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k_coef_lip</span><span class="p">)</span>

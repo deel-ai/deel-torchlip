@@ -645,7 +645,8 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The loss add a temperature (tau) factor to the CrossEntropyLoss</span>
-<span class="sd">        CrossEntropyLoss(tau * input, target)</span>
+<span class="sd">        CrossEntropyLoss(tau * input, target).</span>
+
 <span class="sd">        See `CrossEntropyLoss` for more details on arguments.</span>
 
 <span class="sd">        Args:</span>
@@ -681,7 +682,8 @@
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The loss add a temperature (tau) factor to the BCEWithLogitsLoss</span>
-<span class="sd">        BCEWithLogitsLoss(tau * input, target)</span>
+<span class="sd">        BCEWithLogitsLoss(tau * input, target).</span>
+
 <span class="sd">        See `BCEWithLogitsLoss` for more details on arguments.</span>
 
 <span class="sd">        Args:</span>
@@ -712,7 +714,8 @@
 
 <span class="sd">        `target` and `input` must be of shape (batch_size, # classes).</span>
 <span class="sd">        Note that `target` should be one-hot encoded, +/-1 values.</span>
-<span class="sd">        ReLU(min_margin - (input[target&gt;0] - max(input[target&lt;=0])))</span>
+<span class="sd">        :math:`\\text{ReLU}(\\text{min\\_margin} - (\\text{input}[\\text{target}&gt;0]</span>
+<span class="sd">        - \\text{max}(\\text{input}[\\text{target}&lt;=0])))`</span>
 <span class="sd">        is computed element-wise and averaged over the batch.</span>
 
 <span class="sd">        Args:</span>

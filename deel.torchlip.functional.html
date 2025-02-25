@@ -292,6 +292,26 @@ x, &amp; \text{ if } x \geq 0 \\
 
 </section>
 </section>
+<section id="padding-functions">
+<h2>Padding functions<a class="headerlink" href="#padding-functions" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="deel.torchlip.functional.SymmetricPad">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deel.torchlip.functional.</span></span><span class="sig-name descname"><span class="pre">SymmetricPad</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pad</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">onedim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/functional.html#SymmetricPad"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.functional.SymmetricPad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pads a 2D tensor symmetrically.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pad</strong> (<em>tuple</em>) – A tuple (pad_left, pad_right, pad_top, pad_bottom) specifying
+the number of pixels to pad on each side. (or single int if
+common padding).</p></li>
+<li><p><strong>onedim</strong> – False for conv2d, True for conv1d.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Initialize internal Module state, shared by both nn.Module and ScriptModule.</p>
+</dd></dl>
+
+</section>
 <section id="loss-functions">
 <h2>Loss functions<a class="headerlink" href="#loss-functions" title="Permalink to this heading">¶</a></h2>
 <section id="binary-losses">
@@ -458,6 +478,32 @@ Kantorovich-Rubinstein duality.</p>
 </dd></dl>
 
 </section>
+<section id="id1">
+<h3><span class="hidden-section">others</span><a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h3>
+<dl class="py function">
+<dt class="sig sig-object py" id="deel.torchlip.functional.process_labels_for_multi_gpu">
+<span class="sig-prename descclassname"><span class="pre">deel.torchlip.functional.</span></span><span class="sig-name descname"><span class="pre">process_labels_for_multi_gpu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><span class="pre">Tensor</span></a></span></span><a class="reference internal" href="_modules/deel/torchlip/functional.html#process_labels_for_multi_gpu"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.functional.process_labels_for_multi_gpu" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process labels to be fed to any loss based on KR estimation with a multi-GPU/TPU
+strategy.</p>
+<p>When using a multi-GPU/TPU strategy, the flag <cite>multi_gpu</cite> in KR-based losses must be
+set to True and the labels have to be pre-processed with this function.</p>
+<p>For binary classification, the labels should be of shape [batch_size, 1].
+For multiclass problems, the labels must be one-hot encoded (1 or 0) with shape
+[batch_size, number of classes].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>labels</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.6)"><em>torch.Tensor</em></a>) – tensor containing the labels</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>labels processed for KR-based losses with multi-GPU/TPU strategy.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.6)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 </section>
 </section>
 
@@ -515,6 +561,10 @@ Kantorovich-Rubinstein duality.</p>
 </li>
 </ul>
 </li>
+<li><a class="reference internal" href="#padding-functions">Padding functions</a><ul>
+<li><a class="reference internal" href="#deel.torchlip.functional.SymmetricPad"><code class="docutils literal notranslate"><span class="pre">SymmetricPad</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#loss-functions">Loss functions</a><ul>
 <li><a class="reference internal" href="#binary-losses"><span class="hidden-section">Binary losses</span></a><ul>
 <li><a class="reference internal" href="#deel.torchlip.functional.kr_loss"><code class="docutils literal notranslate"><span class="pre">kr_loss()</span></code></a></li>
@@ -526,6 +576,10 @@ Kantorovich-Rubinstein duality.</p>
 <li><a class="reference internal" href="#multiclass-losses"><span class="hidden-section">multiclass losses</span></a><ul>
 <li><a class="reference internal" href="#deel.torchlip.functional.hinge_multiclass_loss"><code class="docutils literal notranslate"><span class="pre">hinge_multiclass_loss()</span></code></a></li>
 <li><a class="reference internal" href="#deel.torchlip.functional.hkr_multiclass_loss"><code class="docutils literal notranslate"><span class="pre">hkr_multiclass_loss()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id1"><span class="hidden-section">others</span></a><ul>
+<li><a class="reference internal" href="#deel.torchlip.functional.process_labels_for_multi_gpu"><code class="docutils literal notranslate"><span class="pre">process_labels_for_multi_gpu()</span></code></a></li>
 </ul>
 </li>
 </ul>

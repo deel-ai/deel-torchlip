@@ -220,8 +220,8 @@ For instance, the <code class="xref py py-class docutils literal notranslate"><s
 <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">init</span><span class="o">.</span><span class="n">orthogonal_</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>
 <span class="n">m</span><span class="o">.</span><span class="n">bias</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">fill_</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
 
-<span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">spectral_norm</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
-<span class="n">torchlip</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">bjorck_norm</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="mi">15</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">spectral_norm</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="n">torchlip</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">bjorck_norm</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The following table indicates which module are safe to use in a Lipschitz network, and which are not.</p>
@@ -244,42 +244,47 @@ For instance, the <code class="xref py py-class docutils literal notranslate"><s
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConv2d" title="deel.torchlip.SpectralConv2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConv2d</span></code></a> <span class="raw-html-m2r"><br></span><a class="reference internal" href="deel.torchlip.html#deel.torchlip.FrobeniusConv2d" title="deel.torchlip.FrobeniusConv2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">FrobeniusConv2d</span></code></a></p></td>
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConv2d" title="deel.torchlip.SpectralConv2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConv2d</span></code></a> also implements Björck normalization.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MaxPooling</span></code><span class="raw-html-m2r"><br></span><code class="xref py py-class docutils literal notranslate"><span class="pre">GlobalMaxPooling</span></code></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Conv1d.html#torch.nn.Conv1d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Conv1d</span></code></a></p></td>
+<td><p>no</p></td>
+<td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConv1d" title="deel.torchlip.SpectralConv1d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConv1d</span></code></a></p></td>
+<td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConv1d" title="deel.torchlip.SpectralConv1d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConv1d</span></code></a> also implements Björck normalization.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">MaxPooling</span></code><span class="raw-html-m2r"><br></span><code class="xref py py-class docutils literal notranslate"><span class="pre">GlobalMaxPooling</span></code></p></td>
 <td><p>yes</p></td>
 <td><p>n/a</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html#torch.nn.AvgPool2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AvgPool2d</span></code></a><span class="raw-html-m2r"><br></span><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AdaptiveAvgPool2d</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AvgPool2d.html#torch.nn.AvgPool2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AvgPool2d</span></code></a><span class="raw-html-m2r"><br></span><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.AdaptiveAvgPool2d.html#torch.nn.AdaptiveAvgPool2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.AdaptiveAvgPool2d</span></code></a></p></td>
 <td><p>no</p></td>
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledAvgPool2d" title="deel.torchlip.ScaledAvgPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledAvgPool2d</span></code></a><span class="raw-html-m2r"><br></span><a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledAdaptiveAvgPool2d" title="deel.torchlip.ScaledAdaptiveAvgPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledAdaptiveAvgPool2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledL2NormPool2d" title="deel.torchlip.ScaledL2NormPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledL2NormPool2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference internal" href="deel.torchlip.html#deel.torchlip.ScaledAdaptativeL2NormPool2d" title="deel.torchlip.ScaledAdaptativeL2NormPool2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScaledAdaptativeL2NormPool2d</span></code></a></p></td>
 <td><p>The Lipschitz constant is bounded by <code class="docutils literal notranslate"><span class="pre">sqrt(pool_h</span> <span class="pre">*</span> <span class="pre">pool_w)</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Flatten</span></code></p></td>
+<tr class="row-odd"><td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">Flatten</span></code></p></td>
 <td><p>yes</p></td>
 <td><p>n/a</p></td>
 <td></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html#torch.nn.ConvTranspose2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.ConvTranspose2d</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.ConvTranspose2d.html#torch.nn.ConvTranspose2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.ConvTranspose2d</span></code></a></p></td>
 <td><p>no</p></td>
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConvTranspose2d" title="deel.torchlip.SpectralConvTranspose2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConvTranspose2d</span></code></a></p></td>
 <td><p><a class="reference internal" href="deel.torchlip.html#deel.torchlip.SpectralConvTranspose2d" title="deel.torchlip.SpectralConvTranspose2d"><code class="xref py py-class docutils literal notranslate"><span class="pre">SpectralConvTranspose2d</span></code></a> also implements Björck normalization.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm1d.html#torch.nn.BatchNorm1d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm1d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm3d.html#torch.nn.BatchNorm3d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm3d</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm1d.html#torch.nn.BatchNorm1d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm1d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html#torch.nn.BatchNorm2d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm2d</span></code></a> <span class="raw-html-m2r"><br></span> <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm3d.html#torch.nn.BatchNorm3d" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.BatchNorm3d</span></code></a></p></td>
 <td><p>no</p></td>
 <td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">BatchCentering</span></code></p></td>
 <td><p>This layer apply a bias based on statistics on batch, but no normalization factor (1-Lipschitz).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html#torch.nn.LayerNorm" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.LayerNorm</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.LayerNorm.html#torch.nn.LayerNorm" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.LayerNorm</span></code></a></p></td>
 <td><p>no</p></td>
 <td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">LayerCentering</span></code></p></td>
 <td><p>This layer apply a bias based on statistics on each sample, but no normalization factor (1-Lipschitz).</p></td>
 </tr>
-<tr class="row-even"><td><p>Residual connections</p></td>
+<tr class="row-odd"><td><p>Residual connections</p></td>
 <td><p>no</p></td>
 <td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">LipResidual</span></code></p></td>
 <td><p>Learn a factor for mixing residual and a 1-Lipschitz branch .</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html#torch.nn.Dropout" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Dropout</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Dropout.html#torch.nn.Dropout" title="(in PyTorch v2.6)"><code class="xref py py-class docutils literal notranslate"><span class="pre">torch.nn.Dropout</span></code></a></p></td>
 <td><p>no</p></td>
 <td><p>None</p></td>
 <td><p>The Lipschitz constant is bounded by the dropout factor.</p></td>
@@ -313,11 +318,12 @@ For instance, the <code class="xref py py-class docutils literal notranslate"><s
 <span class="c1"># binary classification with -1 and +1 labels to the target</span>
 <span class="c1"># must be fixed from the dataset.</span>
 <span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+<span class="n">hkr_loss</span> <span class="o">=</span> <span class="n">HKRLoss</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">mnist_08</span><span class="p">:</span>
     <span class="n">data</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">),</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-    <span class="n">loss</span> <span class="o">=</span> <span class="n">torchlip</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">min_margin</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">hkr_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
     <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
     <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 </pre></div>
