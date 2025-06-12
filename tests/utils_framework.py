@@ -59,6 +59,7 @@ from deel.torchlip.modules import (
     HingeMulticlassLoss,
     HKRMulticlassLoss,
     SoftHKRMulticlassLoss,
+    LseHKRMulticlassLoss,
     TauCrossEntropyLoss,
     TauBCEWithLogitsLoss,
     CategoricalHingeLoss,

@@ -432,7 +432,99 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
             target = torch.Tensor(target, dtype=input.dtype)
         loss_batch = self.fct(target, input)
         return F.apply_reduction(loss_batch, self.reduction)
+    
+class LseHKRMulticlassLoss(torch.nn.Module):
+    def __init__(
+        self,
+        alpha: float = 1.,
+        temperature: float = 1.,
+        penalty = 1., # max <logsumpexp< max+penalty*margin
+        min_margin = 1,
+        reduction: str = "mean",
+    ):
+        """
+    Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
+    duality with a hinge regularization and logsumexp summary.
+        Args:
+            alpha: Regularization factor between the hinge and the KR loss (0 <= alpha <= 1).
+            min_margin (float): margin to enforce.
+            alpha_mean (float): geometric mean factor
+            temperature (float): factor for softmax  temperature
+                (higher value increases the weight of the highest non y_true logits)
+            min_margin: Minimal margin for the hinge loss.
+            reduction: type of reduction applied to the output. possible values are
+                'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
+        """
+        super().__init__()
+        if (alpha >= 0) and (alpha <= 1):
+            self.alpha = torch.tensor(alpha, dtype=torch.float32)
+        else:
+            warnings.warn(
+                f"Depreciated alpha should be between 0 and 1 replaced by \
+                    {alpha/(alpha+1.0)}"
+            )
+            self.alpha = torch.tensor(alpha / (alpha + 1.0), dtype=torch.float32)
+        self.penalty = penalty
+        self.temperature = temperature
+        self.margin = min_margin
+        if alpha == 1.0:  # alpha = 1.0 => hinge only
+            self.fct = self.lse_hinge
+        else:
+            if alpha == 0.0:  # alpha = 0.0 => KR only
+                self.fct = self.lse_kr
+            else:
+                self.fct = self.lse_hkr
+        self.reduction = reduction
 
+    def get_positive(self, y_pred, y_true):
+        return y_pred[y_true > 0]
+
+    def compute_lse_neg(self, y_pred, y_true, min_margin):
+        neg = torch.where(y_true > 0, -float('inf'),  y_pred)
+        nb_bins = y_pred.new_tensor(y_pred.size(1) - 1)
+        nb_bins = torch.log(nb_bins)
+        t = nb_bins/ (min_margin*self.penalty/2.0)# margin = min_margin/2.0
+        lse_neg = 1/t*torch.logsumexp(t*neg,dim = 1)# max <neg_soft< max+penalty*margin
+        return lse_neg
+        
+    def lse_hinge_preproc(self, pos, lse_neg, min_margin):
+        # compute the elementwise hinge term
+        hinge_pos = torch.nn.functional.relu(min_margin / 2.0 -  pos)
+        hinge_neg = torch.nn.functional.relu(min_margin / 2.0 +  lse_neg)
+        return hinge_pos+hinge_neg
+	        
+
+    def lse_hinge(self, y_pred, y_true):
+        pos = self.get_positive(y_pred, y_true)
+        lse_neg = self.compute_lse_neg(y_pred, y_true, self.margin)
+        hinge = self.lse_hinge_preproc(pos, lse_neg, self.margin)
+        return hinge
+        
+    def lse_kr_preproc(self, pos, lse_neg):
+        return pos-lse_neg
+    	
+    def lse_kr(self, y_pred, y_true):
+        pos = self.get_positive(y_pred, y_true)
+        lse_neg = self.compute_lse_neg(y_pred, y_true, self.margin)
+        kr  = -self.lse_kr_preproc(pos, lse_neg)
+        return kr
+    
+    def lse_hkr(self, y_pred, y_true):
+        pos = self.get_positive(y_pred, y_true)
+        lse_neg = self.compute_lse_neg(y_pred, y_true, self.margin)
+
+        lse_kr  = -self.lse_kr_preproc(pos, lse_neg)
+        lse_hinge = self.lse_hinge_preproc(pos, lse_neg, self.margin)
+
+        return self.alpha * lse_hinge + (1 - self.alpha) * lse_kr
+        
+    def forward(self, input: torch.Tensor, target: torch.Tensor) -> torch.Tensor:
+        if not (isinstance(input, torch.Tensor)):  # required for dtype.max
+            input = torch.Tensor(input, dtype=input.dtype)
+        if not (isinstance(target, torch.Tensor)):
+            target = torch.Tensor(target, dtype=input.dtype)
+        loss_batch = self.fct(input, target)
+        return F.apply_reduction(loss_batch, self.reduction)
 
 class TauCrossEntropyLoss(CrossEntropyLoss):
     def __init__(
