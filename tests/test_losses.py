@@ -363,7 +363,6 @@ def test_hkr_loss():
 
 
 def test_softhkrmulticlass_loss():
-    global y_true2, y_pred2, y_trueonehot, y_predonehot
     loss_instance = SoftHKRMulticlassLoss
     if hasattr(loss_instance, "unavailable_class"):
         pytest.skip(f"{loss_instance} not implemented")
@@ -422,12 +421,11 @@ def test_softhkrmulticlass_loss():
 
 
 def test_lsehkrmulticlass_loss():
-    global y_true2, y_pred2, y_trueonehot, y_predonehot
     loss_instance = LseHKRMulticlassLoss
     if hasattr(loss_instance, "unavailable_class"):
         pytest.skip(f"{loss_instance} not implemented")
     y_true_np, y_pred_np = y_true2, y_pred2
-    expected_loss = np.float32(1.0231503) # warning alpha scaled to be in [0,1]
+    expected_loss = np.float32(1.0231503)  # warning alpha scaled to be in [0,1]
     rtol = 1e-5
     loss = uft.get_instance_framework(
         loss_instance, inst_params={"alpha": 5.0, "min_margin": 0.2}
@@ -441,9 +439,7 @@ def test_lsehkrmulticlass_loss():
 
     # loss value should not change
     loss_val_bis = uft.compute_loss(loss, y_pred, y_true).numpy()
-    np.testing.assert_allclose(
-        loss_val_bis, np.float32(expected_loss), rtol=rtol
-    )
+    np.testing.assert_allclose(loss_val_bis, np.float32(expected_loss), rtol=rtol)
 
     y_true_np, y_pred_np = y_trueonehot, y_predonehot
     loss = uft.get_instance_framework(
@@ -474,6 +470,21 @@ def test_lsehkrmulticlass_loss():
         loss_val_3,
         loss_val,
         err_msg="{loss_instance} test failed when labels are in (1, -1)",
+    )
+
+    # loss with temperature should be multiplied by temp if min_margin adapted
+    temp = 10.0
+    loss4 = uft.get_instance_framework(
+        loss_instance,
+        inst_params={"alpha": 5.0, "min_margin": 0.2 * temp, "temperature": temp},
+    )
+    loss_val_4 = uft.compute_loss(loss4, y_pred, y_true).numpy()
+    np.testing.assert_allclose(
+        loss_val_4,
+        loss_val * temp,
+        err_msg="{loss_instance} test failed when temperature is not 1",
+        rtol=1e-4,
+        atol=1e-4,
     )
 
     check_serialization(1, loss)
@@ -603,7 +614,7 @@ def test_lsehkrmulticlass_loss():
             y_true3,
             y_pred3,
             np.float64(
-                [ 
+                [
                     0.03445601,
                     0.21667106,
                     1.9499999,
@@ -611,7 +622,7 @@ def test_lsehkrmulticlass_loss():
                     -0.2494376,
                     2.9666667,
                     -0.11666449,
-                    1.0251629 
+                    1.0251629,
                 ]
             ),
             1e-7,

@@ -124,6 +124,7 @@ __all__ = [
     "process_labels_for_multi_gpu",
     "SpectralConv1d",
     "LipResidual",
+    "LseHKRMulticlassLoss",
 ]
 
 
