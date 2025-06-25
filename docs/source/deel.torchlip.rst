@@ -64,6 +64,7 @@ Loss Functions
 .. autoclass:: HKRLoss
 .. autoclass:: HKRMulticlassLoss
 .. autoclass:: SoftHKRMulticlassLoss
+.. autoclass:: LseHKRMulticlassLoss
 .. autoclass:: TauCrossEntropyLoss
 .. autoclass:: TauBCEWithLogitsLoss
 .. autoclass:: CategoricalHingeLoss
