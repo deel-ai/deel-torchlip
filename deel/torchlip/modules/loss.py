@@ -449,7 +449,6 @@ class LseHKRMulticlassLoss(torch.nn.Module):
             Args:
                 alpha: Regularization factor between the hinge and the KR loss
                         (0 <= alpha <= 1).
-                min_margin (float): margin to enforce.
                 alpha_mean (float): geometric mean factor
                 temperature (float): temperature factor applied on logits
                     (both in KR and Hinge)
