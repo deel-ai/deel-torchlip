@@ -644,16 +644,15 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein</span>
 <span class="sd">        duality with a hinge regularization and logsumexp summary.</span>
-<span class="sd">            Args:</span>
-<span class="sd">                alpha: Regularization factor between the hinge and the KR loss</span>
-<span class="sd">                        (0 &lt;= alpha &lt;= 1).</span>
-<span class="sd">                alpha_mean (float): geometric mean factor</span>
-<span class="sd">                temperature (float): temperature factor applied on logits</span>
-<span class="sd">                    (both in KR and Hinge)</span>
-<span class="sd">                penalty (float): penalty factor for the logsumexp summary</span>
-<span class="sd">                    max &lt;logsumpexp&lt; max+penalty*margin (default is 1.0).</span>
-<span class="sd">                min_margin: Minimal margin for the hinge loss.</span>
-<span class="sd">                reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">        Args:</span>
+<span class="sd">            alpha: Regularization factor between the hinge and the KR loss</span>
+<span class="sd">                (0 &lt;= alpha &lt;= 1).</span>
+<span class="sd">            temperature (float): temperature factor applied on logits</span>
+<span class="sd">                (both in KR and Hinge)</span>
+<span class="sd">            penalty (float): penalty factor for the logsumexp summary</span>
+<span class="sd">                max &lt;logsumpexp&lt; max+penalty*margin (default is 1.0).</span>
+<span class="sd">            min_margin: Minimal margin for the hinge loss.</span>
+<span class="sd">            reduction: type of reduction applied to the output. possible values are</span>
 <span class="sd">                   &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>

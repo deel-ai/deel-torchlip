@@ -893,30 +893,24 @@ hinge loss.</p>
 <dt class="sig sig-object py" id="deel.torchlip.LseHKRMulticlassLoss">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deel.torchlip.</span></span><span class="sig-name descname"><span class="pre">LseHKRMulticlassLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/loss.html#LseHKRMulticlassLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.LseHKRMulticlassLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
-duality with a hinge regularization and logsumexp summary.</p>
+duality with a hinge regularization and logsumexp summary.
+:param alpha: Regularization factor between the hinge and the KR loss</p>
 <blockquote>
-<div><dl>
-<dt>Args:</dt><dd><dl class="simple">
-<dt>alpha: Regularization factor between the hinge and the KR loss</dt><dd><p>(0 &lt;= alpha &lt;= 1).</p>
+<div><p>(0 &lt;= alpha &lt;= 1).</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>temperature</strong> (<em>float</em>) – temperature factor applied on logits
+(both in KR and Hinge)</p></li>
+<li><p><strong>penalty</strong> (<em>float</em>) – penalty factor for the logsumexp summary
+max &lt;logsumpexp&lt; max+penalty*margin (default is 1.0).</p></li>
+<li><p><strong>min_margin</strong> – Minimal margin for the hinge loss.</p></li>
+<li><p><strong>reduction</strong> – type of reduction applied to the output. possible values are
+‘none’ | ‘mean’ | ‘sum’ | ‘auto’; default is ‘mean’ (‘auto is ‘mean’)</p></li>
+</ul>
 </dd>
 </dl>
-<p>alpha_mean (float): geometric mean factor
-temperature (float): temperature factor applied on logits</p>
-<blockquote>
-<div><p>(both in KR and Hinge)</p>
-</div></blockquote>
-<dl class="simple">
-<dt>penalty (float): penalty factor for the logsumexp summary</dt><dd><p>max &lt;logsumpexp&lt; max+penalty*margin (default is 1.0).</p>
-</dd>
-</dl>
-<p>min_margin: Minimal margin for the hinge loss.
-reduction: type of reduction applied to the output. possible values are</p>
-<blockquote>
-<div><p>‘none’ | ‘mean’ | ‘sum’ | ‘auto’; default is ‘mean’ (‘auto is ‘mean’)</p>
-</div></blockquote>
-</dd>
-</dl>
-</div></blockquote>
 </dd></dl>
 
 <dl class="py class">
