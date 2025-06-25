@@ -43,6 +43,7 @@ __all__ = [
     "HKRLoss",
     "HKRMulticlassLoss",
     "SoftHKRMulticlassLoss",
+    "LseHKRMulticlassLoss",
     "HingeMarginLoss",
     "HingeMulticlassLoss",
     "InvertibleDownSampling",

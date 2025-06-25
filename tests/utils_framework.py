@@ -59,6 +59,7 @@ from deel.torchlip.modules import (
     HingeMulticlassLoss,
     HKRMulticlassLoss,
     SoftHKRMulticlassLoss,
+    LseHKRMulticlassLoss,
     TauCrossEntropyLoss,
     TauBCEWithLogitsLoss,
     CategoricalHingeLoss,
@@ -123,6 +124,7 @@ __all__ = [
     "process_labels_for_multi_gpu",
     "SpectralConv1d",
     "LipResidual",
+    "LseHKRMulticlassLoss",
 ]
 
 
