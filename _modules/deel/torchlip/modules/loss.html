@@ -632,7 +632,7 @@
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
-<span class="k">class</span><span class="w"> </span><span class="nc">LseHKRMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="LseHKRMulticlassLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.LseHKRMulticlassLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">LseHKRMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
@@ -726,7 +726,7 @@
             <span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
         <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span>
         <span class="n">loss_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fct</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="TauCrossEntropyLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.TauCrossEntropyLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TauCrossEntropyLoss</span><span class="p">(</span><span class="n">CrossEntropyLoss</span><span class="p">):</span>

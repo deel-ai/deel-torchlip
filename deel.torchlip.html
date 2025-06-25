@@ -890,6 +890,36 @@ hinge loss.</p>
 </dd></dl>
 
 <dl class="py class">
+<dt class="sig sig-object py" id="deel.torchlip.LseHKRMulticlassLoss">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deel.torchlip.</span></span><span class="sig-name descname"><span class="pre">LseHKRMulticlassLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">penalty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_margin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/loss.html#LseHKRMulticlassLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.LseHKRMulticlassLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
+duality with a hinge regularization and logsumexp summary.</p>
+<blockquote>
+<div><dl>
+<dt>Args:</dt><dd><dl class="simple">
+<dt>alpha: Regularization factor between the hinge and the KR loss</dt><dd><p>(0 &lt;= alpha &lt;= 1).</p>
+</dd>
+</dl>
+<p>alpha_mean (float): geometric mean factor
+temperature (float): temperature factor applied on logits</p>
+<blockquote>
+<div><p>(both in KR and Hinge)</p>
+</div></blockquote>
+<dl class="simple">
+<dt>penalty (float): penalty factor for the logsumexp summary</dt><dd><p>max &lt;logsumpexp&lt; max+penalty*margin (default is 1.0).</p>
+</dd>
+</dl>
+<p>min_margin: Minimal margin for the hinge loss.
+reduction: type of reduction applied to the output. possible values are</p>
+<blockquote>
+<div><p>‘none’ | ‘mean’ | ‘sum’ | ‘auto’; default is ‘mean’ (‘auto is ‘mean’)</p>
+</div></blockquote>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py class">
 <dt class="sig sig-object py" id="deel.torchlip.TauCrossEntropyLoss">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">deel.torchlip.</span></span><span class="sig-name descname"><span class="pre">TauCrossEntropyLoss</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tau</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.7)"><span class="pre">Tensor</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size_average</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduce</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reduction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'mean'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label_smoothing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/deel/torchlip/modules/loss.html#TauCrossEntropyLoss"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#deel.torchlip.TauCrossEntropyLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>The loss add a temperature (tau) factor to the CrossEntropyLoss
@@ -1101,6 +1131,7 @@ is computed element-wise and averaged over the batch.</p>
 <li><a class="reference internal" href="#deel.torchlip.HKRLoss"><code class="docutils literal notranslate"><span class="pre">HKRLoss</span></code></a></li>
 <li><a class="reference internal" href="#deel.torchlip.HKRMulticlassLoss"><code class="docutils literal notranslate"><span class="pre">HKRMulticlassLoss</span></code></a></li>
 <li><a class="reference internal" href="#deel.torchlip.SoftHKRMulticlassLoss"><code class="docutils literal notranslate"><span class="pre">SoftHKRMulticlassLoss</span></code></a></li>
+<li><a class="reference internal" href="#deel.torchlip.LseHKRMulticlassLoss"><code class="docutils literal notranslate"><span class="pre">LseHKRMulticlassLoss</span></code></a></li>
 <li><a class="reference internal" href="#deel.torchlip.TauCrossEntropyLoss"><code class="docutils literal notranslate"><span class="pre">TauCrossEntropyLoss</span></code></a></li>
 <li><a class="reference internal" href="#deel.torchlip.TauBCEWithLogitsLoss"><code class="docutils literal notranslate"><span class="pre">TauBCEWithLogitsLoss</span></code></a></li>
 <li><a class="reference internal" href="#deel.torchlip.CategoricalHingeLoss"><code class="docutils literal notranslate"><span class="pre">CategoricalHingeLoss</span></code></a></li>
