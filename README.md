@@ -146,7 +146,7 @@ The `deel-torchlip` library proposes a list of classification losses
 | Type | `torch.nn`  |  `deel-torchlip` equivalent  | comments   |
 |------------------------------------------------------|-------------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------|
 | Binary classification          |`torch.nn.BCEWithLogitsLoss`                             |  `.HKRLoss`   | alpha: Regularization factor ([0,1]) between the hinge and the KR loss;   min_margin: Minimal margin for the hinge loss.                    |
-| Multiclass classification          |`torch.nn.CrossEntropyLoss`                             |  `.HKRMulticlassLoss`<br>`.SoftHKRMulticlassLoss`                                           |   alpha: Regularization factor ([0,1]) between the hinge and the KR loss;   min_margin: Minimal margin for the hinge loss.     <br> temperature for the softmax calculation    |
+| Multiclass classification          |`torch.nn.CrossEntropyLoss`                             |  `.HKRMulticlassLoss`<br>`.SoftHKRMulticlassLoss`<br>`.LseHKRMulticlassLoss`                                           |   alpha: Regularization factor ([0,1]) between the hinge and the KR loss;   min_margin: Minimal margin for the hinge loss.     <br> temperature for the softmax calculation    |
 
 ## 👍 Contributing
 
