@@ -632,6 +632,103 @@
         <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span></div>
 
 
+<span class="k">class</span><span class="w"> </span><span class="nc">LseHKRMulticlassLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">penalty</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>  <span class="c1"># max &lt;logsumpexp&lt; max+penalty*margin</span>
+        <span class="n">min_margin</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">reduction</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;mean&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein</span>
+<span class="sd">        duality with a hinge regularization and logsumexp summary.</span>
+<span class="sd">            Args:</span>
+<span class="sd">                alpha: Regularization factor between the hinge and the KR loss</span>
+<span class="sd">                        (0 &lt;= alpha &lt;= 1).</span>
+<span class="sd">                alpha_mean (float): geometric mean factor</span>
+<span class="sd">                temperature (float): temperature factor applied on logits</span>
+<span class="sd">                    (both in KR and Hinge)</span>
+<span class="sd">                penalty (float): penalty factor for the logsumexp summary</span>
+<span class="sd">                    max &lt;logsumpexp&lt; max+penalty*margin (default is 1.0).</span>
+<span class="sd">                min_margin: Minimal margin for the hinge loss.</span>
+<span class="sd">                reduction: type of reduction applied to the output. possible values are</span>
+<span class="sd">                   &#39;none&#39; | &#39;mean&#39; | &#39;sum&#39; | &#39;auto&#39;; default is &#39;mean&#39; (&#39;auto is &#39;mean&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Depreciated alpha should be between 0 and 1 replaced by </span><span class="se">\</span>
+<span class="s2">                    </span><span class="si">{</span><span class="n">alpha</span><span class="o">/</span><span class="p">(</span><span class="n">alpha</span><span class="o">+</span><span class="mf">1.0</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">alpha</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">=</span> <span class="n">penalty</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span> <span class="o">=</span> <span class="n">temperature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">margin</span> <span class="o">=</span> <span class="n">min_margin</span>
+        <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>  <span class="c1"># alpha = 1.0 =&gt; hinge only</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lse_hinge</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">alpha</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>  <span class="c1"># alpha = 0.0 =&gt; KR only</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lse_kr</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fct</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lse_hkr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span> <span class="o">=</span> <span class="n">reduction</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_positive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">y_pred</span><span class="p">[</span><span class="n">y_true</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">compute_lse_neg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">):</span>
+        <span class="n">neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">y_true</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span> <span class="n">y_pred</span><span class="p">)</span>
+        <span class="n">nb_bins</span> <span class="o">=</span> <span class="n">y_pred</span><span class="o">.</span><span class="n">new_tensor</span><span class="p">(</span><span class="n">y_pred</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">nb_bins</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">nb_bins</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">nb_bins</span> <span class="o">/</span> <span class="p">(</span><span class="n">min_margin</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">penalty</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># margin = min_margin/2.0</span>
+        <span class="n">lse_neg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="mi">1</span> <span class="o">/</span> <span class="n">t</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">logsumexp</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="n">neg</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>  <span class="c1"># max &lt;neg_soft&lt; max+penalty*margin</span>
+        <span class="k">return</span> <span class="n">lse_neg</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">lse_hinge_preproc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">lse_neg</span><span class="p">,</span> <span class="n">min_margin</span><span class="p">):</span>
+        <span class="c1"># compute the elementwise hinge term</span>
+        <span class="n">hinge_pos</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">min_margin</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="n">pos</span><span class="p">)</span>
+        <span class="n">hinge_neg</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">min_margin</span> <span class="o">/</span> <span class="mf">2.0</span> <span class="o">+</span> <span class="n">lse_neg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hinge_pos</span> <span class="o">+</span> <span class="n">hinge_neg</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">lse_hinge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_positive</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+        <span class="n">lse_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_lse_neg</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">)</span>
+        <span class="n">hinge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lse_hinge_preproc</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">lse_neg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">hinge</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">lse_kr_preproc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">lse_neg</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pos</span> <span class="o">-</span> <span class="n">lse_neg</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">lse_kr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_positive</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+        <span class="n">lse_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_lse_neg</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">)</span>
+        <span class="n">kr</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">lse_kr_preproc</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">lse_neg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">kr</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">lse_hkr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">):</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_positive</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">)</span>
+        <span class="n">lse_neg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_lse_neg</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">y_true</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">)</span>
+
+        <span class="n">lse_kr</span> <span class="o">=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">lse_kr_preproc</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">lse_neg</span><span class="p">)</span>
+        <span class="n">lse_hinge</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lse_hinge_preproc</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">lse_neg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">margin</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">lse_kr</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">lse_hinge</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>  <span class="c1"># required for dtype.max</span>
+            <span class="nb">input</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)):</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">input</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="nb">input</span> <span class="o">=</span> <span class="nb">input</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature</span>
+        <span class="n">loss_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fct</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">apply_reduction</span><span class="p">(</span><span class="n">loss_batch</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reduction</span><span class="p">)</span>
+
+
 <div class="viewcode-block" id="TauCrossEntropyLoss"><a class="viewcode-back" href="../../../../deel.torchlip.html#deel.torchlip.TauCrossEntropyLoss">[docs]</a><span class="k">class</span><span class="w"> </span><span class="nc">TauCrossEntropyLoss</span><span class="p">(</span><span class="n">CrossEntropyLoss</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
