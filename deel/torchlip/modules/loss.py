@@ -446,16 +446,15 @@ class LseHKRMulticlassLoss(torch.nn.Module):
         """
         Loss that estimates the Wasserstein-1 distance using the Kantorovich-Rubinstein
         duality with a hinge regularization and logsumexp summary.
-            Args:
-                alpha: Regularization factor between the hinge and the KR loss
-                        (0 <= alpha <= 1).
-                alpha_mean (float): geometric mean factor
-                temperature (float): temperature factor applied on logits
-                    (both in KR and Hinge)
-                penalty (float): penalty factor for the logsumexp summary
-                    max <logsumpexp< max+penalty*margin (default is 1.0).
-                min_margin: Minimal margin for the hinge loss.
-                reduction: type of reduction applied to the output. possible values are
+        Args:
+            alpha: Regularization factor between the hinge and the KR loss
+                (0 <= alpha <= 1).
+            temperature (float): temperature factor applied on logits
+                (both in KR and Hinge)
+            penalty (float): penalty factor for the logsumexp summary
+                max <logsumpexp< max+penalty*margin (default is 1.0).
+            min_margin: Minimal margin for the hinge loss.
+            reduction: type of reduction applied to the output. possible values are
                    'none' | 'mean' | 'sum' | 'auto'; default is 'mean' ('auto is 'mean')
         """
         super().__init__()
