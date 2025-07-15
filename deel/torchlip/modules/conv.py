@@ -81,7 +81,8 @@ class SpectralConv1d(PadConv1d, LipschitzModule):
                 output.
             k_coef_lip: Lipschitz constant to ensure.
             eps_spectral: stopping criterion for the iterative power algorithm.
-            eps_bjorck: stopping criterion Bjorck algorithm.
+            eps_bjorck: stopping criterion Bjorck algorithm (DEFAULT_EPS_BJORCK),
+             to discard Bjorck projection (1-Lip only) set this parameter to None.
 
         This documentation reuse the body of the original torch.nn.Conv1D doc.
         """
@@ -109,7 +110,8 @@ class SpectralConv1d(PadConv1d, LipschitzModule):
             name="weight",
             eps=eps_spectral,
         )
-        bjorck_norm(self, name="weight", eps=eps_bjorck)
+        if eps_bjorck is not None:  # discard the bjorck norm if None
+            bjorck_norm(self, name="weight", eps=eps_bjorck)
         lconv_norm(self)
         self.apply_lipschitz_factor()
 
@@ -162,7 +164,8 @@ class SpectralConv2d(PadConv2d, LipschitzModule):
                 output.
             k_coef_lip: Lipschitz constant to ensure.
             eps_spectral: stopping criterion for the iterative power algorithm.
-            eps_bjorck: stopping criterion Bjorck algorithm.
+            eps_bjorck: stopping criterion Bjorck algorithm (DEFAULT_EPS_BJORCK),
+             to discard Bjorck projection (1-Lip only) set this parameter to None.
 
         This documentation reuse the body of the original torch.nn.Conv2D doc.
         """
@@ -190,7 +193,8 @@ class SpectralConv2d(PadConv2d, LipschitzModule):
             name="weight",
             eps=eps_spectral,
         )
-        bjorck_norm(self, name="weight", eps=eps_bjorck)
+        if eps_bjorck is not None:  # discard the bjorck norm if None
+            bjorck_norm(self, name="weight", eps=eps_bjorck)
         lconv_norm(self, name="weight")
         self.apply_lipschitz_factor()
 
@@ -268,7 +272,8 @@ class SpectralConvTranspose2d(torch.nn.ConvTranspose2d, LipschitzModule):
             output.
         k_coef_lip: Lipschitz constant to ensure.
         eps_spectral: stopping criterion for the iterative power algorithm.
-        eps_bjorck: stopping criterion Bjorck algorithm.
+        eps_bjorck: stopping criterion Bjorck algorithm (DEFAULT_EPS_BJORCK),
+         to discard Bjorck projection (1-Lip only) set this parameter to None.
 
     This documentation reuse the body of the original torch.nn.ConvTranspose2d
     doc.
@@ -322,7 +327,8 @@ class SpectralConvTranspose2d(torch.nn.ConvTranspose2d, LipschitzModule):
             name="weight",
             eps=eps_spectral,
         )
-        bjorck_norm(self, name="weight", eps=eps_bjorck)
+        if eps_bjorck is not None:  # discard the bjorck norm if None
+            bjorck_norm(self, name="weight", eps=eps_bjorck)
         lconv_norm(self, name="weight")
         self.apply_lipschitz_factor()
 
