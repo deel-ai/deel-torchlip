@@ -58,7 +58,8 @@ class SpectralLinear(torch.nn.Linear, LipschitzModule):
             bias: If ``False``, the layer will not learn an additive bias.
             k_coef_lip: Lipschitz constant to ensure.
             eps_spectral: stopping criterion for the iterative power algorithm.
-            eps_bjorck: stopping criterion Bjorck algorithm.
+            eps_bjorck: stopping criterion Bjorck algorithm (DEFAULT_EPS_BJORCK),
+             to discard Bjorck projection (1-Lip only) set this parameter to None.
 
         Shape:
             - Input: :math:`(N, *, H_{in})` where :math:`*` means any number of
@@ -86,7 +87,8 @@ class SpectralLinear(torch.nn.Linear, LipschitzModule):
             name="weight",
             eps=eps_spectral,
         )
-        bjorck_norm(self, name="weight", eps=eps_bjorck)
+        if eps_bjorck is not None:  # discard the bjorck norm if None
+            bjorck_norm(self, name="weight", eps=eps_bjorck)
         self.apply_lipschitz_factor()
 
     def vanilla_export(self) -> torch.nn.Linear:
