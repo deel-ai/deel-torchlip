@@ -34,7 +34,7 @@
   <!-- <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" /> -->
   <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/katex-math.css" type="text/css" />
   <link rel="stylesheet" href="../../../../_static/css/theme_overrides.css" type="text/css" />
   <link rel="index" title="Index" href="../../../../genindex.html" />
@@ -256,7 +256,8 @@
 <span class="sd">            bias: If ``False``, the layer will not learn an additive bias.</span>
 <span class="sd">            k_coef_lip: Lipschitz constant to ensure.</span>
 <span class="sd">            eps_spectral: stopping criterion for the iterative power algorithm.</span>
-<span class="sd">            eps_bjorck: stopping criterion Bjorck algorithm.</span>
+<span class="sd">            eps_bjorck: stopping criterion Bjorck algorithm (DEFAULT_EPS_BJORCK),</span>
+<span class="sd">             to discard Bjorck projection (1-Lip only) set this parameter to None.</span>
 
 <span class="sd">        Shape:</span>
 <span class="sd">            - Input: :math:`(N, *, H_{in})` where :math:`*` means any number of</span>
@@ -284,7 +285,8 @@
             <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span>
             <span class="n">eps</span><span class="o">=</span><span class="n">eps_spectral</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">bjorck_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps_bjorck</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">eps_bjorck</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># discard the bjorck norm if None</span>
+            <span class="n">bjorck_norm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="n">eps_bjorck</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">apply_lipschitz_factor</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">vanilla_export</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">:</span>
