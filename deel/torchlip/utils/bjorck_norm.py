@@ -68,7 +68,7 @@ def bjorck_norm(
     Args:
         module: Containing module.
         name: Name of weight parameter.
-        n_iterations: Number of iterations for the normalization.
+        eps: stopping criterion Bjorck algorithm.
 
     Returns:
         The original module with the Bjorck normalization hook.

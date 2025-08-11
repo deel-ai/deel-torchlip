@@ -140,35 +140,17 @@ def build_kernel(input_shape: tuple, output_shape: tuple, k=1.0):
     return kernel
 
 
-def train_k_lip_model(
+def build_and_train_k_lip_model(
     layer_type: type,
     layer_params: dict,
     batch_size: int,
-    steps_per_epoch: int,
     epochs: int,
     input_shape: tuple,
     k_lip_model: float,
     k_lip_data: float,
     **kwargs,
 ):
-    """
-    Create a generator, create a model, train it and return the results.
 
-    Args:
-        layer_type:
-        layer_params:
-        batch_size:
-        steps_per_epoch:
-        epochs:
-        input_shape:
-        k_lip_model:
-        k_lip_data:
-        **kwargs:
-
-    Returns:
-        the generator
-
-    """
     # clear session to avoid side effects from previous train
     uft.init_session()  # K.clear_session()
     np.random.seed(42)
@@ -208,6 +190,52 @@ def train_k_lip_model(
         epochs,
         batch_size,
         steps_per_epoch=10,
+    )
+    return model, kernel, loss_fn, metrics
+
+
+def train_k_lip_model(
+    layer_type: type,
+    layer_params: dict,
+    batch_size: int,
+    steps_per_epoch: int,
+    epochs: int,
+    input_shape: tuple,
+    k_lip_model: float,
+    k_lip_data: float,
+    **kwargs,
+):
+    """
+    Create a generator, create a model, train it and return the results.
+
+    Args:
+        layer_type:
+        layer_params:
+        batch_size:
+        steps_per_epoch:
+        epochs:
+        input_shape:
+        k_lip_model:
+        k_lip_data:
+        **kwargs:
+
+    Returns:
+        the generator
+
+    """
+    # define logging features
+    logdir = os.path.join("logs", uft.LIP_LAYERS, "%s" % layer_type.__name__)
+    os.makedirs(logdir, exist_ok=True)
+
+    model, kernel, loss_fn, metrics = build_and_train_k_lip_model(
+        layer_type=layer_type,
+        layer_params=layer_params,
+        batch_size=batch_size,
+        epochs=epochs,
+        input_shape=input_shape,
+        k_lip_model=k_lip_model,
+        k_lip_data=k_lip_data,
+        **kwargs,
     )
     # the seed is set to compare all models with the same data
     test_dl = linear_generator(batch_size, input_shape, kernel)
@@ -1457,3 +1485,154 @@ def test_SpectralConvTranspose2d_vanilla_export():
             input_shape=kwargs["input_shape"],
             k=1.0,
         )
+
+
+@pytest.mark.parametrize(
+    "layer_type,layer_params,k_lip_model,is_orthogonal,input_shape,lfactor,epochs",
+    [
+        (
+            SpectralLinear,
+            {"bias": False, "in_features": 4, "out_features": 3},
+            1.0,
+            True,
+            (4,),
+            1.0,
+            5,
+        ),
+        (
+            SpectralLinear,
+            {"bias": False, "in_features": 4, "out_features": 3, "eps_bjorck": None},
+            1.0,
+            False,
+            (4,),
+            1.0,
+            150,
+        ),
+        (
+            FrobeniusLinear,
+            {"bias": False, "in_features": 4, "out_features": 1},
+            1.0,
+            True,
+            (4,),
+            1.0,
+            5,
+        ),
+        (
+            FrobeniusLinear,
+            {
+                "bias": False,
+                "in_features": 4,
+                "out_features": 3,
+                "disjoint_neurons": False,
+            },
+            1.0,
+            False,
+            (4,),
+            1.0,
+            5,
+        ),
+        (
+            SpectralConv2d,
+            {
+                "in_channels": 3,
+                "out_channels": 5,
+                "kernel_size": (3, 3),
+                "bias": False,
+            },
+            1.0,
+            True,
+            (3, 5, 5),
+            3.0,  # conv factor
+            5,
+        ),
+        (
+            SpectralConv2d,
+            {
+                "in_channels": 3,
+                "out_channels": 5,
+                "kernel_size": (3, 3),
+                "bias": False,
+                "eps_bjorck": None,
+            },
+            1.0,
+            False,
+            (3, 5, 5),
+            3.0,  # conv factor
+            150,
+        ),
+        (
+            FrobeniusConv2d,
+            {
+                "in_channels": 3,
+                "out_channels": 5,
+                "kernel_size": (3, 3),
+                "bias": False,
+            },
+            1.0,
+            False,
+            (3, 5, 5),
+            3.0,  # conv factor
+            5,
+        ),
+        (
+            SpectralConvTranspose2d,
+            {
+                "in_channels": 3,
+                "out_channels": 5,
+                "kernel_size": (3, 3),
+                "bias": False,
+            },
+            1.0,
+            True,
+            (3, 5, 5),
+            3.0,  # conv factor
+            5,
+        ),
+        (
+            SpectralConvTranspose2d,
+            {
+                "in_channels": 3,
+                "out_channels": 5,
+                "kernel_size": (3, 3),
+                "bias": False,
+                "eps_bjorck": None,
+            },
+            1.0,
+            False,
+            (3, 5, 5),
+            3.0,  # conv factor
+            150,
+        ),
+    ],
+)
+def test_ortho_kernel(
+    layer_type, layer_params, k_lip_model, is_orthogonal, input_shape, lfactor, epochs
+):
+    test_params = dict(
+        layer_type=layer_type,
+        layer_params=layer_params,
+        batch_size=25,
+        steps_per_epoch=125,
+        epochs=epochs,
+        input_shape=input_shape,
+        k_lip_data=1.0,
+        k_lip_model=k_lip_model,
+        callbacks=[],
+    )
+    model, kernel, loss_fn, metrics = build_and_train_k_lip_model(**test_params)
+    weights = uft.get_layer_weights_by_index(model, 0)
+    weights = uft.to_numpy(weights)
+    weights = weights.reshape(weights.shape[0], -1)
+
+    sigmas = np.linalg.svd(
+        weights,
+        full_matrices=False,
+        compute_uv=False,
+    )
+    print(lfactor * sigmas)
+    if is_orthogonal:
+        np.testing.assert_allclose(lfactor * sigmas, np.ones_like(sigmas), atol=1e-5)
+    else:
+        assert lfactor * sigmas.max() < k_lip_model * 1.02, "sigma max is too large"
+        diff_to_one = np.max(np.ones_like(sigmas) - lfactor * sigmas)
+        assert diff_to_one > 0.1, f"Too close to orthogonality  {diff_to_one}"
