@@ -38,6 +38,7 @@ def evaluate_lip_const(
     model: torch.nn.Module,
     x: Optional[torch.Tensor] = None,  # can be torch tensor or None
     evaluation_type: Union[str, list[str]] = "jacobian_norm",
+    disjoint_neurons=False,
     input_shape=None,
     expected_value=None,
     **kwargs,
@@ -58,7 +59,13 @@ def evaluate_lip_const(
         for etype in evaluation_type:
             lip_csts.append(
                 evaluate_lip_const(
-                    model, x, etype, input_shape, expected_value, **kwargs
+                    model,
+                    x,
+                    etype,
+                    disjoint_neurons,
+                    input_shape,
+                    expected_value,
+                    **kwargs,
                 )
             )
         return float(torch.max(torch.tensor(lip_csts)).item())
@@ -73,7 +80,7 @@ def evaluate_lip_const(
             raise ValueError("If x is None, input_shape must be provided")
         x = torch.randn(input_shape)
     x = x.to(device)
-    val_lip_const = type2fct[evaluation_type](model, x, **kwargs)
+    val_lip_const = type2fct[evaluation_type](model, x, disjoint_neurons, **kwargs)
     print(
         f"Empirical lipschitz constant is {val_lip_const} with method {evaluation_type}"
     )
@@ -88,6 +95,7 @@ def evaluate_lip_const(
 def evaluate_lip_const_noise_norm(
     model: torch.nn.Module,
     x: torch.Tensor,
+    disjoint_neurons=False,
     num_noisy_samples: int = 10,
     **kwargs,
 ) -> float:
@@ -100,20 +108,28 @@ def evaluate_lip_const_noise_norm(
             noise = torch.randn_like(x) * torch.rand(1).to(x.device)
             noisy_input = x + noise
             noisy_pred = model(noisy_input)
-            pred_diff_norm = torch.linalg.norm(
-                (pred - noisy_pred).view(pred.shape[0], -1), dim=1
-            )
+            if not disjoint_neurons:
+                pred_diff_norm = torch.linalg.norm(
+                    (pred - noisy_pred).view(pred.shape[0], -1), dim=1
+                )
+            else:
+                # each output neuron is a 1Lipschitz function
+                diff_pred = pred - noisy_pred
+                diff_pred = diff_pred.view(diff_pred.shape[0], -1, diff_pred.shape[-1])
+                pred_diff_norm = torch.linalg.norm(diff_pred, dim=1)
+                pred_diff_norm = torch.max(pred_diff_norm, dim=-1).values
+
             input_diff_norm = torch.linalg.norm(noise.view(pred.shape[0], -1), dim=1)
             lip_cst = pred_diff_norm / input_diff_norm
             lip_csts.append(lip_cst)
         lip_csts = torch.cat(lip_csts, dim=0)
-        print(lip_csts)
         return float(torch.max(lip_csts).item())
 
 
 def evaluate_lip_const_jacobian_norm(
     model: torch.nn.Module,
     x: torch.Tensor,
+    disjoint_neurons=False,
     **kwargs,
 ) -> float:
     """
@@ -138,15 +154,25 @@ def evaluate_lip_const_jacobian_norm(
         y = model(torch.unsqueeze(x, dim=0))  # Forward pass
         return y
 
+    # assert disjoint_neurons is False, "disjoint_neurons=True not implemented yet"
     x_src = x.clone().detach().requires_grad_(True)
 
     # Compute the Jacobian using jacrev
     batch_jacobian = tfc.vmap(tfc.jacrev(model_func))(x_src)
-
     # Reshape the Jacobian to match the desired shape
     batch_size = x.shape[0]
     xdim = torch.prod(torch.tensor(x.shape[1:])).item()
-    batch_jacobian = batch_jacobian.view(batch_size, -1, xdim)
+
+    if not disjoint_neurons:
+        batch_jacobian = batch_jacobian.view(batch_size, -1, xdim)
+    else:
+        # each output neuron is a 1Lipschitz function:
+        # compute the norm of each output neuron
+        outdim = len(batch_jacobian.shape) - len(x.shape[1:]) - 1
+        outsize = batch_jacobian.shape[outdim]
+        # switch outdim to be the first dimension
+        batch_jacobian = batch_jacobian.moveaxis(outdim, 0)
+        batch_jacobian = batch_jacobian.reshape(outsize * batch_size, -1, xdim)
 
     # Compute singular values and check Lipschitz property
     lip_cst = torch.linalg.norm(batch_jacobian, ord=2, dim=(-2, -1))
@@ -156,6 +182,7 @@ def evaluate_lip_const_jacobian_norm(
 def evaluate_lip_const_attack(
     model: torch.nn.Module,
     x: torch.Tensor,
+    disjoint_neurons=False,
     num_iterations: int = 100,
     step_size: float = 1e-2,
     double_attack: bool = False,
@@ -191,9 +218,16 @@ def evaluate_lip_const_attack(
             noisy_input = x + noise
             noisy_pred = model(noisy_input)
 
-            pred_diff_norm = torch.linalg.norm(
-                (ref_output - noisy_pred).view(ref_output.shape[0], -1), dim=1
-            )
+            if not disjoint_neurons:
+                pred_diff_norm = torch.linalg.norm(
+                    (ref_output - noisy_pred).view(ref_output.shape[0], -1), dim=1
+                )
+            else:
+                # each output neuron is a 1Lipschitz function: attack the maximum
+                diff_pred = ref_output - noisy_pred
+                diff_pred = diff_pred.view(diff_pred.shape[0], -1, diff_pred.shape[-1])
+                pred_diff_norm = torch.linalg.norm(diff_pred, dim=1)
+                pred_diff_norm = torch.max(pred_diff_norm, dim=-1).values
             input_diff_norm = torch.linalg.norm(
                 noise.view(ref_output.shape[0], -1), dim=1
             )
@@ -206,9 +240,16 @@ def evaluate_lip_const_attack(
 
         noisy_input = x + noise
         noisy_pred = model(noisy_input)
-        pred_diff_norm = torch.linalg.norm(
-            (ref_output - noisy_pred).view(ref_output.shape[0], -1), dim=1
-        )
+        if not disjoint_neurons:
+            pred_diff_norm = torch.linalg.norm(
+                (ref_output - noisy_pred).view(ref_output.shape[0], -1), dim=1
+            )
+        else:
+            # each output neuron is a 1Lipschitz function: attack the maximum
+            diff_pred = ref_output - noisy_pred
+            diff_pred = diff_pred.view(diff_pred.shape[0], -1, diff_pred.shape[-1])
+            pred_diff_norm = torch.linalg.norm(diff_pred, dim=1)
+            pred_diff_norm = torch.max(pred_diff_norm, dim=-1).values
         input_diff_norm = torch.linalg.norm(noise.view(ref_output.shape[0], -1), dim=1)
         lip_cst = pred_diff_norm / input_diff_norm
         return noise, lip_cst
