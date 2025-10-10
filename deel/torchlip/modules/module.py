@@ -62,7 +62,50 @@ def _is_supported_1lip_layer(layer):
     return False
 
 
-def vanilla_model(model: nn.Module):
+def getVanillaModule(module: nn.Module) -> nn.Module:
+    """Return the vanilla torch module corresponding to a lipschitz module.
+
+    Args:
+        module (nn.Module): A lipschitz module
+
+    Returns:
+        nn.Module: The corresponding vanilla torch module
+    """
+    if isinstance(module, torch.nn.Conv2d):
+        return torch.nn.Conv2d(
+            in_channels=module.in_channels,
+            out_channels=module.out_channels,
+            kernel_size=module.kernel_size,
+            stride=module.stride,
+            padding=module.padding,
+            dilation=module.dilation,
+            groups=module.groups,
+            bias=module.bias is not None,
+            padding_mode=module.padding_mode,
+        )
+    elif isinstance(module, torch.nn.Linear):
+        return torch.nn.Linear(
+            in_features=module.in_features,
+            out_features=module.out_features,
+            bias=module.bias is not None,
+        )
+    elif isinstance(module, torch.nn.ConvTranspose2d):
+        return torch.nn.ConvTranspose2d(
+            in_channels=module.in_channels,
+            out_channels=module.out_channels,
+            kernel_size=module.kernel_size,
+            stride=module.stride,
+            padding=module.padding,
+            output_padding=module.output_padding,
+            dilation=module.dilation,
+            groups=module.groups,
+            bias=module.bias is not None,
+            padding_mode=module.padding_mode,
+        )
+    return module
+
+
+def vanilla_model(model: nn.Module, in_place=True, new_module=None) -> nn.Module:
     """Convert lipschitz modules into their non-lipschitz counterpart (for
     instance, SpectralConv2d layers become Conv2d layers).
 
@@ -70,14 +113,35 @@ def vanilla_model(model: nn.Module):
 
     Args:
         model (nn.Module): Lipschitz neural network
+        in_place (bool): If True, modify the model in place. If False, return a copy
     """
+    if in_place is False and new_module is None:
+        model.eval()
+        new_module = copy.deepcopy(model)
+        new_module.eval()
+    if in_place is True:
+        new_module = model
+
     for n, module in model.named_children():
         if isinstance(module, LipschitzModule):
-            # simple module
-            setattr(model, n, module.vanilla_export())
+            # torchlip modules
+            setattr(new_module, n, module.vanilla_export())
+        elif parametrize.is_parametrized(module) and isinstance(
+            module, (nn.Conv2d, nn.Linear, nn.ConvTranspose2d)
+        ):
+            # compatibility with orthogonium modules
+            nmod = getVanillaModule(module)
+            nmod.weight.data = module.weight.data.clone()
+            nmod.bias.data = (
+                module.bias.data.clone() if module.bias is not None else None
+            )
+            setattr(new_module, n, nmod)
         elif len(list(module.children())) > 0:
             # compound module, go inside it
-            vanilla_model(module)
+            _ = vanilla_model(
+                module, in_place=in_place, new_module=new_module.__getattr__(n)
+            )
+    return new_module
 
 
 class _LipschitzCoefMultiplication(nn.Module):
