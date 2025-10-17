@@ -43,6 +43,23 @@ def evaluate_lip_const(
     expected_value=None,
     **kwargs,
 ) -> float:
+    """
+    Evaluate the Lipschitz constant of a model, using different methods.
+    Please note that the estimation of the lipschitz constant is done locally around
+    input samples. This may not correctly estimate the behaviour in the whole domain.
+    Args:
+        model: built torch model used to make predictions
+        x: inputs used to compute the lipschitz constant. If None, input_shape must be
+            provided to generate random inputs. (shape: (batch_size, ...))
+        evaluation_type: method used to evaluate the lipschitz constant. Can be one of
+            "jacobian_norm", "noise_norm", "attack" or "all".
+        disjoint_neurons: if True, each output neuron is considered as a separate
+            1-Lipschitz function.
+        input_shape: shape of the input tensor, used if x is None.
+        expected_value: if provided, the computed lipschitz constant is compared to
+            this value and an assertion error is raised if the computed value is higher
+            (warning the assertion is strict).
+    """
     type2fct = {
         "jacobian_norm": evaluate_lip_const_jacobian_norm,
         "noise_norm": evaluate_lip_const_noise_norm,
@@ -97,15 +114,29 @@ def evaluate_lip_const_noise_norm(
     x: torch.Tensor,
     disjoint_neurons=False,
     num_noisy_samples: int = 10,
+    epsilon_noise: float = 1.0,
     **kwargs,
 ) -> float:
-
+    """
+    Evaluate the Lipschitz constant of a model, using random noise added to the input.
+    Please note that the estimation of the lipschitz constant is done locally around
+    input samples. This may not correctly estimate the behaviour in the whole domain.
+    Args:
+        model: built torch model used to make predictions
+        x: inputs used to compute the lipschitz constant (shape: (batch_size, ...))
+        disjoint_neurons: if True, each output neuron is considered as a separate
+            1-Lipschitz function.
+        num_noisy_samples: number of random noise samples to use for the estimation
+        epsilon_noise: standard deviation of the gaussian noise added to the input
+    Returns:
+        float: the empirically evaluated Lipschitz constant (max over batch).
+    """
     with torch.no_grad():
         model.eval()
         pred = model(x)
         lip_csts = []
         for _ in range(num_noisy_samples):  # random sampling
-            noise = torch.randn_like(x) * torch.rand(1).to(x.device)
+            noise = epsilon_noise * torch.randn_like(x) * torch.rand(1).to(x.device)
             noisy_input = x + noise
             noisy_pred = model(noisy_input)
             if not disjoint_neurons:
@@ -138,8 +169,10 @@ def evaluate_lip_const_jacobian_norm(
     input samples. This may not correctly estimate the behaviour in the whole domain.
 
     Args:
-        model: built keras model used to make predictions
+        model: built torch model used to make predictions
         x: inputs used to compute the lipschitz constant
+        disjoint_neurons: if True, each output neuron is considered as a separate
+            1-Lipschitz function.
 
     Returns:
         float: the empirically evaluated Lipschitz constant. The computation might also
@@ -179,6 +212,17 @@ def evaluate_lip_const_jacobian_norm(
     return float(torch.max(lip_cst).item())
 
 
+def _compute_disjoint_neurons_lip_const(
+    ref_output: torch.Tensor, noisy_pred: torch.Tensor
+) -> torch.Tensor:
+    # each output neuron is a 1Lipschitz function: attack the maximum
+    diff_pred = ref_output - noisy_pred
+    diff_pred = diff_pred.view(diff_pred.shape[0], -1, diff_pred.shape[-1])
+    pred_diff_norm = torch.linalg.norm(diff_pred, dim=1)
+    pred_diff_norm = torch.max(pred_diff_norm, dim=-1).values
+    return pred_diff_norm
+
+
 def evaluate_lip_const_attack(
     model: torch.nn.Module,
     x: torch.Tensor,
@@ -194,8 +238,10 @@ def evaluate_lip_const_attack(
     input samples. This may not correctly estimate the behaviour in the whole domain.
 
     Args:
-        model: built keras model used to make predictions
+        model: built torch model used to make predictions
         x: inputs used to compute the lipschitz constant
+        disjoint_neurons: if True, each output neuron is considered as a separate
+            1-Lipschitz function.
         num_iterations: number of iterations for the attack
         step_size: step size for each iteration
         double_attack: if True, perform a second attack starting from the worst case
@@ -224,10 +270,9 @@ def evaluate_lip_const_attack(
                 )
             else:
                 # each output neuron is a 1Lipschitz function: attack the maximum
-                diff_pred = ref_output - noisy_pred
-                diff_pred = diff_pred.view(diff_pred.shape[0], -1, diff_pred.shape[-1])
-                pred_diff_norm = torch.linalg.norm(diff_pred, dim=1)
-                pred_diff_norm = torch.max(pred_diff_norm, dim=-1).values
+                pred_diff_norm = _compute_disjoint_neurons_lip_const(
+                    ref_output, noisy_pred
+                )
             input_diff_norm = torch.linalg.norm(
                 noise.view(ref_output.shape[0], -1), dim=1
             )
@@ -246,10 +291,7 @@ def evaluate_lip_const_attack(
             )
         else:
             # each output neuron is a 1Lipschitz function: attack the maximum
-            diff_pred = ref_output - noisy_pred
-            diff_pred = diff_pred.view(diff_pred.shape[0], -1, diff_pred.shape[-1])
-            pred_diff_norm = torch.linalg.norm(diff_pred, dim=1)
-            pred_diff_norm = torch.max(pred_diff_norm, dim=-1).values
+            pred_diff_norm = _compute_disjoint_neurons_lip_const(ref_output, noisy_pred)
         input_diff_norm = torch.linalg.norm(noise.view(ref_output.shape[0], -1), dim=1)
         lip_cst = pred_diff_norm / input_diff_norm
         return noise, lip_cst
