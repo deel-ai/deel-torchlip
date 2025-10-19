@@ -217,9 +217,9 @@ def _compute_disjoint_neurons_lip_const(
 ) -> torch.Tensor:
     # each output neuron is a 1Lipschitz function: attack the maximum
     diff_pred = ref_output - noisy_pred
-    diff_pred = diff_pred.view(diff_pred.shape[0], -1, diff_pred.shape[-1])
-    pred_diff_norm = torch.linalg.norm(diff_pred, dim=1)
-    pred_diff_norm = torch.max(pred_diff_norm, dim=-1).values
+    diff_pred = diff_pred.view(diff_pred.shape[0], diff_pred.shape[1], -1)
+    pred_diff_norm = torch.linalg.norm(diff_pred, dim=-1)
+    pred_diff_norm = torch.max(pred_diff_norm, dim=1).values
     return pred_diff_norm
 
 
