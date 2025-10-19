@@ -109,7 +109,7 @@ def vanilla_model(model: nn.Module, in_place=True, new_module=None) -> nn.Module
     """Convert lipschitz modules into their non-lipschitz counterpart (for
     instance, SpectralConv2d layers become Conv2d layers).
 
-    Warning: This function modifies the model in-place.
+    Warning: This function modifies the model in-place by default. Set `in_place=False` for a copy of the model.
 
     Args:
         model (nn.Module): Lipschitz neural network
