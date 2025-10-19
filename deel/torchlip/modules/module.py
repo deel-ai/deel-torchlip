@@ -62,7 +62,7 @@ def _is_supported_1lip_layer(layer):
     return False
 
 
-def getVanillaModule(module: nn.Module) -> nn.Module:
+def _get_vanilla_module(module: nn.Module) -> nn.Module:
     """Return the vanilla torch module corresponding to a lipschitz module.
 
     Args:
@@ -109,11 +109,15 @@ def vanilla_model(model: nn.Module, in_place=True, new_module=None) -> nn.Module
     """Convert lipschitz modules into their non-lipschitz counterpart (for
     instance, SpectralConv2d layers become Conv2d layers).
 
-    Warning: This function modifies the model in-place by default. Set `in_place=False` for a copy of the model.
+    Warning: This function modifies the model in-place by default.
+        Set `in_place=False` for a copy of the model.
 
     Args:
         model (nn.Module): Lipschitz neural network
         in_place (bool): If True, modify the model in place. If False, return a copy
+        new_module (nn.Module): If provided, the function will fill this module
+            instead of creating a new one. Only useful in recursion, should be None
+            when calling the function.
     """
     if in_place is False and new_module is None:
         model.eval()
@@ -130,7 +134,7 @@ def vanilla_model(model: nn.Module, in_place=True, new_module=None) -> nn.Module
             module, (nn.Conv2d, nn.Linear, nn.ConvTranspose2d)
         ):
             # compatibility with orthogonium modules
-            nmod = getVanillaModule(module)
+            nmod = _get_vanilla_module(module)
             nmod.weight.data = module.weight.data.clone()
             nmod.bias.data = (
                 module.bias.data.clone() if module.bias is not None else None
