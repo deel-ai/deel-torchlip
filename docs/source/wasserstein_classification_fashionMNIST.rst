@@ -189,8 +189,8 @@ network (proxy of the average certificate).
 
 .. code:: ipython3
 
-    loss_choice = "HKRMulticlassLoss" # "HKRMulticlassLoss" or "SoftHKRMulticlassLoss"
-    epochs = 50
+    loss_choice = "LseHKRMulticlassLoss" # "HKRMulticlassLoss" or "SoftHKRMulticlassLoss"or "LseHKRMulticlassLoss"
+    epochs = 10
     
     optimizer = torch.optim.Adam(lr=1e-3, params=model.parameters())
     hkr_loss = None
@@ -199,6 +199,8 @@ network (proxy of the average certificate).
         #hkr_loss = torchlip.HKRMulticlassLoss(alpha=0.999, min_margin=0.10) #Accurate
     if loss_choice == "SoftHKRMulticlassLoss":
         hkr_loss = torchlip.SoftHKRMulticlassLoss(alpha=0.995, min_margin=0.10, temperature=50.0)
+    if loss_choice == "LseHKRMulticlassLoss":
+        hkr_loss = torchlip.LseHKRMulticlassLoss(alpha=0.9, min_margin=1.0, temperature=10.0)
     assert hkr_loss is not None, "Please choose a valid loss function"
     
     kr_multiclass_loss = torchlip.KRMulticlassLoss()
@@ -267,302 +269,104 @@ network (proxy of the average certificate).
 
 .. parsed-literal::
 
-    Epoch 1/50
-    loss: 0.0161 - acc: 0.7948 - KR: 0.8425 - val_loss: 0.0234 - val_acc: 0.8237 - val_KR: 1.1728
+    Epoch 1/10
+    loss: -0.2693 - acc: 0.7972 - KR: 0.5558 - val_loss: -0.0116 - val_acc: 0.8260 - val_KR: 0.9576
 
 
 .. parsed-literal::
 
-    Epoch 2/50
-    loss: 0.0144 - acc: 0.8425 - KR: 1.3253 - val_loss: 0.0181 - val_acc: 0.8474 - val_KR: 1.4679
+    Epoch 2/10
+    loss: -0.1993 - acc: 0.8452 - KR: 1.2355 - val_loss: -0.2956 - val_acc: 0.8405 - val_KR: 1.4672
 
 
 .. parsed-literal::
 
-    Epoch 3/50
-    loss: 0.0040 - acc: 0.8522 - KR: 1.6386 - val_loss: 0.0191 - val_acc: 0.8214 - val_KR: 1.7816
+    Epoch 3/10
+    loss: 0.2777 - acc: 0.8492 - KR: 1.6947 - val_loss: -0.4993 - val_acc: 0.8537 - val_KR: 1.8740
 
 
 .. parsed-literal::
 
-    Epoch 4/50
-    loss: 0.0046 - acc: 0.8574 - KR: 1.9427 - val_loss: 0.0098 - val_acc: 0.8596 - val_KR: 2.0056
+    Epoch 4/10
+    loss: -0.8064 - acc: 0.8587 - KR: 1.9901 - val_loss: -0.6347 - val_acc: 0.8482 - val_KR: 2.1012
 
 
 .. parsed-literal::
 
-    Epoch 5/50
-    loss: 0.0000 - acc: 0.8605 - KR: 2.1595 - val_loss: 0.0079 - val_acc: 0.8680 - val_KR: 2.1441
+    Epoch 5/10
+    loss: -0.3866 - acc: 0.8620 - KR: 2.1168 - val_loss: -0.6561 - val_acc: 0.8511 - val_KR: 2.1361
 
 
 .. parsed-literal::
 
-    Epoch 6/50
-    loss: 0.0049 - acc: 0.8642 - KR: 2.2765 - val_loss: 0.0063 - val_acc: 0.8634 - val_KR: 2.3429
+    Epoch 6/10
+    loss: -0.7448 - acc: 0.8661 - KR: 2.1675 - val_loss: -0.7269 - val_acc: 0.8569 - val_KR: 2.1996
 
 
 .. parsed-literal::
 
-    Epoch 7/50
-    loss: -0.0053 - acc: 0.8670 - KR: 2.3516 - val_loss: 0.0051 - val_acc: 0.8664 - val_KR: 2.3691
+    Epoch 7/10
+    loss: -1.1040 - acc: 0.8690 - KR: 2.1988 - val_loss: -0.8093 - val_acc: 0.8603 - val_KR: 2.1904
 
 
 .. parsed-literal::
 
-    Epoch 8/50
-    loss: -0.0021 - acc: 0.8708 - KR: 2.4078 - val_loss: 0.0031 - val_acc: 0.8698 - val_KR: 2.4568
+    Epoch 8/10
+    loss: -0.8349 - acc: 0.8711 - KR: 2.2264 - val_loss: -0.8304 - val_acc: 0.8632 - val_KR: 2.2228
 
 
 .. parsed-literal::
 
-    Epoch 9/50
-    loss: -0.0072 - acc: 0.8731 - KR: 2.4747 - val_loss: 0.0031 - val_acc: 0.8688 - val_KR: 2.5106
+    Epoch 9/10
+    loss: -0.6550 - acc: 0.8733 - KR: 2.2433 - val_loss: -0.8590 - val_acc: 0.8683 - val_KR: 2.2457
 
 
 .. parsed-literal::
 
-    Epoch 10/50
-    loss: 0.0009 - acc: 0.8726 - KR: 2.5210 - val_loss: 0.0026 - val_acc: 0.8685 - val_KR: 2.5051
+    Epoch 10/10
+    loss: -0.5963 - acc: 0.8763 - KR: 2.2583 - val_loss: -0.8937 - val_acc: 0.8685 - val_KR: 2.2552
+
+
+Evaluate lip constant for sanity check
+--------------------------------------
+
+The deel.torchlip.utils.evaluate_lip_const implements several methods to
+evaluate this constant, either by adding random noise :math:`x+\epsilon`
+and evaluating
+:math:`\frac{\Vert{}F(x + \epsilon) - F(x)\Vert{}}{\Vert{}\epsilon\Vert{}}`,
+or by an adversarial attack on :math:`\epsilon` to increase this value,
+or by computing the jacobian norm :math:`||\nabla_x F(x)||`
+
+It can be evaluated several times
+
+.. code:: ipython3
+
+    from deel.torchlip.utils import evaluate_lip_const
+
+.. code:: ipython3
+
+    x,y = next(iter(test_loader))
+    evaluate_lip_const(model, x.to(device), evaluation_type="all", disjoint_neurons=True, double_attack=True, expected_value=1.0)
 
 
 .. parsed-literal::
 
-    Epoch 11/50
-    loss: -0.0028 - acc: 0.8751 - KR: 2.5462 - val_loss: 0.0022 - val_acc: 0.8730 - val_KR: 2.5741
+    Empirical lipschitz constant is 0.7989310622215271 with method jacobian_norm
+    Empirical lipschitz constant is 0.2884121835231781 with method noise_norm
+    Warning : double_attack is set to True,                 the computation time will be doubled
 
 
 .. parsed-literal::
 
-    Epoch 12/50
-    loss: -0.0035 - acc: 0.8751 - KR: 2.5864 - val_loss: 0.0025 - val_acc: 0.8707 - val_KR: 2.5648
+    Empirical lipschitz constant is 0.6641454100608826 with method attack
+
+
 
 
 .. parsed-literal::
 
-    Epoch 13/50
-    loss: -0.0027 - acc: 0.8764 - KR: 2.5977 - val_loss: 0.0019 - val_acc: 0.8718 - val_KR: 2.6368
+    0.7989310622215271
 
-
-.. parsed-literal::
-
-    Epoch 14/50
-    loss: -0.0047 - acc: 0.8789 - KR: 2.6347 - val_loss: 0.0044 - val_acc: 0.8539 - val_KR: 2.6234
-
-
-.. parsed-literal::
-
-    Epoch 15/50
-    loss: 0.0189 - acc: 0.8788 - KR: 2.6543 - val_loss: 0.0003 - val_acc: 0.8723 - val_KR: 2.5902
-
-
-.. parsed-literal::
-
-    Epoch 16/50
-    loss: 0.0142 - acc: 0.8793 - KR: 2.6534 - val_loss: 0.0006 - val_acc: 0.8673 - val_KR: 2.6843
-
-
-.. parsed-literal::
-
-    Epoch 17/50
-    loss: -0.0018 - acc: 0.8809 - KR: 2.6729 - val_loss: 0.0014 - val_acc: 0.8670 - val_KR: 2.7061
-
-
-.. parsed-literal::
-
-    Epoch 18/50
-    loss: 0.0005 - acc: 0.8805 - KR: 2.6892 - val_loss: 0.0002 - val_acc: 0.8692 - val_KR: 2.6683
-
-
-.. parsed-literal::
-
-    Epoch 19/50
-    loss: 0.0144 - acc: 0.8814 - KR: 2.7032 - val_loss: 0.0006 - val_acc: 0.8754 - val_KR: 2.6909
-
-
-.. parsed-literal::
-
-    Epoch 20/50
-    loss: 0.0095 - acc: 0.8827 - KR: 2.7164 - val_loss: 0.0001 - val_acc: 0.8707 - val_KR: 2.7713
-
-
-.. parsed-literal::
-
-    Epoch 21/50
-    loss: -0.0062 - acc: 0.8815 - KR: 2.7312 - val_loss: -0.0008 - val_acc: 0.8776 - val_KR: 2.7397
-
-
-.. parsed-literal::
-
-    Epoch 22/50
-    loss: -0.0057 - acc: 0.8834 - KR: 2.7449 - val_loss: -0.0002 - val_acc: 0.8638 - val_KR: 2.7346
-
-
-.. parsed-literal::
-
-    Epoch 23/50
-    loss: -0.0109 - acc: 0.8844 - KR: 2.7543 - val_loss: -0.0016 - val_acc: 0.8781 - val_KR: 2.7080
-
-
-.. parsed-literal::
-
-    Epoch 24/50
-    loss: -0.0091 - acc: 0.8844 - KR: 2.7597 - val_loss: -0.0006 - val_acc: 0.8731 - val_KR: 2.7509
-
-
-.. parsed-literal::
-
-    Epoch 25/50
-    loss: 0.0054 - acc: 0.8839 - KR: 2.7827 - val_loss: -0.0021 - val_acc: 0.8789 - val_KR: 2.7414
-
-
-.. parsed-literal::
-
-    Epoch 26/50
-    loss: -0.0093 - acc: 0.8865 - KR: 2.7827 - val_loss: -0.0024 - val_acc: 0.8815 - val_KR: 2.7571
-
-
-.. parsed-literal::
-
-    Epoch 27/50
-    loss: -0.0028 - acc: 0.8854 - KR: 2.7891 - val_loss: -0.0007 - val_acc: 0.8671 - val_KR: 2.8054
-
-
-.. parsed-literal::
-
-    Epoch 28/50
-    loss: 0.0045 - acc: 0.8848 - KR: 2.8087 - val_loss: -0.0005 - val_acc: 0.8765 - val_KR: 2.7992
-
-
-.. parsed-literal::
-
-    Epoch 29/50
-    loss: -0.0050 - acc: 0.8855 - KR: 2.8126 - val_loss: -0.0003 - val_acc: 0.8716 - val_KR: 2.7960
-
-
-.. parsed-literal::
-
-    Epoch 30/50
-    loss: -0.0090 - acc: 0.8858 - KR: 2.8186 - val_loss: -0.0015 - val_acc: 0.8727 - val_KR: 2.7698
-
-
-.. parsed-literal::
-
-    Epoch 31/50
-    loss: -0.0086 - acc: 0.8882 - KR: 2.8209 - val_loss: -0.0029 - val_acc: 0.8752 - val_KR: 2.8335
-
-
-.. parsed-literal::
-
-    Epoch 32/50
-    loss: -0.0064 - acc: 0.8871 - KR: 2.8258 - val_loss: -0.0030 - val_acc: 0.8820 - val_KR: 2.8266
-
-
-.. parsed-literal::
-
-    Epoch 33/50
-    loss: -0.0086 - acc: 0.8882 - KR: 2.8410 - val_loss: -0.0025 - val_acc: 0.8742 - val_KR: 2.8252
-
-
-.. parsed-literal::
-
-    Epoch 34/50
-    loss: -0.0157 - acc: 0.8873 - KR: 2.8518 - val_loss: -0.0021 - val_acc: 0.8736 - val_KR: 2.7995
-
-
-.. parsed-literal::
-
-    Epoch 35/50
-    loss: 0.0009 - acc: 0.8877 - KR: 2.8418 - val_loss: -0.0028 - val_acc: 0.8739 - val_KR: 2.8467
-
-
-.. parsed-literal::
-
-    Epoch 36/50
-    loss: -0.0137 - acc: 0.8882 - KR: 2.8552 - val_loss: -0.0023 - val_acc: 0.8778 - val_KR: 2.8063
-
-
-.. parsed-literal::
-
-    Epoch 37/50
-    loss: -0.0103 - acc: 0.8881 - KR: 2.8597 - val_loss: -0.0023 - val_acc: 0.8720 - val_KR: 2.8331
-
-
-.. parsed-literal::
-
-    Epoch 38/50
-    loss: -0.0100 - acc: 0.8897 - KR: 2.8594 - val_loss: -0.0033 - val_acc: 0.8811 - val_KR: 2.8638
-
-
-.. parsed-literal::
-
-    Epoch 39/50
-    loss: -0.0047 - acc: 0.8887 - KR: 2.8630 - val_loss: -0.0035 - val_acc: 0.8801 - val_KR: 2.8755
-
-
-.. parsed-literal::
-
-    Epoch 40/50
-    loss: -0.0047 - acc: 0.8902 - KR: 2.8691 - val_loss: -0.0023 - val_acc: 0.8752 - val_KR: 2.8752
-
-
-.. parsed-literal::
-
-    Epoch 41/50
-    loss: -0.0085 - acc: 0.8897 - KR: 2.8753 - val_loss: -0.0018 - val_acc: 0.8756 - val_KR: 2.8190
-
-
-.. parsed-literal::
-
-    Epoch 42/50
-    loss: -0.0170 - acc: 0.8892 - KR: 2.8745 - val_loss: -0.0034 - val_acc: 0.8807 - val_KR: 2.8524
-
-
-.. parsed-literal::
-
-    Epoch 43/50
-    loss: -0.0025 - acc: 0.8909 - KR: 2.8805 - val_loss: -0.0030 - val_acc: 0.8811 - val_KR: 2.8388
-
-
-.. parsed-literal::
-
-    Epoch 44/50
-    loss: -0.0093 - acc: 0.8922 - KR: 2.8824 - val_loss: -0.0034 - val_acc: 0.8805 - val_KR: 2.8573
-
-
-.. parsed-literal::
-
-    Epoch 45/50
-    loss: -0.0065 - acc: 0.8898 - KR: 2.8861 - val_loss: -0.0027 - val_acc: 0.8763 - val_KR: 2.8508
-
-
-.. parsed-literal::
-
-    Epoch 46/50
-    loss: -0.0046 - acc: 0.8908 - KR: 2.8799 - val_loss: -0.0038 - val_acc: 0.8808 - val_KR: 2.8540
-
-
-.. parsed-literal::
-
-    Epoch 47/50
-    loss: -0.0141 - acc: 0.8902 - KR: 2.8932 - val_loss: -0.0037 - val_acc: 0.8794 - val_KR: 2.8714
-
-
-.. parsed-literal::
-
-    Epoch 48/50
-    loss: -0.0101 - acc: 0.8912 - KR: 2.8959 - val_loss: -0.0033 - val_acc: 0.8789 - val_KR: 2.8827
-
-
-.. parsed-literal::
-
-    Epoch 49/50
-    loss: -0.0111 - acc: 0.8918 - KR: 2.8873 - val_loss: -0.0040 - val_acc: 0.8859 - val_KR: 2.9193
-
-
-.. parsed-literal::
-
-    Epoch 50/50
-    loss: -0.0008 - acc: 0.8933 - KR: 2.9104 - val_loss: -0.0041 - val_acc: 0.8818 - val_KR: 2.8705
 
 
 4. Model export
@@ -622,6 +426,32 @@ torchlip.SpectralConv2d(…), …)
       (8): GroupSort2()
       (9): Linear(in_features=64, out_features=10, bias=True)
     )
+
+
+
+.. code:: ipython3
+
+    x,y = next(iter(test_loader))
+    evaluate_lip_const(vanilla_model, x.to(device), evaluation_type="all", disjoint_neurons=True, double_attack=True, expected_value=1.0)
+
+
+.. parsed-literal::
+
+    Empirical lipschitz constant is 0.7989310622215271 with method jacobian_norm
+    Empirical lipschitz constant is 0.3023391366004944 with method noise_norm
+    Warning : double_attack is set to True,                 the computation time will be doubled
+
+
+.. parsed-literal::
+
+    Empirical lipschitz constant is 0.7989276051521301 with method attack
+
+
+
+
+.. parsed-literal::
+
+    0.7989310622215271
 
 
 
@@ -710,16 +540,16 @@ gradient norm preserving, other attacks gives very similar results.
 
     Image #     Certificate     Distance to adversarial
     ---------------------------------------------------
-    Image 0        0.309                1.29
-    Image 1        1.864                4.65
-    Image 2        0.397                1.56
-    Image 3        0.527                2.81
-    Image 4        0.105                0.44
-    Image 5        0.188                0.82
-    Image 6        0.053                0.26
-    Image 7        0.450                1.62
-    Image 8        1.488                3.91
-    Image 9        0.161                0.69
+    Image 0        0.422                1.62
+    Image 1        3.149                5.18
+    Image 2        0.339                1.70
+    Image 3        0.852                1.57
+    Image 4        0.176                0.80
+    Image 5        0.443                0.94
+    Image 6        0.101                0.66
+    Image 7        0.858                1.76
+    Image 8        2.034                3.98
+    Image 9        0.336                0.90
 
 
 Finally, we can take a visual look at the obtained images. When looking
@@ -797,5 +627,5 @@ properties:
 
 
 
-.. image:: wasserstein_classification_fashionMNIST_files/wasserstein_classification_fashionMNIST_16_0.png
+.. image:: wasserstein_classification_fashionMNIST_files/wasserstein_classification_fashionMNIST_20_0.png
 
