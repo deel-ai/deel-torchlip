@@ -242,61 +242,61 @@ convolutional layers.
 .. parsed-literal::
 
     Epoch 1/10
-    loss: -0.0272 - KR: 1.4492 - acc: 0.9184 - val_loss: -0.0367 - val_KR: 2.3308 - val_acc: 0.9939
+    loss: -0.0341 - KR: 1.2932 - acc: 0.8849 - val_loss: -0.0332 - val_KR: 2.2678 - val_acc: 0.9918
 
 
 .. parsed-literal::
 
     Epoch 2/10
-    loss: -0.0518 - KR: 2.7784 - acc: 0.9926 - val_loss: -0.0574 - val_KR: 3.3190 - val_acc: 0.9939
+    loss: -0.0578 - KR: 2.7714 - acc: 0.9918 - val_loss: -0.0588 - val_KR: 3.3804 - val_acc: 0.9928
 
 
 .. parsed-literal::
 
     Epoch 3/10
-    loss: -0.0782 - KR: 3.6303 - acc: 0.9938 - val_loss: -0.0751 - val_KR: 4.1403 - val_acc: 0.9939
+    loss: -0.0787 - KR: 3.8889 - acc: 0.9930 - val_loss: -0.0777 - val_KR: 4.5303 - val_acc: 0.9903
 
 
 .. parsed-literal::
 
     Epoch 4/10
-    loss: -0.0978 - KR: 4.5607 - acc: 0.9952 - val_loss: -0.0927 - val_KR: 4.9920 - val_acc: 0.9933
+    loss: -0.0989 - KR: 4.8591 - acc: 0.9946 - val_loss: -0.0949 - val_KR: 5.2321 - val_acc: 0.9928
 
 
 .. parsed-literal::
 
     Epoch 5/10
-    loss: -0.0873 - KR: 5.2546 - acc: 0.9958 - val_loss: -0.1037 - val_KR: 5.5868 - val_acc: 0.9944
+    loss: -0.1063 - KR: 5.4602 - acc: 0.9948 - val_loss: -0.1064 - val_KR: 5.7756 - val_acc: 0.9923
 
 
 .. parsed-literal::
 
     Epoch 6/10
-    loss: -0.1186 - KR: 5.7066 - acc: 0.9960 - val_loss: -0.1081 - val_KR: 5.9397 - val_acc: 0.9913
+    loss: -0.1025 - KR: 5.8678 - acc: 0.9946 - val_loss: -0.1123 - val_KR: 6.0558 - val_acc: 0.9928
 
 
 .. parsed-literal::
 
     Epoch 7/10
-    loss: -0.1189 - KR: 6.0129 - acc: 0.9955 - val_loss: -0.1161 - val_KR: 6.1834 - val_acc: 0.9933
+    loss: -0.1155 - KR: 6.0850 - acc: 0.9958 - val_loss: -0.1178 - val_KR: 6.2237 - val_acc: 0.9939
 
 
 .. parsed-literal::
 
     Epoch 8/10
-    loss: -0.1281 - KR: 6.2577 - acc: 0.9958 - val_loss: -0.1151 - val_KR: 6.3653 - val_acc: 0.9923
+    loss: -0.0989 - KR: 6.2505 - acc: 0.9957 - val_loss: -0.1193 - val_KR: 6.3435 - val_acc: 0.9933
 
 
 .. parsed-literal::
 
     Epoch 9/10
-    loss: -0.1292 - KR: 6.4227 - acc: 0.9967 - val_loss: -0.1216 - val_KR: 6.5185 - val_acc: 0.9933
+    loss: -0.1330 - KR: 6.3675 - acc: 0.9956 - val_loss: -0.1218 - val_KR: 6.4925 - val_acc: 0.9939
 
 
 .. parsed-literal::
 
     Epoch 10/10
-    loss: -0.1375 - KR: 6.5687 - acc: 0.9965 - val_loss: -0.1253 - val_KR: 6.6100 - val_acc: 0.9939
+    loss: -0.1272 - KR: 6.4819 - acc: 0.9966 - val_loss: -0.1148 - val_KR: 6.5502 - val_acc: 0.9862
 
 
 4. Evaluate the Lipschitz constant of our networks
@@ -315,56 +315,46 @@ We can estimate the Lipschitz constant by evaluating
 
 for various inputs.
 
+The deel.torchlip.utils.evaluate_lip_const implements several methods to
+evaluate this constant, either by adding random noise :math:`x+\epsilon`
+and evaluating
+:math:`\frac{\Vert{}F(x + \epsilon) - F(x)\Vert{}}{\Vert{}\epsilon\Vert{}}`,
+or by an adversarial attack on :math:`\epsilon` to increase this value,
+or by computing the jacobian norm :math:`||\nabla_x F(x)||`
+
 .. code:: ipython3
 
-    from scipy.spatial.distance import pdist
-    
-    wass.eval()
-    
-    p = []
-    for _ in range(64):
-        eps = 1e-3
-        batch, _ = next(iter(train_loader))
-        dist = torch.distributions.Uniform(-eps, +eps).sample(batch.shape)
-        y1 = wass(batch.to(device)).detach().cpu()
-        y2 = wass((batch + dist).to(device)).detach().cpu()
-    
-        p.append(
-            torch.max(
-                torch.norm(y2 - y1, dim=1)
-                / torch.norm(dist.reshape(dist.shape[0], -1), dim=1)
-            )
-        )
-    print(torch.tensor(p).max())
+    from deel.torchlip.utils import evaluate_lip_const
+
+.. code:: ipython3
+
+    x,y = next(iter(test_loader))
+    evaluate_lip_const(wass, x.to(device), evaluation_type="all", disjoint_neurons=False, double_attack=True)
 
 
 .. parsed-literal::
 
-    tensor(0.1420)
-
-
-.. code:: ipython3
-
-    p = []
-    for batch, _ in train_loader:
-        x = batch.numpy()
-        y = wass(batch.to(device)).detach().cpu().numpy()
-        xd = pdist(x.reshape(batch.shape[0], -1))
-        yd = pdist(y.reshape(batch.shape[0], -1))
-    
-        p.append((yd / xd).max())
-    print(torch.tensor(p).max())
+    Empirical lipschitz constant is 1.0000001192092896 with method jacobian_norm
+    Empirical lipschitz constant is 0.16324962675571442 with method noise_norm
+    Warning : double_attack is set to True,                 the computation time will be doubled
 
 
 .. parsed-literal::
 
-    tensor(0.8841, dtype=torch.float64)
+    Empirical lipschitz constant is 0.9863337874412537 with method attack
 
 
-As we can see, using the :math:`\epsilon`-version, we greatly
-under-estimate the Lipschitz constant. Using the train dataset, we find
-a Lipschitz constant close to 0.9, which is better, but our network
-should be 1-Lipschitz.
+
+
+.. parsed-literal::
+
+    1.0000001192092896
+
+
+
+As we can see, each method provide an underestimation of the Lipschitz
+constant. The adversarial attack method and jacobian norm find values
+very close to one.
 
 4.1. Singular-Value Decomposition
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -382,47 +372,16 @@ are 1.
         if hasattr(layer, "weight"):
             w = layer.weight
             u, s, v = torch.svd(w)
-            print(f"{layer}, min={s.min()}, max={s.max()}")
+            print(f"{type(layer)}, min={s.min()}, max={s.max()}")
 
 
 .. parsed-literal::
 
     === Before export ===
-    ParametrizedSpectralLinear(
-      in_features=784, out_features=128, bias=True
-      (parametrizations): ModuleDict(
-        (weight): ParametrizationList(
-          (0): _SpectralNorm()
-          (1): _BjorckNorm()
-        )
-      )
-    ), min=0.9999998211860657, max=1.0
-    ParametrizedSpectralLinear(
-      in_features=128, out_features=64, bias=True
-      (parametrizations): ModuleDict(
-        (weight): ParametrizationList(
-          (0): _SpectralNorm()
-          (1): _BjorckNorm()
-        )
-      )
-    ), min=1.000001072883606, max=1.000012755393982
-    ParametrizedSpectralLinear(
-      in_features=64, out_features=32, bias=True
-      (parametrizations): ModuleDict(
-        (weight): ParametrizationList(
-          (0): _SpectralNorm()
-          (1): _BjorckNorm()
-        )
-      )
-    ), min=0.9999998807907104, max=1.0
-    ParametrizedFrobeniusLinear(
-      in_features=32, out_features=1, bias=True
-      (parametrizations): ModuleDict(
-        (weight): ParametrizationList(
-          (0): _FrobeniusNorm()
-        )
-      )
-    ), min=1.0000001192092896, max=1.0000001192092896
+    <class 'abc.ParametrizedSpectralLinear'>, min=0.9999998807907104, max=1.0
+    <class 'abc.ParametrizedSpectralLinear'>, min=1.000000238418579, max=1.000009536743164
+    <class 'abc.ParametrizedSpectralLinear'>, min=0.9999998807907104, max=1.0
+    <class 'abc.ParametrizedFrobeniusLinear'>, min=0.9999998211860657, max=0.9999998211860657
 
 
 4.2 Model export
@@ -468,17 +427,18 @@ torchlip.SpectralConv2d(…), …)
         if hasattr(layer, "weight"):
             w = layer.weight
             u, s, v = torch.svd(w)
-            print(f"{layer}, min={s.min()}, max={s.max()}")
+            print(f"{type(layer)}, min={s.min()}, max={s.max()}")
 
 
 .. parsed-literal::
 
     === After export ===
-    Linear(in_features=784, out_features=128, bias=True), min=0.9999998211860657, max=1.0
-    Linear(in_features=128, out_features=64, bias=True), min=1.000001072883606, max=1.000012755393982
-    Linear(in_features=64, out_features=32, bias=True), min=0.9999998807907104, max=1.0
-    Linear(in_features=32, out_features=1, bias=True), min=1.0000001192092896, max=1.0000001192092896
+    <class 'torch.nn.modules.linear.Linear'>, min=0.9999998807907104, max=1.0
+    <class 'torch.nn.modules.linear.Linear'>, min=1.000000238418579, max=1.000009536743164
+    <class 'torch.nn.modules.linear.Linear'>, min=0.9999998807907104, max=1.0
+    <class 'torch.nn.modules.linear.Linear'>, min=0.9999998211860657, max=0.9999998211860657
 
 
 As we can see, all our singular values are very close to one.
 
+.. container:: alert alert-block alert-danger
