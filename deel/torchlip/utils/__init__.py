@@ -27,14 +27,7 @@
 """
 Contains utility functions.
 """
-from typing import Optional
 
-import torch
-
-if torch.__version__.startswith("1."):
-    import functorch as tfc
-else:
-    import torch.func as tfc
 
 from .bjorck_norm import bjorck_norm
 from .bjorck_norm import remove_bjorck_norm
@@ -43,49 +36,7 @@ from .frobenius_norm import remove_frobenius_norm
 from .lconv_norm import lconv_norm
 from .lconv_norm import remove_lconv_norm
 from .sqrt_eps import sqrt_with_gradeps  # noqa: F401
-
-
-def evaluate_lip_const(
-    model: torch.nn.Module,
-    x: torch.Tensor,
-    eps: float = 1e-4,
-    seed: Optional[int] = None,
-) -> float:
-    """
-    Evaluate the Lipschitz constant of a model, using the Jacobian of the model.
-    Please note that the estimation of the lipschitz constant is done locally around
-    input samples. This may not correctly estimate the behaviour in the whole domain.
-
-    Args:
-        model: built keras model used to make predictions
-        x: inputs used to compute the lipschitz constant
-
-    Returns:
-        float: the empirically evaluated Lipschitz constant. The computation might also
-            be inaccurate in high dimensional space.
-
-    """
-
-    # Define a function that computes the model output
-    def model_func(x):
-        # using vmap torchfunc method induce a single sample input
-        # so we need to unsqueeze the input
-        y = model(torch.unsqueeze(x, dim=0))  # Forward pass
-        return y
-
-    x_src = x.clone().detach().requires_grad_(True)
-
-    # Compute the Jacobian using jacrev
-    batch_jacobian = tfc.vmap(tfc.jacrev(model_func))(x_src)
-
-    # Reshape the Jacobian to match the desired shape
-    batch_size = x.shape[0]
-    xdim = torch.prod(torch.tensor(x.shape[1:])).item()
-    batch_jacobian = batch_jacobian.view(batch_size, -1, xdim)
-
-    # Compute singular values and check Lipschitz property
-    lip_cst = torch.linalg.norm(batch_jacobian, ord=2, dim=(-2, -1))
-    return float(torch.max(lip_cst).item())
+from .evaluate_lip_const import evaluate_lip_const
 
 
 __all__ = [
