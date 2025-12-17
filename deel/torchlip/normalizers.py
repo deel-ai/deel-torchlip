@@ -84,10 +84,9 @@ def bjorck_normalization(
 
     def body(w, fct, iter):
         if maxiter - iter > DEFAULT_BJORK_DETACH:
-            return  (1.0 + beta) * w - beta * fct(w).detach()
+            return (1.0 + beta) * w - beta * fct(w).detach()
         w = (1.0 + beta) * w - beta * fct(w)
         return w
-
 
     shape = w.shape
     cout = w.size(0)
@@ -103,7 +102,7 @@ def bjorck_normalization(
 
     while not done:
         old_w = w_mat
-        w_mat = body(w_mat, body_fct,iter)
+        w_mat = body(w_mat, body_fct, iter)
         iter -= 1
         done = (not cond(w_mat, old_w)) or (iter <= 0)
 
