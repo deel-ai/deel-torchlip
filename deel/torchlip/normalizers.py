@@ -39,7 +39,7 @@ DEFAULT_EPS_BJORCK = 1e-3
 DEFAULT_MAXITER_BJORCK = 15
 DEFAULT_MAXITER_SPECTRAL = 10
 DEFAULT_BETA = 0.5
-DEFAULT_BJORK_DETACH = 3
+DEFAULT_BJORK_DETACH = 4
 
 
 def bjorck_normalization(
@@ -83,7 +83,7 @@ def bjorck_normalization(
         return torch.mm(torch.mm(w, w.t()), w)
 
     def body(w, fct, iter):
-        if maxiter - iter > DEFAULT_BJORK_DETACH:
+        if maxiter - iter >= DEFAULT_BJORK_DETACH:
             return (1.0 + beta) * w - beta * fct(w).detach()
         w = (1.0 + beta) * w - beta * fct(w)
         return w
