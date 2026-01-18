@@ -9,12 +9,14 @@ jobs:
       max-parallel: 4
       matrix:
         include:
-          - python-version: 3.9
-            pt-version: 1.13.1
           - python-version: "3.10"
-            pt-version: 2.1.2
+            pt-version: 1.13.1
           - python-version: "3.11"
+            pt-version: 2.1.2
+          - python-version: "3.12"
             pt-version: 2.4.1
+          - python-vesion: "3.14"
+            pt-version: 2.9.1
 
     steps:
     - uses: actions/checkout@v5
