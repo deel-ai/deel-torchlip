@@ -110,7 +110,7 @@ def test_kernel_svd(kernel_shape):
 def set_spectral_input_shape(kernel, strides):
     """Set spectral input shape and RO_case, depending on kernel shape and
     strides."""
-    (kh, kw, c_in, c_out) = kernel.shape
+    kh, kw, c_in, c_out = kernel.shape
     cPad = [kh // 2, kw // 2]
     stride = strides[0]
 
