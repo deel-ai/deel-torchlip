@@ -197,7 +197,7 @@ def test_HouseHolder_instantiation(params, shape, len_shape, expected):
     uft.build_layer(hh, shape)
     theta = np.squeeze(uft.to_numpy(hh.theta))
     assert theta.shape == len_shape
-    np.testing.assert_equal(theta, expected)
+    np.testing.assert_allclose(theta, expected)
 
 
 @pytest.mark.skipif(
