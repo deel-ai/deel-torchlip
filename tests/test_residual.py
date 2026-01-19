@@ -63,7 +63,6 @@ def functional_input_output_tensors(dict_functional_tensors, x):
 
 
 def check_serialization(layer_type, layer_params, input_shape=(10,)):
-
     dict_tensors = get_functional_tensors(input_shape)
     m = uft.get_functional_model(tModel, dict_tensors, functional_input_output_tensors)
     if m is None:

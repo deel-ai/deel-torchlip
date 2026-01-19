@@ -28,7 +28,6 @@
 Contains utility functions.
 """
 
-
 from .bjorck_norm import bjorck_norm
 from .bjorck_norm import remove_bjorck_norm
 from .frobenius_norm import frobenius_norm
@@ -37,7 +36,6 @@ from .lconv_norm import lconv_norm
 from .lconv_norm import remove_lconv_norm
 from .sqrt_eps import sqrt_with_gradeps  # noqa: F401
 from .evaluate_lip_const import evaluate_lip_const
-
 
 __all__ = [
     "bjorck_norm",

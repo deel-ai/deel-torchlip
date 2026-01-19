@@ -27,6 +27,7 @@
 """
 Custom autograd function for safe-gradient computation of square-root at 0.
 """
+
 from typing import Any
 
 import torch

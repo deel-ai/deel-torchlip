@@ -29,7 +29,6 @@ from typing import Optional
 import torch
 import torch.nn.functional as F
 
-
 # Activations
 
 
@@ -460,7 +459,6 @@ class SymmetricPad(torch.nn.Module):
         assert len(self.pad) == num_dim, f"Pad must be a tuple of {num_dim} integers"
 
     def forward(self, x):
-
         # Horizontal padding
         left = x[:, ..., : self.pad[0]].flip(dims=[-1])
         right = x[:, ..., -self.pad[1] :].flip(dims=[-1])

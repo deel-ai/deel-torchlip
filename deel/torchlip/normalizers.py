@@ -28,6 +28,7 @@
 This module contains computation functions for Bjorck and spectral
 normalization. This is most for internal use.
 """
+
 from typing import Optional
 from typing import Tuple
 

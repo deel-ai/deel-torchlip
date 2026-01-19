@@ -297,10 +297,8 @@ def evaluate_lip_const_attack(
         return noise, lip_cst
 
     if double_attack:
-        print(
-            "Warning : double_attack is set to True, \
-                the computation time will be doubled"
-        )
+        print("Warning : double_attack is set to True, \
+                the computation time will be doubled")
     noise, lip_cst = attack_lip_const(model, x, step_size, num_iterations)
 
     if not double_attack:

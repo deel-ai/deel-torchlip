@@ -85,7 +85,6 @@ def test_invertible_downsample():
     reason="InvertibleUpSampling not available",
 )
 def test_invertible_upsample():
-
     # 2D input
     x_np = np.random.rand(10, 16, 32, 32)
     x = uft.to_NCHW_inv(x_np)

@@ -150,7 +150,6 @@ def build_and_train_k_lip_model(
     k_lip_data: float,
     **kwargs,
 ):
-
     # clear session to avoid side effects from previous train
     uft.init_session()  # K.clear_session()
     np.random.seed(42)
