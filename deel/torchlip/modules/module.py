@@ -28,6 +28,7 @@
 This module contains equivalents for Model and Sequential. These classes add support
 for condensation and vanilla exportation.
 """
+
 import abc
 import copy
 import warnings

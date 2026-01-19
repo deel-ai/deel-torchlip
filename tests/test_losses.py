@@ -49,7 +49,6 @@ from .utils_framework import (
     process_labels_for_multi_gpu,
 )
 
-
 # a tester:
 # - un cas hardcodé
 # - les dtypes pour y_true

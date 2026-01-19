@@ -29,6 +29,7 @@ This module contains extra activation functions which respect the Lipschitz cons
 It can be added as a layer, or it can be used in the "activation" params for other
 layers.
 """
+
 from typing import Optional
 
 import torch

@@ -77,7 +77,6 @@ class KRLoss(torch.nn.Module):
 
 
 class NegKRLoss(torch.nn.Module):
-
     def __init__(self, multi_gpu=False, reduction: str = "mean", true_values=None):
         """
         Loss that estimates the negative of the Wasserstein-1 distance using
@@ -164,10 +163,8 @@ class HKRLoss(torch.nn.Module):
         if (alpha >= 0) and (alpha <= 1):
             self.alpha = alpha
         else:
-            warnings.warn(
-                f"Depreciated alpha should be between 0 and 1 replaced by \
-                    {alpha/(alpha+1.0)}"
-            )
+            warnings.warn(f"Depreciated alpha should be between 0 and 1 replaced by \
+                    {alpha/(alpha+1.0)}")
             self.alpha = alpha / (alpha + 1.0)
         self.min_margin = min_margin
         assert (
@@ -270,10 +267,8 @@ class HKRMulticlassLoss(torch.nn.Module):
         if (alpha >= 0) and (alpha <= 1):
             self.alpha = alpha
         else:
-            warnings.warn(
-                f"Depreciated alpha should be between 0 and 1 replaced by \
-                    {alpha/(alpha+1.0)}"
-            )
+            warnings.warn(f"Depreciated alpha should be between 0 and 1 replaced by \
+                    {alpha/(alpha+1.0)}")
             self.alpha = alpha / (alpha + 1.0)
         self.min_margin = min_margin
         self.reduction = reduction
@@ -321,10 +316,8 @@ class SoftHKRMulticlassLoss(torch.nn.Module):
         if (alpha >= 0) and (alpha <= 1):
             self.alpha = torch.tensor(alpha, dtype=torch.float32)
         else:
-            warnings.warn(
-                f"Depreciated alpha should be between 0 and 1 replaced by \
-                    {alpha/(alpha+1.0)}"
-            )
+            warnings.warn(f"Depreciated alpha should be between 0 and 1 replaced by \
+                    {alpha/(alpha+1.0)}")
             self.alpha = torch.tensor(alpha / (alpha + 1.0), dtype=torch.float32)
         self.min_margin_v = min_margin
         self.alpha_mean = alpha_mean
@@ -461,10 +454,8 @@ class LseHKRMulticlassLoss(torch.nn.Module):
         if (alpha >= 0) and (alpha <= 1):
             self.alpha = torch.tensor(alpha, dtype=torch.float32)
         else:
-            warnings.warn(
-                f"Depreciated alpha should be between 0 and 1 replaced by \
-                    {alpha/(alpha+1.0)}"
-            )
+            warnings.warn(f"Depreciated alpha should be between 0 and 1 replaced by \
+                    {alpha/(alpha+1.0)}")
             self.alpha = torch.tensor(alpha / (alpha + 1.0), dtype=torch.float32)
         self.penalty = penalty
         self.temperature = temperature
