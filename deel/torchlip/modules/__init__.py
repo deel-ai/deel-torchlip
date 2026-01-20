@@ -44,6 +44,7 @@ wasserstein distance estimation. However for other problems (such as adversarial
 robustness) the user may want to use layers that are at most 1 lipschitz, this can
 be done by setting the param `niter_bjorck=0`.
 """
+
 # flake8: noqa
 from .activation import FullSort
 from .activation import GroupSort

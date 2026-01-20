@@ -142,7 +142,6 @@ def test_pooling_global(layer_type, layer_params):
     ],
 )
 def test_pool_vanilla_export(layer_type, layer_params):
-
     input_shape = (4, 10, 10)
     input_shape = uft.to_framework_channel(input_shape)
     model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, 1.0)

@@ -25,6 +25,7 @@
 # CRIAQ and ANITI - https://www.deel.ai/
 # =====================================================================================
 """Tests for singular value computation (in compute_layer_sv.py)"""
+
 import os
 import pprint
 import pytest
@@ -42,7 +43,6 @@ from .utils_framework import (
 from .utils_framework import OrthLinearRegularizer
 
 from . import utils_framework as uft
-
 
 pp = pprint.PrettyPrinter(indent=4)
 
