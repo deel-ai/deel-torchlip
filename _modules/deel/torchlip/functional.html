@@ -227,7 +227,6 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">torch.nn.functional</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">F</span>
 
-
 <span class="c1"># Activations</span>
 
 
@@ -658,7 +657,6 @@
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">)</span> <span class="o">==</span> <span class="n">num_dim</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Pad must be a tuple of </span><span class="si">{</span><span class="n">num_dim</span><span class="si">}</span><span class="s2"> integers&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
-
         <span class="c1"># Horizontal padding</span>
         <span class="n">left</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="o">...</span><span class="p">,</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
         <span class="n">right</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span> <span class="o">...</span><span class="p">,</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="p">:]</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
