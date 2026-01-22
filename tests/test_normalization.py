@@ -114,7 +114,6 @@ def test_BatchCentering(size, input_shape, bias):
     input_shape = uft.to_framework_channel(input_shape)
     x = np.arange(np.prod(input_shape)).reshape(input_shape)
     bn = uft.get_instance_framework(BatchCentering, {"size": size, "bias": bias})
-    bn_mom = bn.momentum
     if len(input_shape) == 2:
         mean_x = np.mean(x, axis=0)
         mean_shape = (1, size)
@@ -128,8 +127,10 @@ def test_BatchCentering(size, input_shape, bias):
         uft.to_numpy(y), x - np.reshape(mean_x, mean_shape), atol=1e-5
     )
     y = bn(2 * x)
-    new_runningmean = mean_x * (1 - bn_mom) + 2 * mean_x * bn_mom
-    np.testing.assert_allclose(bn.running_mean, new_runningmean, atol=1e-5)
+    new_runningmean = (mean_x + 2 * mean_x) / 2.0
+    np.testing.assert_allclose(
+        bn.running_mean / bn.running_num_batches, new_runningmean, atol=1e-5
+    )
     np.testing.assert_allclose(
         uft.to_numpy(y), 2 * x - 2 * np.reshape(mean_x, mean_shape), atol=1e-5
     )  # keep substract batch mean
@@ -266,4 +267,10 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
     for _ in range(1000):
         y = bn(x)  # noqa: F841
 
-    np.testing.assert_allclose(bn.running_mean, mean_x, atol=1e-5)
+    np.testing.assert_allclose(
+        bn.running_mean / bn.running_num_batches, mean_x * 1000 / 1001, atol=1e-5
+    )
+    bn.eval()
+    y = bn(x)
+    # updated running mean used in eval mode
+    np.testing.assert_allclose(bn.running_mean, mean_x * 1000 / 1001, atol=1e-5)

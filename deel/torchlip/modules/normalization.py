@@ -58,23 +58,22 @@ class BatchCentering(nn.Module):
 
     .. math::
 
-        y = x - \mathrm{E}[x] + \beta
+        y_i = x_i - \mathrm{E}[x_i] + \beta_i
 
-    The mean is calculated per-dimension over the mini-batchesa and
+    The mean is calculated per-dimension over the mini-batches and
     other dimensions excepted the feature/channel dimension.
+        :math:`\beta` is a learnable parameter vectors
+    of size `C` (where `C` is the number of features or channels of the input).
     This layer uses statistics computed from input data in
     training mode and  a constant in evaluation mode computed as
     the running mean on training samples.
-    :math:`\beta` is a learnable parameter vectors
-    of size `C` (where `C` is the number of features or channels of the input).
-    that can be applied after the mean subtraction.
-    Unlike Batch Normalization, this layer is 1-Lipschitz
+        This layer is compatible with multi-GPU training (torch.nn.distributed).
+    This layer is :math:`1`-Lipschitz and should be used
 
     Args:
         size: number of features in the input tensor
         dim: dimensions over which to compute the mean
         (default ``input.mean((0, -2, -1))`` for a 4D tensor).
-        momentum: the value used for the running mean computation
         bias: if `True`, adds a learnable bias to the output
         of shape (size,). Default: `True`
 
@@ -88,13 +87,12 @@ class BatchCentering(nn.Module):
         self,
         size: int = 1,
         dim: Optional[tuple] = None,
-        momentum: float = 0.05,
         bias: bool = True,
     ):
         super(BatchCentering, self).__init__()
         self.dim = dim
-        self.momentum = momentum
         self.register_buffer("running_mean", torch.zeros((size,)))
+        self.register_buffer("running_num_batches", torch.zeros((1,)))
         if bias:
             self.bias = nn.Parameter(torch.zeros((size,)), requires_grad=True)
         else:
@@ -102,25 +100,50 @@ class BatchCentering(nn.Module):
 
         self.first = True
 
+    def reset_states(self):
+        self.running_mean.zero_()
+        self.running_num_batches.zero_()
+
+    # compute average of running values
+    def update_running_values(self):
+        if self.running_num_batches > 1:
+            self.running_mean = self.running_mean / self.running_num_batches
+            self.running_num_batches = self.running_num_batches.zero_() + 1.0
+
+    def get_running_mean(self, training=False, update=True):
+        """Retrieve the running mean in eval mode."""
+        """ If update is True, update the running values"""
+
+        assert training == False, "Only in eval mode"
+        # case asking for running mean before a step
+        if self.running_num_batches == 0:
+            return torch.zeros(self.running_mean.shape).to(self.running_mean.device)
+        if update and (self.running_num_batches > 1):
+            self.update_running_values()
+        return self.running_mean / self.running_num_batches
+
     def forward(self, x):
         if self.dim is None:  # (0,2,3) for 4D tensor; (0,) for 2D tensor
             self.dim = (0,) + tuple(range(2, len(x.shape)))
         mean_shape = (1, -1) + (1,) * (len(x.shape) - 2)
         if self.training:
+            if self.first:
+                self.reset_states()
+                self.first = False
+            # compute local mean (on batch of a single GPU)
             mean = x.mean(dim=self.dim)
-            with torch.no_grad():
-                if self.first:
-                    self.running_mean = mean
-                    self.first = False
-                else:
-                    self.running_mean = (
-                        1 - self.momentum
-                    ) * self.running_mean + self.momentum * mean
+            agrregated_mean = mean.clone().detach()
+            # on a single GPU this value is always 1
+            num_batches = self.running_num_batches.clone().detach().zero_() + 1.0
+            # for multiGPU aggregate mean and num_batches
             if dist.is_initialized():
-                dist.all_reduce(self.running_mean, op=dist.ReduceOp.SUM)
-                self.running_mean /= dist.get_world_size()
+                dist.all_reduce(agrregated_mean.detach(), op=dist.ReduceOp.SUM)
+                dist.all_reduce(num_batches.detach(), op=dist.ReduceOp.SUM)
+            with torch.no_grad():
+                self.running_mean += agrregated_mean
+                self.running_num_batches += num_batches
         else:
-            mean = self.running_mean
+            mean = self.get_running_mean(self.training)
         if self.bias is not None:
             return x - mean.view(mean_shape) + self.bias.view(mean_shape)
         else:
