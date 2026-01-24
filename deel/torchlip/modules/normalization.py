@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 import torch
 import torch.nn as nn
 import torch.distributed as dist
@@ -32,10 +32,10 @@ class LayerCentering(nn.Module):
 
     """
 
-    def __init__(self, size: int = 1, dim: tuple = [-2, -1], bias=True):
+    def __init__(self, num_features: int = 1, dim: tuple = [-2, -1], bias=True):
         super(LayerCentering, self).__init__()
         if bias:
-            self.bias = nn.Parameter(torch.zeros((size,)), requires_grad=True)
+            self.bias = nn.Parameter(torch.zeros((num_features,)), requires_grad=True)
         else:
             self.register_parameter("bias", None)
         self.dim = dim
@@ -63,7 +63,7 @@ class BatchCentering(nn.Module):
     The mean is calculated per-dimension over the mini-batches and
     other dimensions excepted the feature/channel dimension.
         :math:`\beta` is a learnable parameter vectors
-    of size `C` (where `C` is the number of features or channels of the input).
+    of num_features `C` (where `C` is the number of features or channels of the input).
     This layer uses statistics computed from input data in
     training mode and  a constant in evaluation mode computed as
     the running mean on training samples.
@@ -71,79 +71,103 @@ class BatchCentering(nn.Module):
     This layer is :math:`1`-Lipschitz and should be used
 
     Args:
-        size: number of features in the input tensor
+        num_features: number of features in the input tensor
         dim: dimensions over which to compute the mean
         (default ``input.mean((0, -2, -1))`` for a 4D tensor).
         bias: if `True`, adds a learnable bias to the output
-        of shape (size,). Default: `True`
+        of shape (num_features,). Default: `True`
 
     Shape:
-        - Input: :math:`(N, size, *)`
-        - Output: :math:`(N, size, *)` (same shape as input)
+        - Input: :math:`(N, num_features, *)`
+        - Output: :math:`(N, num_features, *)` (same shape as input)
 
     """
 
     def __init__(
         self,
-        size: int = 1,
+        num_features: int = 1,
         dim: Optional[tuple] = None,
+        centering: bool = True,
         bias: bool = True,
     ):
         super(BatchCentering, self).__init__()
+        self.num_features = num_features
         self.dim = dim
-        self.register_buffer("running_mean", torch.zeros((size,)))
-        self.register_buffer("running_num_batches", torch.zeros((1,)))
+        self.centering = centering
+
+        # register for saving the local mean on batch
+        # running_sum_bmean sum of batch mean (mean needs it)
+        self.register_buffer("running_sum_bmean", torch.zeros((num_features,)))
+        self.register_buffer("running_num_batches", torch.zeros((1,), dtype=torch.long))
         if bias:
-            self.bias = nn.Parameter(torch.zeros((size,)), requires_grad=True)
+            self.bias = nn.Parameter(torch.zeros((num_features,)), requires_grad=True)
         else:
             self.register_parameter("bias", None)
 
-        self.first = True
+        # Cached batch stats (for training-time scaling and mean)
+        self._batch_mean: Optional[torch.Tensor] = None
+
+        self._first = True
+
+    def _infer_dim(self, x: torch.Tensor) -> tuple:
+        if self.dim is None:
+            # Default: reduce over batch + spatial dims, keep channel
+            self.dim = (0,) + tuple(range(2, x.dim()))
+    
+    @staticmethod
+    def _all_reduce_sum_(lt: List[torch.Tensor]):
+        if dist.is_available() and dist.is_initialized():
+            for t in lt:
+                dist.all_reduce(t, op=dist.ReduceOp.SUM)
 
     def reset_states(self):
-        self.running_mean.zero_()
+        self.running_sum_bmean.zero_()
         self.running_num_batches.zero_()
 
     # compute average of running values
     def update_running_values(self):
         if self.running_num_batches > 1:
-            self.running_mean = self.running_mean / self.running_num_batches
-            self.running_num_batches = self.running_num_batches.zero_() + 1.0
+            self.running_sum_bmean = self.running_sum_bmean / self.running_num_batches
+            self.running_num_batches = self.running_num_batches.zero_() + 1
 
-    def get_running_mean(self, training=False, update=True):
+    def _get_mean(self, training: bool, update=True) -> torch.Tensor:
         """Retrieve the running mean in eval mode."""
         """ If update is True, update the running values"""
+        if training:
+            return self._batch_mean
 
-        assert training == False, "Only in eval mode"
         # case asking for running mean before a step
-        if self.running_num_batches == 0:
-            return torch.zeros(self.running_mean.shape).to(self.running_mean.device)
+        if self.running_num_batches.item() == 0:
+            return torch.zeros_like(self.running_sum_bmean)
         if update and (self.running_num_batches > 1):
             self.update_running_values()
-        return self.running_mean / self.running_num_batches
+        return self.running_sum_bmean / self.running_num_batches
 
     def forward(self, x):
-        if self.dim is None:  # (0,2,3) for 4D tensor; (0,) for 2D tensor
-            self.dim = (0,) + tuple(range(2, len(x.shape)))
+        self._infer_dim(x)
         mean_shape = (1, -1) + (1,) * (len(x.shape) - 2)
         if self.training:
-            if self.first:
+            if self._first:
                 self.reset_states()
-                self.first = False
+                self._first = False
             # compute local mean (on batch of a single GPU)
-            mean = x.mean(dim=self.dim)
-            agrregated_mean = mean.clone().detach()
+            if self.centering:
+                self._batch_mean = x.mean(dim=self.dim)
+            else:
+                self._batch_mean = torch.zeros((self.num_features,)).to(x.device)
+            agrregated_mean = self._batch_mean.clone().detach()
             # on a single GPU this value is always 1
-            num_batches = self.running_num_batches.clone().detach().zero_() + 1.0
+            num_batches = self.running_num_batches.clone().detach().zero_() + 1
             # for multiGPU aggregate mean and num_batches
-            if dist.is_initialized():
-                dist.all_reduce(agrregated_mean.detach(), op=dist.ReduceOp.SUM)
-                dist.all_reduce(num_batches.detach(), op=dist.ReduceOp.SUM)
+            list_tensors = [agrregated_mean, num_batches]
+            self._all_reduce_sum_(list_tensors)
+
             with torch.no_grad():
-                self.running_mean += agrregated_mean
+                self.running_sum_bmean += agrregated_mean
                 self.running_num_batches += num_batches
-        else:
-            mean = self.get_running_mean(self.training)
+
+        mean = self._get_mean(self.training)
+
         if self.bias is not None:
             return x - mean.view(mean_shape) + self.bias.view(mean_shape)
         else:

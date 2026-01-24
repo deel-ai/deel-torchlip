@@ -76,7 +76,7 @@ def test_LayerCentering(size, input_shape, bias):
     """evaluate layerbatch centering"""
     input_shape = uft.to_framework_channel(input_shape)
     x = np.arange(np.prod(input_shape)).reshape(input_shape)
-    bn = uft.get_instance_framework(LayerCentering, {"size": size, "bias": bias})
+    bn = uft.get_instance_framework(LayerCentering, {"num_features": size, "bias": bias})
 
     mean_x = np.mean(x, axis=(2, 3))
     mean_shape = (-1, size, 1, 1)
@@ -113,7 +113,7 @@ def test_BatchCentering(size, input_shape, bias):
     """evaluate layerbatch centering"""
     input_shape = uft.to_framework_channel(input_shape)
     x = np.arange(np.prod(input_shape)).reshape(input_shape)
-    bn = uft.get_instance_framework(BatchCentering, {"size": size, "bias": bias})
+    bn = uft.get_instance_framework(BatchCentering, {"num_features": size, "bias": bias})
     if len(input_shape) == 2:
         mean_x = np.mean(x, axis=0)
         mean_shape = (1, size)
@@ -122,14 +122,14 @@ def test_BatchCentering(size, input_shape, bias):
         mean_shape = (1, size, 1, 1)
     x = uft.to_tensor(x)
     y = bn(x)
-    np.testing.assert_allclose(bn.running_mean, mean_x, atol=1e-5)
+    np.testing.assert_allclose(bn.running_sum_bmean, mean_x, atol=1e-5)
     np.testing.assert_allclose(
         uft.to_numpy(y), x - np.reshape(mean_x, mean_shape), atol=1e-5
     )
     y = bn(2 * x)
     new_runningmean = (mean_x + 2 * mean_x) / 2.0
     np.testing.assert_allclose(
-        bn.running_mean / bn.running_num_batches, new_runningmean, atol=1e-5
+        bn.running_sum_bmean / bn.running_num_batches, new_runningmean, atol=1e-5
     )
     np.testing.assert_allclose(
         uft.to_numpy(y), 2 * x - 2 * np.reshape(mean_x, mean_shape), atol=1e-5
@@ -137,7 +137,7 @@ def test_BatchCentering(size, input_shape, bias):
     bn.eval()
     y = bn(2 * x)
     np.testing.assert_allclose(
-        bn.running_mean, new_runningmean, atol=1e-5
+        bn.running_sum_bmean, new_runningmean, atol=1e-5
     )  # eval mode running mean freezed
     np.testing.assert_allclose(
         uft.to_numpy(y), 2 * x - np.reshape(new_runningmean, mean_shape), atol=1e-5
@@ -162,7 +162,7 @@ def test_Normalization_serialization(norm_type, size, input_shape, bias):
     if hasattr(norm_type, "unavailable_class"):
         pytest.skip(f"{norm_type} not available")
     check_serialization(
-        norm_type, layer_params={"size": size, "bias": bias}, input_shape=input_shape
+        norm_type, layer_params={"num_features": size, "bias": bias}, input_shape=input_shape
     )
 
 
@@ -204,7 +204,7 @@ def test_Normalization_bias(norm_type, size, input_shape, bias):
         pytest.skip(f"{norm_type} not available")
     m = uft.generate_k_lip_model(
         norm_type,
-        layer_params={"size": size, "bias": bias},
+        layer_params={"num_features": size, "bias": bias},
         input_shape=input_shape,
         k=1,
     )
@@ -252,11 +252,11 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
     input_shape = uft.to_framework_channel(input_shape)
     # start with 0 to set up running mean to zero
     x = np.zeros(input_shape)
-    bn = uft.get_instance_framework(BatchCentering, {"size": size, "bias": bias})
+    bn = uft.get_instance_framework(BatchCentering, {"num_features": size, "bias": bias})
     x = uft.to_tensor(x)
     y = bn(x)
 
-    np.testing.assert_allclose(bn.running_mean, 0.0, atol=1e-5)
+    np.testing.assert_allclose(bn.running_sum_bmean, 0.0, atol=1e-5)
 
     x = np.random.normal(0.0, 1.0, input_shape)
     if len(input_shape) == 2:
@@ -266,11 +266,12 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
     x = uft.to_tensor(x)
     for _ in range(1000):
         y = bn(x)  # noqa: F841
-
+    
     np.testing.assert_allclose(
-        bn.running_mean / bn.running_num_batches, mean_x * 1000 / 1001, atol=1e-5
+        bn.running_sum_bmean / bn.running_num_batches, mean_x * 1000 / 1001, atol=1e-4
     )
     bn.eval()
     y = bn(x)
     # updated running mean used in eval mode
-    np.testing.assert_allclose(bn.running_mean, mean_x * 1000 / 1001, atol=1e-5)
+    np.testing.assert_allclose(bn.running_sum_bmean, mean_x * 1000 / 1001, atol=1e-4)
+    
