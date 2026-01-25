@@ -120,6 +120,12 @@ def vanilla_model(model: nn.Module, in_place=True, new_module=None) -> nn.Module
             instead of creating a new one. Only useful in recursion, should be None
             when calling the function.
     """
+
+    def _is_exportable(module):
+        return hasattr(module, "vanilla_export") and callable(
+            getattr(module, "vanilla_export")
+        )
+
     if in_place is False and new_module is None:
         model.eval()
         new_module = copy.deepcopy(model)
@@ -128,7 +134,7 @@ def vanilla_model(model: nn.Module, in_place=True, new_module=None) -> nn.Module
         new_module = model
 
     for n, module in model.named_children():
-        if isinstance(module, LipschitzModule):
+        if _is_exportable(module):
             # torchlip modules
             setattr(new_module, n, module.vanilla_export())
         elif parametrize.is_parametrized(module) and isinstance(

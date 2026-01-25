@@ -3,6 +3,8 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 
+from deel.torchlip.modules.module import LipschitzModule
+
 
 class LayerCentering(nn.Module):
     r"""
@@ -50,6 +52,37 @@ class LayerCentering(nn.Module):
 
 
 LayerCentering2d = LayerCentering
+
+
+class ScaleBiasLayer(nn.Module):
+    def __init__(
+        self,
+        scalar=1.0,
+        num_features: int = 1,
+        bias: bool = True,
+    ):
+        """
+        A PyTorch layer that multiplies the input by a fixed scalar.
+        and add a bias
+        :param scalar: The scalar multiplier (non-learnable).
+        :param size: number of features in the input tensor
+        :param bias: if `True`, adds a learnable bias to the output
+        of shape (size,). Default: `True`
+        """
+        super(ScaleBiasLayer, self).__init__()
+        self.scalar = scalar
+        self.num_features = num_features
+        if bias:
+            self.bias = nn.Parameter(torch.zeros((num_features,)), requires_grad=True)
+            self.bias_shape = None
+
+    def forward(self, x):
+        if self.bias is not None:
+            if self.bias_shape is None:
+                self.bias_shape = (1, -1) + (1,) * (len(x.shape) - 2)
+            return x * self.scalar + self.bias.view(self.bias_shape)
+        else:
+            return x * self.scalar
 
 
 class BatchCentering(nn.Module):
@@ -113,7 +146,7 @@ class BatchCentering(nn.Module):
         if self.dim is None:
             # Default: reduce over batch + spatial dims, keep channel
             self.dim = (0,) + tuple(range(2, x.dim()))
-    
+
     @staticmethod
     def _all_reduce_sum_(lt: List[torch.Tensor]):
         if dist.is_available() and dist.is_initialized():
@@ -172,6 +205,16 @@ class BatchCentering(nn.Module):
             return x - mean.view(mean_shape) + self.bias.view(mean_shape)
         else:
             return x - mean.view(mean_shape)
+
+    def vanilla_export(self):
+        num_features = self.running_sum_bmean.shape[0]
+        bias = -self.running_sum_bmean.detach() / self.running_num_batches.detach()
+        if self.bias is not None:
+            bias += self.bias.detach()
+
+        layer = ScaleBiasLayer(scalar=1.0, bias=True, num_features=num_features)
+        layer.bias.data = bias
+        return layer
 
 
 BatchCentering2d = BatchCentering

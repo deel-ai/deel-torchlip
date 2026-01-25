@@ -76,7 +76,9 @@ def test_LayerCentering(size, input_shape, bias):
     """evaluate layerbatch centering"""
     input_shape = uft.to_framework_channel(input_shape)
     x = np.arange(np.prod(input_shape)).reshape(input_shape)
-    bn = uft.get_instance_framework(LayerCentering, {"num_features": size, "bias": bias})
+    bn = uft.get_instance_framework(
+        LayerCentering, {"num_features": size, "bias": bias}
+    )
 
     mean_x = np.mean(x, axis=(2, 3))
     mean_shape = (-1, size, 1, 1)
@@ -113,7 +115,9 @@ def test_BatchCentering(size, input_shape, bias):
     """evaluate layerbatch centering"""
     input_shape = uft.to_framework_channel(input_shape)
     x = np.arange(np.prod(input_shape)).reshape(input_shape)
-    bn = uft.get_instance_framework(BatchCentering, {"num_features": size, "bias": bias})
+    bn = uft.get_instance_framework(
+        BatchCentering, {"num_features": size, "bias": bias}
+    )
     if len(input_shape) == 2:
         mean_x = np.mean(x, axis=0)
         mean_shape = (1, size)
@@ -162,7 +166,9 @@ def test_Normalization_serialization(norm_type, size, input_shape, bias):
     if hasattr(norm_type, "unavailable_class"):
         pytest.skip(f"{norm_type} not available")
     check_serialization(
-        norm_type, layer_params={"num_features": size, "bias": bias}, input_shape=input_shape
+        norm_type,
+        layer_params={"num_features": size, "bias": bias},
+        input_shape=input_shape,
     )
 
 
@@ -252,7 +258,9 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
     input_shape = uft.to_framework_channel(input_shape)
     # start with 0 to set up running mean to zero
     x = np.zeros(input_shape)
-    bn = uft.get_instance_framework(BatchCentering, {"num_features": size, "bias": bias})
+    bn = uft.get_instance_framework(
+        BatchCentering, {"num_features": size, "bias": bias}
+    )
     x = uft.to_tensor(x)
     y = bn(x)
 
@@ -266,7 +274,7 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
     x = uft.to_tensor(x)
     for _ in range(1000):
         y = bn(x)  # noqa: F841
-    
+
     np.testing.assert_allclose(
         bn.running_sum_bmean / bn.running_num_batches, mean_x * 1000 / 1001, atol=1e-4
     )
@@ -274,4 +282,38 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
     y = bn(x)
     # updated running mean used in eval mode
     np.testing.assert_allclose(bn.running_sum_bmean, mean_x * 1000 / 1001, atol=1e-4)
-    
+
+
+@pytest.mark.parametrize(
+    "layer_type,layer_params",
+    [
+        (BatchCentering, {"num_features": 10, "centering": True, "bias": False}),
+        (BatchCentering, {"num_features": 10, "centering": False, "bias": False}),
+        (BatchCentering, {"num_features": 10, "centering": True, "bias": True}),
+    ],
+)
+@pytest.mark.parametrize("input_shape", [(10, 10), (), (10,)])
+def test_batchcenter_vanilla_export(layer_type, layer_params, input_shape):
+    input_shape = (layer_params["num_features"],) + input_shape
+    input_shape = uft.to_framework_channel(input_shape)
+    model = uft.generate_k_lip_model(layer_type, layer_params, input_shape, 1.0)
+
+    x = np.random.normal(size=(5,) + input_shape)
+
+    x = uft.to_tensor(x)
+    y1 = model(x)
+    for _ in range(1000):
+        y = model(x)  # noqa: F841
+
+    model.eval()
+    y1 = model(x)
+    # Test vanilla export inference comparison
+    if uft.vanilla_require_a_copy():
+        model2 = uft.generate_k_lip_model(layer_type, layer_params, input_shape, 1.0)
+        uft.copy_model_parameters(model, model2)
+        vanilla_model = uft.vanillaModel(model2)
+    else:
+        vanilla_model = uft.vanillaModel(model)  # .vanilla_export()
+    y2 = vanilla_model(x)
+    assert type(list(vanilla_model.children())[0]) is uft.ScaleBiasLayer
+    np.testing.assert_allclose(uft.to_numpy(y1), uft.to_numpy(y2), atol=1e-6)
