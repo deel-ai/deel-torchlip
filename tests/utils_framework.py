@@ -126,6 +126,7 @@ __all__ = [
     "SpectralConv1d",
     "LipResidual",
     "LseHKRMulticlassLoss",
+    "ScaleBiasLayer",
 ]
 
 

@@ -282,6 +282,9 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
     y = bn(x)
     # updated running mean used in eval mode
     np.testing.assert_allclose(bn.running_sum_bmean, mean_x * 1000 / 1001, atol=1e-4)
+    x_shape = uft.to_numpy(x).shape
+    meanr = np.reshape(mean_x * 1000 / 1001, (1, -1) + (1,) * (len(x_shape) - 2))
+    np.testing.assert_allclose(uft.to_numpy(y), uft.to_numpy(x) - meanr, atol=1e-4)
 
 
 @pytest.mark.parametrize(

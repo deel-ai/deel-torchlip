@@ -3,8 +3,6 @@ import torch
 import torch.nn as nn
 import torch.distributed as dist
 
-from deel.torchlip.modules.module import LipschitzModule
-
 
 class LayerCentering(nn.Module):
     r"""
