@@ -290,9 +290,8 @@ def test_BatchCentering_runningmean(size, input_shape, bias):
 @pytest.mark.parametrize(
     "layer_type,layer_params",
     [
-        (BatchCentering, {"num_features": 10, "centering": True, "bias": False}),
-        (BatchCentering, {"num_features": 10, "centering": False, "bias": False}),
-        (BatchCentering, {"num_features": 10, "centering": True, "bias": True}),
+        (BatchCentering, {"num_features": 10, "bias": False}),
+        (BatchCentering, {"num_features": 10, "bias": True}),
     ],
 )
 @pytest.mark.parametrize("input_shape", [(10, 10), (), (10,)])

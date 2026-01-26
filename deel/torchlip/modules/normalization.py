@@ -83,7 +83,7 @@ class ScaleBiasLayer(nn.Module):
             return x * self.scalar
 
 
-class BatchCentering(nn.Module):
+class BatchLipNorm(nn.Module):
     r"""
     Applies Batch Centering  over a 2D, 3D, 4D input.
 
@@ -120,8 +120,9 @@ class BatchCentering(nn.Module):
         dim: Optional[tuple] = None,
         centering: bool = True,
         bias: bool = True,
+        factory=None,
     ):
-        super(BatchCentering, self).__init__()
+        super(BatchLipNorm, self).__init__()
         self.num_features = num_features
         self.dim = dim
         self.centering = centering
@@ -139,6 +140,7 @@ class BatchCentering(nn.Module):
         self._batch_mean: Optional[torch.Tensor] = None
 
         self._first = True
+        self.factory = factory
 
     def _infer_dim(self, x: torch.Tensor) -> tuple:
         if self.dim is None:
@@ -213,6 +215,27 @@ class BatchCentering(nn.Module):
         layer = ScaleBiasLayer(scalar=1.0, bias=True, num_features=num_features)
         layer.bias.data = bias
         return layer
+
+
+class BatchCentering(BatchLipNorm):
+    """
+    BatchCentering implemented as BatchLipNorm with factory=None and centering=True.
+    Equivalent forward: y = x - E[x] + beta (if bias=True).
+    """
+
+    def __init__(
+        self,
+        num_features: int = 1,
+        dim: Optional[tuple] = None,
+        bias: bool = True,
+    ):
+        super().__init__(
+            num_features=num_features,
+            dim=dim,
+            centering=True,  # Batchcentering is centering
+            bias=bias,
+            factory=None,  # forces scaling_norm = 1
+        )
 
 
 BatchCentering2d = BatchCentering
