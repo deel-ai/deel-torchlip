@@ -31,10 +31,18 @@ import numpy as np
 
 from . import utils_framework as uft
 
-from .utils_framework import BatchCentering, LayerCentering
+from .utils_framework import (
+    BatchCentering,
+    BatchLipNorm,
+    LayerCentering,
+    SharedLipFactory,
+)
 
 
-def check_serialization(layer_type, layer_params, input_shape=(10,)):
+def check_serialization(layer_type, layer_params, input_shape=(10,), norm=False):
+    if norm:
+        factory = SharedLipFactory()
+        layer_params["factory"] = factory
     m = uft.generate_k_lip_model(layer_type, layer_params, input_shape=input_shape, k=1)
     if m is None:
         pytest.skip()
@@ -319,3 +327,280 @@ def test_batchcenter_vanilla_export(layer_type, layer_params, input_shape):
     y2 = vanilla_model(x)
     assert type(list(vanilla_model.children())[0]) is uft.ScaleBiasLayer
     np.testing.assert_allclose(uft.to_numpy(y1), uft.to_numpy(y2), atol=1e-6)
+
+
+@pytest.mark.parametrize(
+    "size, input_shape, bias, norm",
+    [
+        (4, (3, 4), False, False),
+        (4, (3, 4), False, True),
+        (4, (3, 4), True, False),
+        (4, (3, 4), True, True),
+        (4, (3, 4, 8, 8), False, False),
+        (4, (3, 4, 8, 8), False, True),
+        (4, (3, 4, 8, 8), True, False),
+        (4, (3, 4, 8, 8), True, True),
+    ],
+)
+def test_BatchLipNorm(size, input_shape, bias, norm):
+    """evaluate layerbatch centering"""
+    # input_shape = uft.to_framework_channel(input_shape)
+    xnp = np.arange(np.prod(input_shape)).reshape(input_shape)
+    factory = None
+    if norm:
+        factory = SharedLipFactory()
+    bn = BatchLipNorm(**{"num_features": size, "bias": bias, "factory": factory})
+    # bn_mom = bn.momentum
+    if len(input_shape) == 2:
+        mean_x = np.mean(xnp, axis=0)
+        var_x = np.var(xnp, axis=0, ddof=1)
+        mean_shape = (1, size)
+    else:
+        mean_x = np.mean(xnp, axis=(0, 2, 3))
+        var_x = np.var(xnp, axis=(0, 2, 3), ddof=1)
+        mean_shape = (1, size, 1, 1)
+    x = uft.to_tensor(xnp)
+    y = bn(x)
+    scale_factor = current_scale_factor = 1.0
+    if norm:
+        print("gt var ", var_x)
+        scale_factor = np.max(np.sqrt(var_x))
+    np.testing.assert_allclose(bn._get_mean(), mean_x, atol=1e-5)
+    np.testing.assert_allclose(bn.get_scaling_factor(), scale_factor, atol=1e-5)
+    np.testing.assert_allclose(
+        uft.to_numpy(y),
+        (xnp - np.reshape(mean_x, mean_shape)) / scale_factor,
+        atol=1e-5,
+    )
+    y = bn(2 * x)
+    new_runningmean = (
+        mean_x + 2 * mean_x
+    ) / 2.0  # mean_x * (1 - bn_mom) + 2 * mean_x * bn_mom
+    # new_runningvar = (var_x + 4 * var_x)/2.0 #mean_x * (1 - bn_mom)
+    # + 2 * mean_x * bn_mom
+    conc_xnp = np.concatenate([xnp, 2 * xnp], axis=0)
+    if len(input_shape) == 2:
+        new_runningvar = np.var(conc_xnp, axis=0, ddof=1)
+    else:
+        new_runningvar = np.var(conc_xnp, axis=(0, 2, 3), ddof=1)
+        # (var_x + 4 * var_x + 0.5*(mean_x-2 * mean_x)**2)/2.0 #mean_x * (1 - bn_mom)
+        #  + 2 * mean_x * bn_mom
+    if norm:
+        print("gtnew_runningvar ", new_runningvar)
+        current_scale_factor = np.max(np.sqrt(4 * var_x))
+        scale_factor = np.max(np.sqrt(new_runningvar))
+    np.testing.assert_allclose(bn._get_mean(), new_runningmean, atol=1e-5, rtol=1e-5)
+    np.testing.assert_allclose(
+        bn.get_scaling_factor(), scale_factor, atol=1e-5, rtol=1e-5
+    )
+    np.testing.assert_allclose(
+        uft.to_numpy(y),
+        (2 * xnp - 2 * np.reshape(mean_x, mean_shape)) / current_scale_factor,
+        atol=1e-5,
+        rtol=1e-5,
+    )  # keep substract batch mean
+    print("start in eval mode")
+    bn.eval()
+    y = bn(2 * x)
+    np.testing.assert_allclose(
+        bn._get_mean(), new_runningmean, atol=1e-5
+    )  # eval mode running mean freezed
+    np.testing.assert_allclose(
+        bn.get_scaling_factor(), scale_factor, atol=1e-5, rtol=1e-5
+    )
+    np.testing.assert_allclose(
+        uft.to_numpy(y),
+        (2 * xnp - np.reshape(new_runningmean, mean_shape)) / scale_factor,
+        atol=1e-5,
+        rtol=1e-5,
+    )  # eval mode use running_mean
+
+
+@pytest.mark.parametrize(
+    "norm_type",
+    [
+        BatchLipNorm,
+    ],
+)
+@pytest.mark.parametrize(
+    "norm",
+    [False, True],
+)
+@pytest.mark.parametrize(
+    "size, input_shape, bias",
+    [
+        (10, (10,), False),
+        (10, (10,), True),
+        (7, (7, 8, 8), False),
+        (7, (7, 8, 8), True),
+    ],
+)
+def test_batchlipnorm_serialization(norm_type, size, input_shape, bias, norm):
+    # Check serialization
+    if hasattr(norm_type, "unavailable_class"):
+        pytest.skip(f"{norm_type} not available")
+    check_serialization(
+        norm_type,
+        layer_params={"num_features": size, "bias": bias},
+        input_shape=input_shape,
+        norm=norm,
+    )
+
+
+@pytest.mark.parametrize(
+    "norm_type",
+    [
+        BatchLipNorm,
+    ],
+)
+@pytest.mark.parametrize(
+    "size, input_shape, bias",
+    [
+        (10, (10,), True),
+        (7, (7, 8, 8), True),
+    ],
+)
+@pytest.mark.parametrize(
+    "norm",
+    [False, True],
+)
+def test_BatchLipNorm_bias(norm_type, size, input_shape, bias, norm):
+    if hasattr(norm_type, "unavailable_class"):
+        pytest.skip(f"{norm_type} not available")
+    factory = None
+    if norm:
+        factory = SharedLipFactory()
+    m = uft.generate_k_lip_model(
+        norm_type,
+        layer_params={"num_features": size, "bias": bias, "factory": factory},
+        input_shape=input_shape,
+        k=1,
+    )
+    if m is None:
+        pytest.skip()
+
+    loss, optimizer, _ = uft.compile_model(
+        m,
+        optimizer=uft.get_instance_framework(uft.SGD, inst_params={"model": m}),
+        loss=uft.CategoricalCrossentropy(from_logits=True),
+    )
+    batch_size = 10
+
+    batch_size = 10
+    bb = uft.to_numpy(uft.get_layer_by_index(m, 0).bias)
+    sf = uft.to_numpy(uft.get_layer_by_index(m, 0).get_scaling_factor())
+    np.testing.assert_allclose(bb, np.zeros((size,)), atol=1e-5)
+    np.testing.assert_allclose(sf, 1.0, atol=1e-5)
+
+    traind_ds = linear_generator(batch_size, input_shape)
+
+    uft.train(
+        traind_ds,
+        m,
+        loss,
+        optimizer,
+        2,
+        batch_size,
+        steps_per_epoch=10,
+    )
+
+    bb = uft.to_numpy(uft.get_layer_by_index(m, 0).bias)
+    sf = uft.to_numpy(uft.get_layer_by_index(m, 0).get_scaling_factor())
+    assert np.linalg.norm(bb) != 0.0
+    if norm:
+        assert np.linalg.norm(sf) != 1.0
+    else:
+        assert np.linalg.norm(sf) == 1.0
+
+
+"""@pytest.mark.skipif(
+    hasattr(BatchLipNorm, "unavailable_class"),
+    reason="BatchLipNorm not available",
+)"""
+
+
+@pytest.mark.parametrize(
+    "size, input_shape, bias",
+    [
+        (4, (3, 4), False),
+        (4, (3, 4), True),
+        (4, (3, 4, 8, 8), False),
+        (4, (3, 4, 8, 8), True),
+        (13, (64, 13, 8, 8), False),
+        (13, (64, 13, 8, 8), True),
+    ],
+)
+@pytest.mark.parametrize(
+    "norm",
+    [False, True],
+)
+@pytest.mark.parametrize(
+    "type_seq",
+    [0, 1, 2],
+)
+def test_BatchLipNorm_runningmean(size, input_shape, bias, norm, type_seq):
+    """evaluate batch centering convergence of running mean"""
+    # input_shape = uft.to_framework_channel(input_shape)
+    # start with 0 to set up running mean to zero
+    if type_seq == 0:
+        xnp = np.zeros(input_shape)
+        gt_mean = 0.0
+        gt_var = 1.0
+        epochs = 2
+    elif type_seq >= 1:
+        epochs = 20
+        xnp = np.random.normal(0.0, 1.0, input_shape)
+        if len(input_shape) == 2:
+            mean_x = np.mean(xnp, axis=0)
+            var_x = np.var(xnp, axis=0, ddof=1)
+            num_elem = input_shape[0]
+        else:
+            mean_x = np.mean(xnp, axis=(0, 2, 3))
+            var_x = np.var(xnp, axis=(0, 2, 3), ddof=1)
+            num_elem = input_shape[0] * input_shape[2] * input_shape[3]
+        if type_seq == 1:
+            gt_mean = mean_x
+            gt_var = var_x * (num_elem - 1) * epochs / (epochs * num_elem - 1)
+        else:
+            conc_xnp = np.concatenate([xnp, 3 * xnp], axis=0)
+            if len(input_shape) == 2:
+                new_runningvar = np.var(conc_xnp, axis=0, ddof=1)
+            else:
+                new_runningvar = np.var(conc_xnp, axis=(0, 2, 3), ddof=1)
+            gt_mean = (mean_x + 3 * mean_x) / 2.0
+            print("gt mean_x ", mean_x, "new_runningvar ", new_runningvar)
+            gt_var = (
+                new_runningvar
+                * (2 * num_elem - 1)
+                * epochs
+                / (2 * epochs * num_elem - 1)
+            )
+
+    factory = None
+    if norm:
+        factory = SharedLipFactory()
+
+    bn = uft.get_instance_framework(
+        BatchLipNorm, {"num_features": size, "bias": bias, "factory": factory}
+    )
+
+    x = uft.to_tensor(xnp)
+
+    for _ in range(epochs):
+        y = bn(x)  # noqa: F841
+        if type_seq == 2:
+            y = bn(3 * x)  # noqa: F841
+
+    np.testing.assert_allclose(bn._get_mean(), gt_mean, atol=1e-5)
+    # constant value => no scale factor
+    if (type_seq == 0) or norm:
+        print(
+            "get_scaling_factor ",
+            bn.get_scaling_factor(False),
+            " var_x ",
+            gt_var,
+            np.sqrt(np.max(gt_var)),
+        )
+        np.testing.assert_allclose(
+            bn.get_scaling_factor(), np.sqrt(np.max(gt_var)), atol=1e-5
+        )
