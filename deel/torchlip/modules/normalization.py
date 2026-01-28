@@ -1,8 +1,9 @@
-import abc
-from typing import List, Optional
+from typing import Optional, List
 import torch
 import torch.nn as nn
 import torch.distributed as dist
+
+from .module import ScaledLipschitzModule, SharedLipFactory
 
 
 class LayerCentering(nn.Module):
@@ -82,61 +83,6 @@ class ScaleBiasLayer(nn.Module):
             return x * self.scalar + self.bias.view(self.bias_shape)
         else:
             return x * self.scalar
-
-
-class SharedLipFactory:
-    def __init__(self):
-        self.modules: List["ScaledLipschitzModule"] = []
-
-    def register(self, module: "ScaledLipschitzModule"):
-        self.modules.append(module)
-
-    def get_current_product_value(self, training):
-        """Retrieve the current product of the scaling factors."""
-        if not self.modules:
-            return torch.ones(())
-        scalings = [m.get_scaling_factor(training=training) for m in self.modules]
-        return torch.prod(torch.stack(scalings))
-
-
-class ScaledLipschitzModule(abc.ABC):
-    """
-    This class allow to set learnable/fixed lipschitz parameter of a layer.
-
-    """
-
-    def __init__(
-        self, scaling: bool = False, factory: Optional[SharedLipFactory] = None
-    ):
-        assert (scaling) or (
-            factory is None
-        ), "Factory has to be none when scaling is False. "
-        # Factory of factors
-        self.factory = factory
-        self.scaling = scaling
-        if self.factory is not None:
-            self.factory.register(self)
-
-    """Retrieve the scaling_factor of the layer."""
-
-    def get_scaling_factor(self, training: bool = False, update=True) -> torch.Tensor:
-        if not self.scaling:
-            return torch.ones((1,))
-        return self.get_scaling(training=training, update=update)
-
-    @abc.abstractmethod
-    def get_scaling(self, training: bool = False, update=True) -> torch.Tensor:
-        """Retrieve the scaling factor of the layer."""
-        pass
-
-    @abc.abstractmethod
-    def vanilla_export(self):
-        """
-        Convert this layer to a corresponding vanilla torch layer (when possible).
-        Returns:
-             A vanilla torch version of this layer.
-        """
-        pass
 
 
 class BatchLipNorm(nn.Module, ScaledLipschitzModule):

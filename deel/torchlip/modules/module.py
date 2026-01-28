@@ -34,7 +34,7 @@ import copy
 import warnings
 import math
 from collections import OrderedDict
-from typing import Any
+from typing import List, Optional, Any
 
 import numpy as np
 import torch
@@ -155,6 +155,72 @@ def vanilla_model(model: nn.Module, in_place=True, new_module=None) -> nn.Module
     return new_module
 
 
+class SharedLipFactory:
+    """
+    Factory to share scaling factors between multiple layers.
+    Register layers of type ScaledLipschitzModule
+    that provide a get_scaling_factor method.
+    Provide a method to get the product of all scaling factors.
+    This assume that the network is sequential
+    """
+
+    def __init__(self):
+        self.modules: List["ScaledLipschitzModule"] = []
+
+    def register(self, module: "ScaledLipschitzModule"):
+        self.modules.append(module)
+
+    def get_current_product_value(self, training):
+        """Retrieve the current product of the scaling factors."""
+        if not self.modules:
+            return torch.ones(())
+        scalings = [m.get_scaling_factor(training=training) for m in self.modules]
+        return torch.prod(torch.stack(scalings))
+
+
+class ScaledLipschitzModule(abc.ABC):
+    """
+    This class allow to set learnable/fixed lipschitz parameter of a layer.
+    args:
+        scaling: whether the layer has a scaling factor or not.
+        If not the scaling factor will return 1.0
+        factory: Optional factory to share scaling factors between multiple layers.
+    """
+
+    def __init__(
+        self, scaling: bool = False, factory: Optional[SharedLipFactory] = None
+    ):
+        assert (scaling) or (
+            factory is None
+        ), "Factory has to be none when scaling is False. "
+        # Factory of factors
+        self.factory = factory
+        self.scaling = scaling
+        if self.factory is not None:
+            self.factory.register(self)
+
+    """Retrieve the scaling_factor of the layer."""
+
+    def get_scaling_factor(self, training: bool = False, update=True) -> torch.Tensor:
+        if not self.scaling:
+            return torch.ones((1,))
+        return self.get_scaling(training=training, update=update)
+
+    @abc.abstractmethod
+    def get_scaling(self, training: bool = False, update=True) -> torch.Tensor:
+        """Retrieve the scaling factor of the layer."""
+        pass
+
+    @abc.abstractmethod
+    def vanilla_export(self):
+        """
+        Convert this layer to a corresponding vanilla torch layer (when possible).
+        Returns:
+             A vanilla torch version of this layer.
+        """
+        pass
+
+
 class _LipschitzCoefMultiplication(nn.Module):
     """Parametrization module for lipschitz global coefficient multiplication."""
 
@@ -166,7 +232,7 @@ class _LipschitzCoefMultiplication(nn.Module):
         return self._coef * weight
 
 
-class LipschitzModule(abc.ABC):
+class LipschitzModule(ScaledLipschitzModule):
     """
     This class allow to set lipschitz factor of a layer. Lipschitz layer must inherit
     this class to allow user to set the lipschitz factor.
@@ -175,12 +241,22 @@ class LipschitzModule(abc.ABC):
          This class only regroup useful functions when developing new Lipschitz layers.
          But it does not ensure any property about the layer. This means that
          inheriting from this class won't ensure anything about the lipschitz constant.
+    args:
+        coefficient_lip: multiplicative coefficient of the layer
+        to form a K-Lipschitz layer.
+        factory: from ScaledLipschitzModule,
     """
 
     # The target coefficient:
     _coefficient_lip: float
 
-    def __init__(self, coefficient_lip: float = 1.0):
+    def __init__(
+        self,
+        coefficient_lip: float = 1.0,
+        factory: Optional[SharedLipFactory] = None,
+    ):
+        scaling = coefficient_lip != 1.0
+        super().__init__(scaling=scaling, factory=factory)
         self._coefficient_lip = coefficient_lip
 
     def apply_lipschitz_factor(self):
@@ -191,15 +267,8 @@ class LipschitzModule(abc.ABC):
             self, "weight", _LipschitzCoefMultiplication(self._coefficient_lip)
         )
 
-    @abc.abstractmethod
-    def vanilla_export(self):
-        """
-        Convert this layer to a corresponding vanilla torch layer (when possible).
-
-        Returns:
-             A vanilla torch version of this layer.
-        """
-        pass
+    def get_scaling(self, training=False, update=True):
+        return self._coefficient_lip
 
 
 class Sequential(TorchSequential, LipschitzModule):

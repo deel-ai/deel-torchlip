@@ -83,7 +83,8 @@ from .normalization import LayerCentering
 from .normalization import BatchCentering
 from .normalization import ScaleBiasLayer
 from .normalization import BatchLipNorm
-from .normalization import SharedLipFactory
+from .module import SharedLipFactory
+from .module import ScaledLipschitzModule
 from .unconstrained import PadConv2d
 from .unconstrained import PadConv1d
 from .residual import LipResidual
