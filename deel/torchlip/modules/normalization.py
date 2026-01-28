@@ -20,17 +20,18 @@ class LayerCentering(nn.Module):
     Unlike Layer Normalization, this layer is 1-Lipschitz
     This layer uses statistics computed from input data in
     both training and  evaluation modes.
+    This layer is :math:`1`-Lipschitz and should be used
 
     Args:
-        size: number of features in the input tensor
+        num_features: number of features in the input tensor
         dim: dimensions over which to compute the mean
         (default ``input.mean((-2, -1))`` for a 4D tensor).
         bias: if `True`, adds a learnable bias to the output
-        of shape (size,). Default: `True`
+        of shape (num_features,). Default: `True`
 
     Shape:
-        - Input: :math:`(N, size, *)`
-        - Output: :math:`(N, size, *)` (same shape as input)
+        - Input: :math:`(N, num_features, *)`
+        - Output: :math:`(N, num_features, *)` (same shape as input)
 
     """
 
@@ -63,11 +64,13 @@ class ScaleBiasLayer(nn.Module):
     ):
         """
         A PyTorch layer that multiplies the input by a fixed scalar.
-        and add a bias
-        :param scalar: The scalar multiplier (non-learnable).
-        :param size: number of features in the input tensor
-        :param bias: if `True`, adds a learnable bias to the output
-        of shape (size,). Default: `True`
+        and add a bias. This modeule is used to export
+        Lipschitz normalization layers into vanilla layers.
+        Args:
+            scalar: The scalar multiplier (non-learnable).
+            num_features: number of features in the input tensor
+            bias: if `True`, adds a learnable bias to the output
+            of shape (size,). Default: `True`
         """
         super(ScaleBiasLayer, self).__init__()
         self.scalar = scalar
@@ -87,11 +90,11 @@ class ScaleBiasLayer(nn.Module):
 
 class BatchLipNorm(nn.Module, ScaledLipschitzModule):
     r"""
-    Applies Batch Centering  over a 2D, 3D, 4D input.
+    Applies Batch Normalization with a single scaling factor over a 2D, 3D, 4D input.
 
     .. math::
 
-        y_i = x_i - \mathrm{E}[x_i] + \beta_i
+        y_i = (x_i - \mathrm{E}[x_i])/\sqrt{\max{\mathrm{Var}[x_i]+\epsilon}} + \beta_i
 
     The mean is calculated per-dimension over the mini-batches and
     other dimensions excepted the feature/channel dimension.
@@ -101,14 +104,23 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
     training mode and  a constant in evaluation mode computed as
     the running mean on training samples.
         This layer is compatible with multi-GPU training (torch.nn.distributed).
-    This layer is :math:`1`-Lipschitz and should be used
+    Warning: This layer is not :math:`1`-Lipschitz and could be used with a
+    SharedLipFactory to compute the global Lipschitz constant on Sequential models.
 
     Args:
-        num_features: number of features in the input tensor
-        dim: dimensions over which to compute the mean
+            num_features: number of features in the input tensor
+            dim: dimensions over which to compute the mean
         (default ``input.mean((0, -2, -1))`` for a 4D tensor).
-        bias: if `True`, adds a learnable bias to the output
+            centering: apply a batch centering (\mathrm{E}[x_i]) if `True`
+        otherwise only apply the variance normalization.
+            bias: if `True`, adds a learnable bias to the output
         of shape (num_features,). Default: `True`
+            normalize: apply variance normalization if `True`
+        otherwise only apply centering. Note that BatchCentering class
+        is equivalent to BatchLipNorm with `normalize=False`.
+        By default `normalize=True`.
+            factory (optional): SharedLipFactory to register the scaling factor
+            eps: a value added to the denominator for numerical stability.
 
     Shape:
         - Input: :math:`(N, num_features, *)`
@@ -328,10 +340,36 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
 
 
 class BatchCentering(BatchLipNorm):
-    """
-    BatchCentering implemented as BatchLipNorm with
-    normalize = False, factory=None and centering=True.
-    Equivalent forward: y = x - E[x] + beta (if bias=True).
+    r"""
+    Applies Batch Centering  over a 2D, 3D, 4D input.
+
+    .. math::
+
+        y_i = (x_i - \mathrm{E}[x_i]) + \beta_i
+    BatchCentering implemented as BatchLipNorm with normalize = False,
+    factory=None and centering=True.
+
+    The mean is calculated per-dimension over the mini-batches and
+    other dimensions excepted the feature/channel dimension.
+        :math:`\beta` is a learnable parameter vectors
+    of num_features `C` (where `C` is the number of features or channels of the input).
+    This layer uses statistics computed from input data in
+    training mode and  a constant in evaluation mode computed as
+    the running mean on training samples.
+        This layer is compatible with multi-GPU training (torch.nn.distributed).
+    This layer is :math:`1`-Lipschitz and should be used
+
+    Args:
+        num_features: number of features in the input tensor
+        dim: dimensions over which to compute the mean
+        (default ``input.mean((0, -2, -1))`` for a 4D tensor).
+        bias: if `True`, adds a learnable bias to the output
+        of shape (num_features,). Default: `True`
+
+    Shape:
+        - Input: :math:`(N, num_features, *)`
+        - Output: :math:`(N, num_features, *)` (same shape as input)
+
     """
 
     def __init__(
