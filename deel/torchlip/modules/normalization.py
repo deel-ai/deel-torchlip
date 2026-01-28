@@ -105,16 +105,22 @@ class ScaledLipschitzModule(abc.ABC):
 
     """
 
-    def __init__(self, factory: Optional[SharedLipFactory] = None):
+    def __init__(
+        self, scaling: bool = False, factory: Optional[SharedLipFactory] = None
+    ):
+        assert (scaling) or (
+            factory is None
+        ), "Factory has to be none when scaling is False. "
         # Factory of factors
         self.factory = factory
+        self.scaling = scaling
         if self.factory is not None:
             self.factory.register(self)
 
     """Retrieve the scaling_factor of the layer."""
 
     def get_scaling_factor(self, training: bool = False, update=True) -> torch.Tensor:
-        if self.factory is None:
+        if not self.scaling:
             return torch.ones((1,))
         return self.get_scaling(training=training, update=update)
 
@@ -124,10 +130,9 @@ class ScaledLipschitzModule(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def vanilla_export(self, lambda_cumul):
+    def vanilla_export(self):
         """
         Convert this layer to a corresponding vanilla torch layer (when possible).
-        Based on the cumulated scaling factor of the previous layers.
         Returns:
              A vanilla torch version of this layer.
         """
@@ -171,11 +176,12 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
         dim: Optional[tuple] = None,
         centering: bool = True,
         bias: bool = True,
+        normalize: bool = True,
         factory: Optional[SharedLipFactory] = None,
         eps: float = 1e-5,
     ):
         nn.Module.__init__(self)
-        ScaledLipschitzModule.__init__(self, factory)
+        ScaledLipschitzModule.__init__(self, scaling=normalize, factory=factory)
         self.num_features = num_features
         self.dim = dim
         self.centering = centering
@@ -190,7 +196,7 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
         else:
             self.register_parameter("bias", None)
 
-        self.normalize = self.factory is not None
+        self.normalize = normalize
         if self.normalize:
             # register running_sum_bmeansq for saving the sum of mean of square on batch
             self.register_buffer("running_sum_bmeansq", torch.zeros(num_features))
@@ -304,7 +310,7 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
     def get_scaling(self, training: bool = False, update=True):
         var = self._get_var(training, update=update)
         max_var = var.max()
-        return max_var.sqrt()
+        return 1.0 / max_var.sqrt()
 
     def forward(self, x):
         self._infer_dim(x)
@@ -354,24 +360,31 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
         scale = self.get_scaling(training=self.training).to(x.device)
 
         if self.bias is not None:
-            return (x - mean.view(mean_shape)) / scale + self.bias.view(mean_shape)
+            return (x - mean.view(mean_shape)) * scale + self.bias.view(mean_shape)
         else:
-            return (x - mean.view(mean_shape)) / scale
+            return (x - mean.view(mean_shape)) * scale
 
     def vanilla_export(self):
         num_features = self.running_sum_bmean.shape[0]
-        bias = -self.running_sum_bmean.detach() / self.running_num_batches.detach()
+        bias = -self._get_mean(training=False, update=True).detach()
+
+        scalef = 1.0
+        if self.normalize:
+            scalef = self.get_scaling(training=False, update=True).detach()
+            bias *= scalef
+        # self.running_sum_bmean.detach() / self.running_num_batches.detach()
         if self.bias is not None:
             bias += self.bias.detach()
 
-        layer = ScaleBiasLayer(scalar=1.0, bias=True, num_features=num_features)
+        layer = ScaleBiasLayer(scalar=scalef, bias=True, num_features=num_features)
         layer.bias.data = bias
         return layer
 
 
 class BatchCentering(BatchLipNorm):
     """
-    BatchCentering implemented as BatchLipNorm with factory=None and centering=True.
+    BatchCentering implemented as BatchLipNorm with
+    normalize = False, factory=None and centering=True.
     Equivalent forward: y = x - E[x] + beta (if bias=True).
     """
 
@@ -386,6 +399,7 @@ class BatchCentering(BatchLipNorm):
             dim=dim,
             centering=True,  # Batchcentering is centering
             bias=bias,
+            normalize=False,  # forces scaling_norm = 1
             factory=None,  # forces scaling_norm = 1
         )
 
