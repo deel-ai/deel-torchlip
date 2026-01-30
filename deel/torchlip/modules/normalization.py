@@ -197,6 +197,11 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
 
     # compute average of running values
     def update_running_values(self):
+        """
+        In eval mode reduce the running values to their mean
+        and set the counter of batches to one
+        (previous epoch will have a weight equivalent to one batch)
+        """
         if self.running_num_batches > 1:
             self._batch_mean = None  # free some memory
             self._batch_meansq = None
