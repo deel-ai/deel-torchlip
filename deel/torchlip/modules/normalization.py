@@ -64,7 +64,7 @@ class ScaleBiasLayer(nn.Module):
     ):
         """
         A PyTorch layer that multiplies the input by a fixed scalar.
-        and add a bias. This modeule is used to export
+        and add a bias. This module is used to export
         Lipschitz normalization layers into vanilla layers.
         Args:
             scalar: The scalar multiplier (non-learnable).
@@ -312,11 +312,11 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
                 xsq = x * x
                 self._batch_meansq = xsq.mean(dim=self.dim)
 
-            agrregated_mean = self._batch_mean.clone().detach()
+            aggregated_mean = self._batch_mean.clone().detach()
             # on a single GPU this value is always 1
             num_batches = self.running_num_batches.clone().detach().zero_() + 1
             # for multiGPU aggregate mean and num_batches
-            list_tensors = [agrregated_mean, num_batches]
+            list_tensors = [aggregated_mean, num_batches]
             if self.normalize:
                 current_meansq = self._batch_meansq.clone()
                 list_tensors.append(current_meansq.detach())
@@ -325,7 +325,7 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
             # Accumulate running mean, mean square and num elements over the epoch
             # use aggregated mean and mean square for multi GPU
             with torch.no_grad():
-                self.running_sum_bmean += agrregated_mean
+                self.running_sum_bmean += aggregated_mean
                 self.running_num_batches += num_batches
                 if self.normalize:
                     self.running_sum_bmeansq += current_meansq
