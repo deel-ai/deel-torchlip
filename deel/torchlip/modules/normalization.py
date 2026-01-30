@@ -240,6 +240,10 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
         return self.running_sum_bmean / self.running_num_batches
 
     def _get_var(self, training: bool = False) -> torch.Tensor:
+        """retrieve the batch variance in training mode
+        and the running variance in eval mode,
+        when variance is too small return 1.0 to avoid division by zero
+        """
         cur_mean = self._get_mean(training)
         if cur_mean is None:
             raise RuntimeError(
@@ -280,6 +284,9 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
         return var
 
     def get_scaling(self, training: bool = False):
+        """retrieve the scaling factor based on the maximum of the variance
+        this is the main difference with batchnorm that uses per-feature variance
+        """
         var = self._get_var(training)
         max_var = var.max()
         return 1.0 / max_var.sqrt()
