@@ -78,6 +78,8 @@ class ScaleBiasLayer(nn.Module):
         if bias:
             self.bias = nn.Parameter(torch.zeros((num_features,)), requires_grad=True)
             self.bias_shape = None
+        else:
+            self.register_parameter("bias", None)
 
     def forward(self, x):
         if self.bias is not None:
