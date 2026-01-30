@@ -314,7 +314,7 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
 
             aggregated_mean = self._batch_mean.clone().detach()
             # on a single GPU this value is always 1
-            num_batches = self.running_num_batches.clone().detach().zero_() + 1
+            num_batches = torch.zeros_like(self.running_num_batches) + 1
             # for multiGPU aggregate mean and num_batches
             list_tensors = [aggregated_mean, num_batches]
             if self.normalize:
