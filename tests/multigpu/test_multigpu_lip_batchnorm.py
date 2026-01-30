@@ -133,14 +133,14 @@ def test_BatchLipNorm(size, input_shape, bias, norm, device="cpu"):
         scale_factor = 1.0 / np.max(np.sqrt(var_x))
 
     np.testing.assert_allclose(
-        mbn_src.bn._get_mean(training=False, update=False).detach().cpu().numpy(),
+        mbn_src.bn._get_mean(training=False).detach().cpu().numpy(),
         mean_x,
         atol=1e-4,
         rtol=1e-4,
     )
 
     np.testing.assert_allclose(
-        mbn_src.bn.get_scaling_factor(update=False).detach().cpu().numpy(),
+        mbn_src.bn.get_scaling_factor().detach().cpu().numpy(),
         scale_factor,
         atol=1e-4,
         rtol=1e-4,
@@ -161,14 +161,14 @@ def test_BatchLipNorm(size, input_shape, bias, norm, device="cpu"):
         # current_scale_factor = 1.0 / np.max(np.sqrt(4 * var_x))
         scale_factor = 1.0 / np.max(np.sqrt(new_runningvar))
     np.testing.assert_allclose(
-        mbn_src.bn._get_mean(training=False, update=False).detach().cpu().numpy(),
+        mbn_src.bn._get_mean(training=False).detach().cpu().numpy(),
         new_runningmean,
         atol=1e-4,
         rtol=1e-4,
     )
 
     np.testing.assert_allclose(
-        mbn_src.bn.get_scaling_factor(update=False).detach().cpu().numpy(),
+        mbn_src.bn.get_scaling_factor().detach().cpu().numpy(),
         scale_factor,
         atol=1e-4,
         rtol=1e-4,
@@ -252,14 +252,14 @@ def test_BatchLipNorm3(size, input_shape, bias, norm, device="cpu"):
         # current_scale_factor = 1.0 / np.max(np.sqrt(4 * var_x))
         scale_factor = 1.0 / np.max(np.sqrt(new_runningvar))
     np.testing.assert_allclose(
-        mbn_src.bn._get_mean(training=False, update=False).detach().cpu().numpy(),
+        mbn_src.bn._get_mean(training=False).detach().cpu().numpy(),
         new_runningmean,
         atol=1e-4,
         rtol=1e-4,
     )
 
     np.testing.assert_allclose(
-        mbn_src.bn.get_scaling_factor(update=False).detach().cpu().numpy(),
+        mbn_src.bn.get_scaling_factor().detach().cpu().numpy(),
         scale_factor,
         atol=1e-4,
         rtol=1e-4,

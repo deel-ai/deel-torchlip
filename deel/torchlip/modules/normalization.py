@@ -198,6 +198,9 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
     # compute average of running values
     def update_running_values(self):
         if self.running_num_batches > 1:
+            self._batch_mean = None  # free some memory
+            self._batch_meansq = None
+            self._batch_count = None
             self.running_sum_bmean = self.running_sum_bmean / self.running_num_batches
             if self.normalize:
                 self.running_sum_bmeansq = (
@@ -209,24 +212,30 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
                 )
             self.running_num_batches = self.running_num_batches.zero_() + 1
 
-    def _get_mean(self, training: bool = False, update=True) -> torch.Tensor:
+    def _get_mean_and_update(self, training: bool = False) -> torch.Tensor:
         """retrieve the batch mean in training mode
-        and the running mean in eval mode
-        if update is True, update the running values
-        update=False is only for unit testing (getting values without averaging)"""
+        update and retrieve the running mean in eval mode
+        """
+        assert training is False, "use _get_mean only in training mode"
+        self.update_running_values()
+        return self._get_mean(training=False)
+
+    def _get_mean(self, training: bool = False) -> torch.Tensor:
+        """retrieve the batch mean in training mode
+        and the running mean in eval mode"""
 
         if training:
             return self._batch_mean
 
+        # eval mode: return running mean
         # case asking for running mean before a step
         if self.running_num_batches.item() == 0:
             return torch.zeros_like(self.running_sum_bmean)
-        if update and (self.running_num_batches > 1):
-            self.update_running_values()
+        # self.running_num_batches is set to 1 after update_running_values
         return self.running_sum_bmean / self.running_num_batches
 
-    def _get_var(self, training: bool = False, update=True) -> torch.Tensor:
-        cur_mean = self._get_mean(training, update=update)
+    def _get_var(self, training: bool = False) -> torch.Tensor:
+        cur_mean = self._get_mean(training)
         if cur_mean is None:
             raise RuntimeError(
                 f"Mean is None when computing variance. training={training}"
@@ -265,8 +274,8 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
         var = torch.where(var < self.eps, torch.ones(var.shape).to(var.device), var)
         return var
 
-    def get_scaling(self, training: bool = False, update=True):
-        var = self._get_var(training, update=update)
+    def get_scaling(self, training: bool = False):
+        var = self._get_var(training)
         max_var = var.max()
         return 1.0 / max_var.sqrt()
 
@@ -311,9 +320,11 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
                     self.running_mean_sample_per_batches += (
                         self.local_num_elements * num_batches
                     )
+            mean = self._get_mean(self.training)
+        else:
+            mean = self._get_mean_and_update(training=self.training)
 
         # get scaling factor: shape = (C,)
-        mean = self._get_mean(self.training)
         # get scaling factor: shape = (1,)
         scale = self.get_scaling(training=self.training).to(x.device)
 
@@ -324,11 +335,11 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
 
     def vanilla_export(self):
         num_features = self.running_sum_bmean.shape[0]
-        bias = -self._get_mean(training=False, update=True).detach()
+        bias = -self._get_mean_and_update(training=False).detach()
 
         scalef = 1.0
         if self.normalize:
-            scalef = self.get_scaling(training=False, update=True).detach()
+            scalef = self.get_scaling(training=False).detach()
             bias *= scalef
         # self.running_sum_bmean.detach() / self.running_num_batches.detach()
         if self.bias is not None:

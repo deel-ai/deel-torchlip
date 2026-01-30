@@ -143,9 +143,10 @@ def vanilla_model(model: nn.Module, in_place=True, new_module=None) -> nn.Module
             # compatibility with orthogonium modules
             nmod = _get_vanilla_module(module)
             nmod.weight.data = module.weight.data.clone()
-            nmod.bias.data = (
-                module.bias.data.clone() if module.bias is not None else None
-            )
+            if nmod.bias is not None:
+                nmod.bias.data = module.bias.data.clone()
+            else:
+                assert module.bias is None
             setattr(new_module, n, nmod)
         elif len(list(module.children())) > 0:
             # compound module, go inside it
@@ -201,13 +202,13 @@ class ScaledLipschitzModule(abc.ABC):
 
     """Retrieve the scaling_factor of the layer."""
 
-    def get_scaling_factor(self, training: bool = False, update=True) -> torch.Tensor:
+    def get_scaling_factor(self, training: bool = False) -> torch.Tensor:
         if not self.scaling:
             return torch.ones((1,))
-        return self.get_scaling(training=training, update=update)
+        return self.get_scaling(training=training)
 
     @abc.abstractmethod
-    def get_scaling(self, training: bool = False, update=True) -> torch.Tensor:
+    def get_scaling(self, training: bool = False) -> torch.Tensor:
         """Retrieve the scaling factor of the layer."""
         pass
 
