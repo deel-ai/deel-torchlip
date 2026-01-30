@@ -168,11 +168,12 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
             self.register_buffer("total_num_samples", torch.zeros((1,)))
 
         # Cached batch stats (for training-time scaling and mean)
+        # these cached values are kept outside the forward function
+        # to get access in the Lipschitz computation
         self._batch_mean: Optional[torch.Tensor] = None
         self._batch_meansq: Optional[torch.Tensor] = None
         self._batch_count: Optional[torch.Tensor] = None
         self.local_num_elements: Optional[int] = None
-        self.current_mean: Optional[torch.Tensor] = None
 
         self._first = True
 
