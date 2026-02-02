@@ -386,7 +386,6 @@ def test_BatchLipNorm(size, input_shape, bias, norm):
     y = bn(x)
     scale_factor = current_scale_factor = 1.0
     if norm:
-        print("gt var ", var_x)
         scale_factor = 1.0 / np.max(np.sqrt(var_x))
     np.testing.assert_allclose(bn._get_mean(), mean_x, atol=1e-5)
     np.testing.assert_allclose(bn.get_scaling_factor(), scale_factor, atol=1e-5)
@@ -409,7 +408,6 @@ def test_BatchLipNorm(size, input_shape, bias, norm):
         # (var_x + 4 * var_x + 0.5*(mean_x-2 * mean_x)**2)/2.0 #mean_x * (1 - bn_mom)
         #  + 2 * mean_x * bn_mom
     if norm:
-        print("gtnew_runningvar ", new_runningvar)
         current_scale_factor = 1.0 / np.max(np.sqrt(4 * var_x))
         scale_factor = 1.0 / np.max(np.sqrt(new_runningvar))
     np.testing.assert_allclose(bn._get_mean(), new_runningmean, atol=1e-5, rtol=1e-5)
@@ -422,7 +420,6 @@ def test_BatchLipNorm(size, input_shape, bias, norm):
         atol=1e-5,
         rtol=1e-5,
     )  # keep substract batch mean
-    print("start in eval mode")
     bn.eval()
     y = bn(2 * x)
     np.testing.assert_allclose(

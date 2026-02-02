@@ -209,16 +209,13 @@ class BatchLipNorm(nn.Module, ScaledLipschitzModule):
             self._batch_mean = None  # free some memory
             self._batch_meansq = None
             self._batch_count = None
-            self.running_sum_bmean = self.running_sum_bmean / self.running_num_batches
+            self.running_sum_bmean /= self.running_num_batches
             if self.normalize:
-                self.running_sum_bmeansq = (
-                    self.running_sum_bmeansq / self.running_num_batches
-                )
-                self.total_num_samples = self.running_mean_sample_per_batches
-                self.running_mean_sample_per_batches = (
-                    self.running_mean_sample_per_batches / self.running_num_batches
-                )
-            self.running_num_batches = self.running_num_batches.zero_() + 1
+                self.running_sum_bmeansq /= self.running_num_batches
+                self.total_num_samples = self.running_mean_sample_per_batches.clone()
+                self.running_mean_sample_per_batches /= self.running_num_batches
+            self.running_num_batches.zero_()
+            self.running_num_batches += 1
 
     def _get_mean_and_update(self, training: bool = False) -> torch.Tensor:
         """retrieve the batch mean in training mode
