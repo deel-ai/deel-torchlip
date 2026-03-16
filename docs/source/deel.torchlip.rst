@@ -54,6 +54,12 @@ Non-linear Activations
 .. autoclass:: LPReLU
 .. autoclass:: HouseHolder
 
+Normalization layers
+----------------------
+.. autoclass:: LayerCentering
+.. autoclass:: BatchCentering
+.. autoclass:: BatchLipNorm
+.. autoclass:: ScaleBiasLayer
 
 Loss Functions
 --------------
