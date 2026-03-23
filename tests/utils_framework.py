@@ -47,6 +47,9 @@ from deel.torchlip.modules import InvertibleDownSampling
 from deel.torchlip.modules import InvertibleUpSampling
 from deel.torchlip.modules import LayerCentering
 from deel.torchlip.modules import BatchCentering
+from deel.torchlip.modules import ScaleBiasLayer
+from deel.torchlip.modules import BatchLipNorm
+from deel.torchlip.modules import SharedLipFactory
 from deel.torchlip.utils import evaluate_lip_const
 from deel.torchlip.modules import PadConv2d
 from deel.torchlip.modules import LipResidual
@@ -125,6 +128,9 @@ __all__ = [
     "SpectralConv1d",
     "LipResidual",
     "LseHKRMulticlassLoss",
+    "ScaleBiasLayer",
+    "BatchLipNorm",
+    "SharedLipFactory",
 ]
 
 
